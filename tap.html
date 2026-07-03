@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Knight Tactical Trainer</title>
+<meta name="description" content="Every player falls for the knight eventually. Train its forks, outposts and mating nets in bite-sized puzzles and start thinking like a tactician today.">
+<meta name="theme-color" content="#0b0e14">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230b0e14'/%3E%3Ctext x='50' y='68' font-size='60' text-anchor='middle' fill='%23d4af37'%3E%E2%99%9E%3C/text%3E%3C/svg%3E">
+
+<!-- ============================================================
+     EXTERNAL LIBRARIES (the only two allowed)
+     ============================================================ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+
+<style>
+/* ============================================================
+     DESIGN TOKENS
+     ============================================================ */
+:root{
+  --bg:#0b0e14;
+  --bg2:#11151f;
+  --panel:rgba(255,255,255,0.045);
+  --panel-border:rgba(212,175,55,0.16);
+  --gold:#d4af37;
+  --gold-soft:#e8cf76;
+  --teal:#1f3a3a;
+  --text:#e8e6df;
+  --text-dim:#9aa0ad;
+  --green:#5fbf6e;
+  --red:#e1564e;
+  --radius:18px;
+  --serif:Georgia,'Iowan Old Style','Palatino Linotype',serif;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:hidden;}
+body{position:fixed;inset:0;overflow:hidden;padding-bottom:78px;}
+::-webkit-scrollbar{width:8px;}
+::-webkit-scrollbar-thumb{background:var(--panel-border);border-radius:8px;}
+@media (prefers-reduced-motion: reduce){*{animation-duration:0.01ms !important;transition-duration:0.01ms !important;}}
+
+/* ambient animated background */
+.bg-glow{position:fixed;inset:0;z-index:-1;overflow:hidden;}
+.bg-glow span{position:absolute;border-radius:50%;filter:blur(70px);opacity:0.18;animation:float 16s ease-in-out infinite;}
+.bg-glow span:nth-child(1){width:340px;height:340px;background:var(--gold);top:-80px;left:-60px;animation-duration:18s;}
+.bg-glow span:nth-child(2){width:260px;height:260px;background:var(--teal);bottom:-60px;right:-40px;animation-duration:22s;animation-delay:2s;}
+.bg-glow span:nth-child(3){width:200px;height:200px;background:#4a3f6b;top:40%;left:60%;animation-duration:20s;animation-delay:4s;}
+@keyframes float{0%,100%{transform:translate(0,0);}50%{transform:translate(30px,-25px);}}
+
+.bg-pieces{position:fixed;inset:0;z-index:-1;opacity:0.04;font-size:120px;pointer-events:none;overflow:hidden;}
+.bg-pieces span{position:absolute;animation:drift 30s linear infinite;}
+@keyframes drift{0%{transform:translateY(0) rotate(0deg);}100%{transform:translateY(-40px) rotate(8deg);}}
+
+/* glass panel base */
+.glass{background:var(--panel);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--panel-border);border-radius:var(--radius);}
+
+h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:0.2px;margin:0;}
+
+/* screens */
+.screen{display:none;animation:fadeIn 0.35s ease;height: calc(100% - 20px);overflow-y: auto;padding-bottom: 40px;}
+.screen.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ===================== HOME ===================== */
+.home-header{padding:48px 20px 18px;text-align:center;}
+.home-header h1{font-size:clamp(28px,7vw,42px);background:linear-gradient(135deg,var(--gold-soft),var(--gold) 60%,#fff3d0);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.home-header p{color:var(--text-dim);margin-top:8px;font-size:15px;}
+
+.theme-search-box{max-width:500px;margin: 0 auto 16px;padding: 0 16px;}
+.theme-search-box input{width:100%;padding:12px 16px;background:var(--panel);border:1px solid var(--panel-border);border-radius:12px;color:var(--text);font-size:14px;outline:none;}
+.theme-search-box input:focus{border-color:var(--gold);}
+
+.theme-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:8px 16px 24px;max-width:840px;margin:0 auto;}
+@media (min-width:640px){.theme-grid{grid-template-columns:repeat(3,1fr);}}
+
+.theme-card{position:relative;overflow:hidden;padding:16px 14px;cursor:pointer;transition:transform 0.18s ease, border-color 0.18s ease;-webkit-user-select:none;user-select:none;display:flex;flex-direction:column;justify-content:space-between;min-height:95px;}
+.theme-card:active{transform:scale(0.97);}
+.theme-card.selected{border-color:var(--gold);background:rgba(212,175,55,0.08);}
+.theme-card .tname{font-family:var(--serif);font-size:15px;font-weight:600;color:var(--text);word-break:break-word;}
+.theme-card .tcount{margin-top:8px;font-size:11px;color:var(--gold-soft);letter-spacing:0.4px;}
+.theme-card .ripple{position:absolute;border-radius:50%;background:rgba(212,175,55,0.35);transform:scale(0);animation:rip 0.6s ease-out;pointer-events:none;}
+
+.section-label{padding:18px 20px 6px;font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-dim);text-align:center;}
+.quick-row{display:flex;gap:10px;padding:0 16px 20px;overflow-x:auto;justify-content:center;}
+.chip{flex:0 0 auto;padding:10px 16px;border-radius:999px;font-size:13px;color:var(--text);cursor:pointer;white-space:nowrap;}
+.chip:active{transform:scale(0.96);}
+.chip.active{border-color:var(--gold);color:var(--gold-soft);background:rgba(212,175,55,0.1);}
+
+/* ===================== BOTTOM NAV ===================== */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:50;display:flex;justify-content:space-around;padding:10px 8px calc(10px + env(safe-area-inset-bottom));background:rgba(11,14,20,0.85);backdrop-filter:blur(16px);border-top:1px solid var(--panel-border);}
+.nav-btn{background:none;border:none;color:var(--text-dim);font-family:var(--sans);font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 14px;cursor:pointer;border-radius:10px;transition:color .15s;}
+.nav-btn .ic{font-size:19px;}
+.nav-btn.active{color:var(--gold);}
+
+/* ===================== TRAINER ===================== */
+.trainer-wrap{display:flex;flex-direction:column;max-width:1100px;margin:0 auto;padding:14px 12px 20px;gap:14px;}
+@media (min-width:880px){.trainer-wrap{flex-direction:row;align-items:flex-start;}}
+.board-col{flex:1;min-width:0;}
+.board-shell{max-width:560px;margin:0 auto;position:relative;touch-action:manipulation;}
+#board{width:100%;border-radius:10px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,0.5);}
+#board, #board *{
+  -webkit-touch-callout:none;
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  -ms-user-select:none;
+  user-select:none;
+  -webkit-user-drag:none;
+  user-drag:none;
+}
+#board img{ pointer-events:auto; }
+#board [data-square]{ touch-action:manipulation; }
+.board-arrows{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:6;}
+.board-toolbar{display:flex;justify-content:space-between;align-items:center;padding:6px 2px 10px;max-width:560px;margin:0 auto;}
+.icon-btn{background:var(--panel);border:1px solid var(--panel-border);color:var(--text);width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;}
+.icon-btn:active{transform:scale(0.92);}
+.icon-btn:disabled{opacity:0.35;cursor:default;}
+.status-bar{max-width:560px;margin:0 auto 6px;text-align:center;min-height:24px;font-size:14px;font-weight:600;letter-spacing:0.2px;}
+.status-bar.correct{color:var(--green);}
+.status-bar.wrong{color:var(--red);}
+.status-bar.info{color:var(--gold-soft);}
+
+.action-row{display:flex;flex-wrap:wrap;gap:8px;max-width:560px;margin:10px auto 0;justify-content:center;}
+.btn{font-family:var(--sans);font-size:13px;font-weight:600;padding:11px 16px;border-radius:12px;border:1px solid var(--panel-border);background:var(--panel);color:var(--text);cursor:pointer;min-height:42px;}
+.btn:active{transform:scale(0.96);}
+.btn:disabled{opacity:0.35;cursor:default;transform:none;}
+.btn.primary{background:linear-gradient(135deg,var(--gold-soft),var(--gold));color:#1a1404;border:none;}
+.btn.danger{border-color:rgba(225,86,78,0.4);color:var(--red);}
+
+.nav-row{display:flex;gap:8px;max-width:560px;margin:8px auto 0;justify-content:center;}
+
+.side-panel{width:100%;max-width:340px;margin:0 auto;}
+@media (min-width:880px){.side-panel{width:320px;flex:0 0 320px;}}
+.info-card{padding:18px;margin-bottom:12px;}
+.info-card h3{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:10px;}
+.info-row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.info-row:last-child{border-bottom:none;}
+.info-row .v{color:var(--gold-soft);font-weight:600;text-align:right;max-width:60%;}
+.theme-tag{display:inline-block;font-size:11px;padding:3px 9px;margin:3px 3px 0 0;border-radius:999px;background:rgba(212,175,55,0.12);color:var(--gold-soft);}
+
+.engine-compact-row{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--text-dim);padding:2px 0 8px;}
+.engine-compact-row strong{color:var(--gold-soft);font-weight:700;}
+#engineLiveDot.searching{color:var(--gold-soft);animation:enginePulse 1s ease-in-out infinite;}
+@keyframes enginePulse{0%,100%{opacity:0.4;}50%{opacity:1;}}
+.engine-toggle-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0 10px;border-top:1px solid rgba(255,255,255,0.05);}
+.engine-toggle-row .lbl{font-size:12.5px;}
+.engine-toggle-row .sub{font-size:10.5px;color:var(--text-dim);margin-top:1px;}
+.switch.small{width:38px;height:22px;}
+.switch.small .knob{width:16px;height:16px;top:3px;left:3px;}
+.switch.small.on .knob{left:19px;}
+
+.move-list{display:flex;flex-wrap:wrap;gap:4px 0;font-size:13px;max-height:120px;overflow-y:auto;line-height:1.9;}
+.move-list .mv{padding:2px 7px;border-radius:7px;cursor:pointer;color:var(--text-dim);}
+.move-list .mv:hover{background:rgba(255,255,255,0.06);}
+.move-list .mv.current{background:rgba(212,175,55,0.18);color:var(--gold-soft);font-weight:700;}
+.move-list .mnum{color:var(--text-dim);font-size:11px;padding-right:2px;}
+.mini-actions{display:flex;gap:8px;margin-top:10px;}
+.mini-actions .btn{flex:1;padding:8px 6px;font-size:12px;min-height:34px;}
+
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:14px;color:var(--text-dim);}
+.spinner{width:34px;height:34px;border-radius:50%;border:3px solid var(--panel-border);border-top-color:var(--gold);animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* board square highlight animations */
+.sq-correct{box-shadow:inset 0 0 0 9999px rgba(95,191,110,0.45)!important;}
+.sq-wrong{animation:shake 0.4s;}
+@keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}
+.sq-hint{box-shadow:inset 0 0 0 9999px rgba(212,175,55,0.5)!important;}
+
+/* legal-move affordances shown the instant a piece is selected */
+.sq-selected{box-shadow:inset 0 0 0 9999px rgba(212,175,55,0.32)!important;}
+.sq-legal,.sq-legal-capture{position:relative;}
+.sq-legal::after{content:'';position:absolute;top:50%;left:50%;width:26%;height:26%;border-radius:50%;background:rgba(20,18,14,0.32);transform:translate(-50%,-50%);pointer-events:none;}
+.sq-legal-capture::after{content:'';position:absolute;inset:6%;border-radius:50%;border:4px solid rgba(20,18,14,0.38);background:transparent;pointer-events:none;}
+
+/* ===================== STATS ===================== */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px 16px;max-width:760px;margin:0 auto;}
+@media (min-width:640px){.stats-grid{grid-template-columns:repeat(4,1fr);}}
+.stat-card{padding:16px;text-align:center;}
+.stat-card .big{font-family:var(--serif);font-size:26px;color:var(--gold-soft);}
+.stat-card .lbl{font-size:11px;color:var(--text-dim);margin-top:4px;text-transform:uppercase;letter-spacing:0.6px;}
+.piece-stats{max-width:760px;margin:0 auto;padding:0 16px 24px;}
+.piece-stat-row{display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:8px;}
+.piece-stat-row .pg{font-size:22px;width:30px;}
+.bar-track{flex:1;height:8px;border-radius:6px;background:rgba(255,255,255,0.07);overflow:hidden;}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-soft));}
+.piece-stat-row .pct{font-size:12px;color:var(--text-dim);width:42px;text-align:right;}
+
+/* ===================== SETTINGS / ABOUT ===================== */
+.simple-screen{max-width:600px;margin:0 auto;padding:16px;}
+.settings-row{display:flex;justify-content:space-between;align-items:center;padding:16px;margin-bottom:10px;}
+.settings-row .lbl{font-size:14px;}
+.settings-row .sub{font-size:11px;color:var(--text-dim);margin-top:2px;}
+.switch{position:relative;width:46px;height:26px;border-radius:999px;background:rgba(255,255,255,0.12);cursor:pointer;}
+.switch.on{background:var(--gold);}
+.switch .knob{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .18s;}
+.switch.on .knob{left:23px;}
+.select-pill{background:rgba(255,255,255,0.07);border:1px solid var(--panel-border);color:var(--text);border-radius:10px;padding:8px 10px;font-size:13px;}
+.color-dot{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);cursor:pointer;}
+.color-row{display:flex;gap:8px;}
+
+.about-card{padding:22px;line-height:1.6;font-size:14px;color:var(--text-dim);}
+.about-card h3{color:var(--text);margin-bottom:8px;}
+
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(20,24,33,0.95);border:1px solid var(--panel-border);padding:10px 18px;border-radius:12px;font-size:13px;z-index:80;opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+
+.topbar{display:flex;align-items:center;gap:10px;padding:18px 16px 4px;max-width:760px;margin:0 auto;}
+.topbar h2{font-size:22px;}
+.back-btn{background:none;border:none;color:var(--gold);font-size:22px;cursor:pointer;padding:4px 8px;}
+
+.panel-hidden{display:none!important;}
+.hidden{display:none!important;}
+
+/* ===========================================================
+    MOBILE-ONLY OVERRIDES
+   =========================================================== */
+@media (max-width:899px){
+  #puzzleInfoCard{ display:none !important; }
+}
+
+/* ===========================================================
+    DESKTOP LAYOUT (single source of truth — 900px+)
+   =========================================================== */
+@media (min-width:900px){
+  body{ padding-bottom:0; }
+  #screen-trainer .topbar{ display:none; }
+  .bottom-nav{
+    position:fixed;
+    left:28px; top:50%; right:auto; bottom:auto;
+    transform:translateY(-50%);
+    width:150px;
+    display:flex; flex-direction:column; gap:6px;
+    padding:8px; border-radius:16px;
+    background:rgba(12,15,22,.65);
+    backdrop-filter:blur(22px);
+    border:1px solid rgba(255,255,255,.06);
+    box-shadow:0 12px 36px rgba(0,0,0,.25);
+    z-index:100;
+  }
+  .nav-btn{
+    flex-direction:row; justify-content:flex-start; gap:12px;
+    padding:10px 14px; border-radius:10px; font-size:13px;
+  }
+  .nav-btn .ic{ width:18px; text-align:center; font-size:18px; }
+
+  .trainer-wrap{
+    display:grid;
+    grid-template-columns: 88px minmax(0,1fr) 320px;
+    column-gap:40px;
+    align-items:center;
+    justify-content:center;
+    width:100%;
+    height:100vh;
+    margin:0;
+    padding:32px 56px 32px 210px;
+    max-width:none;
+  }
+
+  .board-col{
+    display:grid;
+    grid-template-columns: 88px minmax(0,1fr);
+    grid-template-rows: 1fr auto 1fr;
+    grid-template-areas:
+      "rail board"
+      "rail board"
+      "rail board";
+    column-gap:40px;
+    align-items:center;
+    width:100%;
+    height:100%;
+  }
+
+  .board-shell{
+    grid-area:board;
+    width:min(100%, calc(100vh - 160px));
+    aspect-ratio:1/1;
+    max-width:none;
+    margin:0 auto;
+  }
+  #board{ width:100%; height:100%; }
+
+  .board-toolbar, .nav-row, .action-row{
+    grid-area:rail;
+    width:100%;
+    max-width:none;
+    margin:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .board-toolbar{ grid-row:1; align-self:end; gap:10px; }
+  .nav-row{ grid-row:2; gap:8px; }
+  .action-row{ grid-row:3; align-self:start; gap:8px; flex-wrap:nowrap; }
+
+  .board-toolbar .status-bar{
+    writing-mode:vertical-rl;
+    transform:rotate(180deg);
+    width:auto;
+    min-height:120px;
+    text-align:center;
+    margin:0;
+    font-size:13px;
+  }
+  .board-toolbar .icon-btn, .nav-row .icon-btn{ width:48px; height:48px; }
+
+  .action-row .btn{
+    width:100%;
+    padding:10px 4px;
+    font-size:10.5px;
+    line-height:1.3;
+    white-space:normal;
+    min-height:44px;
+  }
+  .action-row .btn.primary{ order:-1; margin-bottom:4px; }
+  .side-panel{ width:320px; max-width:320px; margin:0; align-self:center; }
+}
+
+/* ===========================================
+    Ultra-compact Stockfish box (mobile only)
+   =========================================== */
+@media (max-width:700px){
+  .side-panel .info-card:has(#toggleAnalysis){
+      display: block !important;
+      padding: 8px 56px 8px 12px !important;
+      margin-bottom: 8px;
+      position: relative;
+  }
+  .side-panel .info-card:has(#toggleAnalysis) h3{
+      display: inline-block !important;
+      font-size: 11px;
+      margin: 0 10px 0 0 !important;
+      letter-spacing: 0.5px;
+      vertical-align: middle;
+  }
+  .side-panel .info-card:has(#toggleAnalysis) .engine-compact-row{
+      display: inline-flex !important;
+      gap: 8px !important;
+      font-size: 11px;
+      padding: 0 !important;
+      margin: 0 !important;
+      vertical-align: middle;
+  }
+  .side-panel .info-card:has(#toggleAnalysis) .mini-actions{
+      margin-top: 6px !important;
+      display: block !important;
+  }
+  .side-panel .info-card:has(#toggleAnalysis) .mini-actions .btn{
+      min-height: 28px !important;
+      padding: 4px 12px !important;
+      font-size: 11px;
+      border-radius: 8px;
+      width: auto;
+  }
+  .side-panel .info-card:has(#toggleAnalysis) .engine-toggle-row{
+      position: absolute !important;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      min-height: auto !important;
+      background: none !important;
+  }
+  .side-panel .info-card:has(#toggleAnalysis) .engine-toggle-row > div:not(#toggleAnalysis){
+      display: none !important;
+  }
+  .side-panel .info-card:has(#toggleAnalysis) #toggleAnalysis{
+      transform: scale(0.82);
+      transform-origin: right center;
+      margin: 0 !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-glow"><span></span><span></span><span></span></div>
+<div class="bg-pieces" aria-hidden="true">
+  <span style="left:8%;top:10%;">♞</span><span style="left:70%;top:6%;animation-delay:-6s;">♞</span>
+  <span style="left:30%;top:60%;animation-delay:-12s;">♞</span><span style="left:85%;top:55%;animation-delay:-4s;">♞</span>
+</div>
+
+<!-- =========================================================
+     HOME SCREEN
+     ========================================================= -->
+<section id="screen-home" class="screen active">
+  <div class="home-header">
+    <h1>Knight Tactical Trainer</h1>
+    <p>It's the piece every player falls for first — awkward, brilliant, and impossible to predict. Train its patterns here and start thinking like a tactician.</p>
+  </div>
+
+  <div class="section-label">1. Choose Your Level</div>
+  <div class="quick-row" id="difficultyRow">
+    <div class="chip glass active" data-diff="easy">Easy</div>
+    <div class="chip glass" data-diff="medium">Medium</div>
+    <div class="chip glass" data-diff="hard">Hard</div>
+  </div>
+
+  <div class="section-label">Fast Track</div>
+  <div class="quick-row">
+    <div class="chip glass" id="chipRandom">🎲 Surprise Me</div>
+    <div class="chip glass" id="chipFav">⭐ My Favorites</div>
+    <div class="chip glass" id="chipRecent">🕘 Pick Up Where I Left Off</div>
+  </div>
+
+  <div class="section-label">2. Choose Your Pattern</div>
+  <div class="theme-search-box">
+    <input type="text" id="themeSearch" placeholder="Search knight patterns — try “fork,” “mate,” or “sacrifice”…">
+  </div>
+  
+  <div class="theme-grid" id="themeGrid">
+    <div class="loading"><div class="spinner"></div>Warming up the knight…</div>
+  </div>
+</section>
+
+<!-- =========================================================
+     TRAINER SCREEN
+     ========================================================= -->
+<section id="screen-trainer" class="screen">
+  <div class="topbar">
+    <button class="back-btn" id="trainerBack">←</button>
+    <h2 id="trainerTitle">Knight Training Ground</h2>
+  </div>
+
+  <div class="trainer-wrap">
+    <div class="board-col">
+      <div class="board-shell">
+        <div id="board"></div>
+        <svg id="boardArrows" class="board-arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+        <div id="loadingOverlay" class="loading hidden">
+          <div class="spinner"></div>
+          <div>Setting the board…</div>
+        </div>
+      </div>
+      <div class="board-toolbar">
+        <button class="icon-btn" id="btnFlip" title="Flip the board">⇅</button>
+        <div class="status-bar info" id="statusBar">Pick a pattern to begin your training</div>
+        <button class="icon-btn" id="btnFavorite" title="Save this puzzle">☆</button>
+      </div>
+      <div class="nav-row">
+        <button class="icon-btn" id="btnFirst" title="Back to the beginning">⏮</button>
+        <button class="icon-btn" id="btnPrev" title="Step back one move">◀</button>
+        <button class="icon-btn" id="btnReset" title="Run it back">⟲</button>
+        <button class="icon-btn" id="btnNextMove" title="Step forward one move">▶</button>
+        <button class="icon-btn" id="btnLast" title="Jump to the end">⏭</button>
+      </div>
+      <div class="action-row">
+        <button class="btn" id="btnHint">💡 Give Me a Clue</button>
+        <button class="btn" id="btnSolution">📖 Show the Line</button>
+        <button class="btn primary" id="btnNext">Next Drill →</button>
+      </div>
+    </div>
+
+    <div class="side-panel">
+      <div class="info-card glass" id="puzzleInfoCard">
+        <h3>Puzzle Intel</h3>
+        <div class="info-row"><span>Pattern</span><span class="v" id="infoPiece">—</span></div>
+        <div class="info-row"><span>Level</span><span class="v" id="infoDifficulty">—</span></div>
+        <div class="info-row"><span>Rating</span><span class="v" id="infoRating">—</span></div>
+        <div class="info-row"><span>Puzzle ID</span><span class="v" id="infoId">—</span></div>
+        <div class="info-row"><span>Move</span><span class="v" id="infoMoveCount">—</span></div>
+        <div class="info-row"><span>Solved This Session</span><span class="v" id="infoSession">0</span></div>
+      </div>
+      <div class="info-card glass">
+        <h3>Stockfish Engine <span id="engineLiveDot" style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0;">○ idle</span></h3>
+        <div class="engine-compact-row">
+          <span>Eval <strong id="engineEval">—</strong></span>
+          <span>Depth <strong id="engineDepth">—</strong></span>
+          <span>Best <strong id="engineBest">—</strong></span>
+        </div>
+        <div class="engine-toggle-row">
+          <div><div class="lbl">Free Play Mode</div><div class="sub">Try any move — there's no wrong answer here</div></div>
+          <div class="switch small" id="toggleAnalysis"><div class="knob"></div></div>
+        </div>
+        <div class="mini-actions">
+          <button class="btn" id="btnStockfishGo">▶ Let the Engine Continue</button>
+        </div>
+      </div>
+      <div class="info-card glass">
+        <h3>Move List</h3>
+        <div class="move-list" id="moveList">—</div>
+        <div class="mini-actions">
+          <button class="btn" id="btnCopyFen">Copy FEN</button>
+          <button class="btn" id="btnCopyPgn">Copy PGN</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     STATISTICS SCREEN
+     ========================================================= -->
+<section id="screen-stats" class="screen">
+  <div class="topbar"><h2>Statistics</h2></div>
+  <div class="stats-grid">
+    <div class="stat-card glass"><div class="big" id="stTotal">0</div><div class="lbl">Puzzles Solved</div></div>
+    <div class="stat-card glass"><div class="big" id="stAccuracy">0%</div><div class="lbl">Accuracy</div></div>
+    <div class="stat-card glass"><div class="big" id="stStreak">0</div><div class="lbl">Current Streak</div></div>
+    <div class="stat-card glass"><div class="big" id="stBest">0</div><div class="lbl">Best Streak</div></div>
+    <div class="stat-card glass"><div class="big" id="stAvgRating">—</div><div class="lbl">Avg Rating</div></div>
+    <div class="stat-card glass"><div class="big" id="stDaily">0</div><div class="lbl">Solved Today</div></div>
+    <div class="stat-card glass"><div class="big" id="stTime">0m</div><div class="lbl">Training Time</div></div>
+    <div class="stat-card glass"><div class="big" id="stAttempts">0</div><div class="lbl">Total Attempts</div></div>
+  </div>
+  <div style="text-align:center; margin-top:24px; padding-bottom:20px;">
+    <button class="btn danger" id="btnResetStats">Reset Statistics</button>
+  </div>
+</section>
+
+<!-- =========================================================
+     SETTINGS SCREEN
+     ========================================================= -->
+<section id="screen-settings" class="screen">
+  <div class="simple-screen">
+    <div class="topbar" style="padding:2px 0 4px;"><h2>Settings</h2></div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Sound</div><div class="sub">Hear every correct strike and missed shot</div></div>
+      <div class="switch on" id="toggleSound"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Animations</div><div class="sub">Visual shake and transition effects</div></div>
+      <div class="switch on" id="toggleAnim"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Coordinates</div><div class="sub">Show board file and rank labels</div></div>
+      <div class="switch on" id="toggleCoords"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Flip Board Automatically</div><div class="sub">Always face the side you're training</div></div>
+      <div class="switch" id="toggleAutoFlip"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Auto-Advance</div><div class="sub">Keep the reps coming — no tapping required</div></div>
+      <div class="switch" id="toggleAutoAdvance"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Piece Style</div></div>
+      <select class="select-pill" id="selPieceStyle">
+        <option value="wikipedia">Classic</option>
+        <option value="alpha">Alpha</option>
+        <option value="merida">Merida</option>
+      </select>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Board Color</div></div>
+      <div class="color-row" id="boardColorRow">
+        <div class="color-dot" data-c="brown" style="background:#b58863;"></div>
+        <div class="color-dot" data-c="green" style="background:#779556;"></div>
+        <div class="color-dot" data-c="blue" style="background:#4b6f9e;"></div>
+        <div class="color-dot" data-c="gray" style="background:#6e6e6e;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     ABOUT SCREEN
+     ========================================================= -->
+<section id="screen-about" class="screen">
+  <div class="simple-screen">
+    <div class="topbar" style="padding:2px 0 4px;"><h2>About</h2></div>
+    <div class="about-card glass">
+      <h3>Welcome to the Knight's Academy</h3>
+      <p>Ask any player which piece they fell in love with first, and most will say the <strong>knight</strong>. It jumps where nothing else can, threatens two pieces at once, and turns "impossible" positions into forced wins. Beginners light up the moment they spot their first fork. Grandmasters still smile at a well-placed outpost. This is where that love affair becomes a skill.</p>
+      <p>Chess strength is built from pattern recognition, not memorization. Every puzzle here isolates one knight idea — a fork, an outpost, a mating net like <strong>Anastasia's</strong> or the <strong>Arabian</strong> — so your brain can drill it until it's instinct. Short reps, tight feedback, real progress. That's deliberate practice, knight-style.</p>
+      <p>Train a little every day and you won't just get better at chess — you'll start seeing the whole board differently. Welcome to your knight era.</p>
+      <p>Keyboard shortcuts: <strong>←</strong> / <strong>→</strong> step through moves, <strong>H</strong> for a clue, <strong>N</strong> for the next puzzle.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     BOTTOM NAVIGATION
+     ========================================================= -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-screen="home"><span class="ic">♞</span>Home</button>
+  <button class="nav-btn" data-screen="stats"><span class="ic">📊</span>Stats</button>
+  <button class="nav-btn" data-screen="settings"><span class="ic">⚙️</span>Settings</button>
+  <button class="nav-btn" data-screen="about"><span class="ic">ℹ️</span>About</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+/* ============================================================
+   CONFIGURATION
+   ============================================================ */
+const CONFIG = {
+  REPO_BASE: 'https://raw.githubusercontent.com/andrewveda/knight-trainer/main/data',
+  CACHE_LIMIT: 30,
+  AUTO_MOVE_DELAY: 480,
+  AUTO_ADVANCE_DELAY: 1400,
+  STOCKFISH_URL: 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js',
+  ENGINE_DEPTH: 14,
+};
+
+const IS_TOUCH_DEVICE = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  cache: new Map(),
+  themesMeta: null,
+  currentTheme: null,
+  currentDifficulty: 'easy',
+  currentPuzzle: null,
+  chess: null,
+  board: null,
+  boardResizeWired: false,
+  solving: false,
+  moveCursor: 0,
+  fenHistory: [],
+  sanHistory: [],
+  viewIndex: 0,
+  boardOrientation: 'white',
+  puzzleStartTime: null,
+  sessionSolved: 0,
+  settings: loadSettings(),
+  stats: loadStats(),
+  favorites: loadJSON('knt_favorites', []),
+  recents: loadJSON('knt_recents', []),
+  selectedSquare: null,
+  legalTargets: [],
+  sf: null,
+  sfMode: null,
+  sfBestLine: {},
+  analysisMode: false,
+};
+
+/* ============================================================
+   STORAGE HELPERS
+   ============================================================ */
+function loadJSON(key, fallback){
+  try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch(e){ return fallback; }
+}
+function saveJSON(key, val){
+  try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+}
+function loadSettings(){
+  return loadJSON('knt_settings', {
+    theme:'dark', sound:true, animations:true, coordinates:true,
+    autoFlip:false, autoAdvance:false, pieceStyle:'wikipedia', boardColor:'brown'
+  });
+}
+function saveSettings(){ saveJSON('knt_settings', state.settings); }
+
+function loadStats(){
+  return loadJSON('knt_stats', {
+    totalSolved:0, totalAttempts:0, correctFirstTry:0,
+    currentStreak:0, bestStreak:0, ratingSum:0, ratingCount:0,
+    totalTimeMs:0, dailyDate:null, dailyCount:0
+  });
+}
+function saveStats(){ saveJSON('knt_stats', state.stats); }
+
+/* ============================================================
+   NETWORKING & THEME PROCESSING
+   ============================================================ */
+async function fetchJSONCached(url){
+  if(state.cache.has(url)) return state.cache.get(url);
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('Failed to fetch ' + url + ' (' + res.status + ')');
+  const data = await res.json();
+  if(state.cache.size >= CONFIG.CACHE_LIMIT){
+    const oldestKey = state.cache.keys().next().value;
+    state.cache.delete(oldestKey);
+  }
+  state.cache.set(url, data);
+  return data;
+}
+
+async function loadMasterThemes() {
+  try {
+    state.themesMeta = await fetchJSONCached(`${CONFIG.REPO_BASE}/index.json`);
+    renderThemeGrid();
+  } catch (e) {
+    document.getElementById('themeGrid').innerHTML = `<div class="status-bar wrong">Failed to sync tactical indices.</div>`;
+  }
+}
+
+async function getPuzzlePayload(theme, difficulty) {
+  const url = `${CONFIG.REPO_BASE}/${theme}/${difficulty}.json`;
+  const puzzles = await fetchJSONCached(url);
+  const arr = Array.isArray(puzzles) ? puzzles : [];
+  if (!arr.length) throw new Error('No puzzles found in ' + theme + '/' + difficulty);
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+/* ============================================================
+   UCI MOVE PARSING
+   ============================================================ */
+function parseUCI(uci){
+  return {
+    from: uci.slice(0,2),
+    to: uci.slice(2,4),
+    promotion: uci.length > 4 ? uci.slice(4) : 'q'
+  };
+}
+
+/* ============================================================
+   AUDIO ARCHITECTURE
+   ============================================================ */
+let audioCtx = null;
+function beep(freq, duration, type='sine'){
+  if(!state.settings.sound) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + duration);
+  }catch(e){}
+}
+const sfx = {
+  move: ()=>beep(450,0.08),
+  correct: ()=>beep(680,0.18),
+  wrong: ()=>beep(150,0.25,'square'),
+  success: ()=>{beep(523,0.12);setTimeout(()=>beep(659,0.12),120);setTimeout(()=>beep(784,0.22),240);}
+};
+
+/* ============================================================
+   TOAST NOTIFICATION ENGINE
+   ============================================================ */
+let toastTimer = null;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 1800);
+}
+
+/* ============================================================
+   SCREEN CONTROL & VIEW SWAPPING
+   ============================================================ */
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.screen === name);
+  });
+  if(name === 'stats') renderStats();
+  if(name === 'trainer' && state.board) setTimeout(()=>state.board.resize(), 50);
+}
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>showScreen(btn.dataset.screen));
+});
+document.getElementById('trainerBack').addEventListener('click', ()=>{
+  if(state.sf) state.sf.postMessage('stop');
+  clearTimeout(liveAnalysisTimer);
+  showScreen('home');
+});
+
+/* ============================================================
+   UI COMPONENT RENDERING (HOME SCREEN)
+   ============================================================ */
+function renderThemeGrid(filterText = '') {
+  const grid = document.getElementById('themeGrid');
+  if (!state.themesMeta) return;
+  
+  grid.innerHTML = '';
+  const search = filterText.toLowerCase().trim();
+  
+  Object.keys(state.themesMeta).forEach(key => {
+    if (search && !key.toLowerCase().includes(search)) return;
+    
+    const diffs = state.themesMeta[key];
+    const totalCount = (diffs.easy || 0) + (diffs.medium || 0) + (diffs.hard || 0);
+    if (totalCount === 0) return;
+    
+    const card = document.createElement('div');
+    card.className = 'theme-card glass' + (state.currentTheme === key ? ' selected' : '');
+    
+    // Formatting matching TitleCase conventions
+    const formattedName = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+    const specificCount = diffs[state.currentDifficulty] || 0;
+
+    card.innerHTML = `
+      <div class="tname">${formattedName}</div>
+      <div class="tcount">${specificCount.toLocaleString()} Puzzles (${state.currentDifficulty})</div>
+    `;
+    
+    card.addEventListener('click', (e) => { 
+      ripple(card, e); 
+      state.currentTheme = key;
+      document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      startTraining(key, state.currentDifficulty); 
+    });
+    grid.appendChild(card);
+  });
+  
+  if (grid.children.length === 0) {
+    grid.innerHTML = `<div class="status-bar info" style="grid-column: 1/-1;">No matching tactical patterns found.</div>`;
+  }
+}
+
+function ripple(el, evt){
+  if(!state.settings.animations) return;
+  const r = document.createElement('span');
+  r.className = 'ripple';
+  const rect = el.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  r.style.width = r.style.height = size + 'px';
+  r.style.left = (evt.clientX - rect.left - size/2) + 'px';
+  r.style.top = (evt.clientY - rect.top - size/2) + 'px';
+  el.appendChild(r);
+  setTimeout(()=>r.remove(), 650);
+}
+
+// Wire configuration event listeners
+document.querySelectorAll('#difficultyRow .chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('#difficultyRow .chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    state.currentDifficulty = chip.dataset.diff;
+    renderThemeGrid(document.getElementById('themeSearch').value);
+  });
+});
+
+document.getElementById('themeSearch').addEventListener('input', (e) => {
+  renderThemeGrid(e.target.value);
+});
+
+document.getElementById('chipRandom').addEventListener('click', ()=>{
+  if(!state.themesMeta) return;
+  const keys = Object.keys(state.themesMeta);
+  const randomKey = keys[Math.floor(Math.random() * keys.length)];
+  startTraining(randomKey, state.currentDifficulty);
+});
+
+document.getElementById('chipFav').addEventListener('click', ()=>{
+  if(!state.favorites.length){ toast('No favorites saved yet — tap the star on a puzzle you love.'); return; }
+  const fav = state.favorites[Math.floor(Math.random()*state.favorites.length)];
+  startTraining(fav.theme, fav.difficulty, fav.puzzle);
+});
+
+document.getElementById('chipRecent').addEventListener('click', ()=>{
+  if(!state.recents.length){ toast('No recent puzzles yet — go solve one!'); return; }
+  const r = state.recents[0];
+  startTraining(r.theme, r.difficulty, r.puzzle);
+});
+
+/* ============================================================
+   CHESSBOARD MANAGEMENT ENGINE
+   ============================================================ */
+function initBoardIfNeeded(){
+  if(state.board) return;
+  state.board = Chessboard('board', {
+    draggable: !IS_TOUCH_DEVICE,
+    position: 'start',
+    pieceTheme: pieceThemeUrl,
+    showNotation: state.settings.coordinates,
+    onDragStart, onDrop, onSnapEnd
+  });
+  if(!state.boardResizeWired){
+    window.addEventListener('resize', ()=>state.board && state.board.resize());
+    state.boardResizeWired = true;
+  }
+
+  const $boardEl = $('#board');
+
+  $boardEl.off('click.cpt').on('click.cpt', '[data-square]', function(e) {
+    const square = $(this).attr('data-square');
+    if (square) onBoardSquareClick(square);
+  });
+
+  // Block the native long-press "save/copy image" context menu on piece
+  // images and the board itself (this is what was popping up an
+  // Android/iOS "Download image" sheet on long-press).
+  $boardEl.off('contextmenu.cpt').on('contextmenu.cpt', function(e){
+    e.preventDefault();
+    return false;
+  });
+
+  // Belt-and-braces: also stop the native dragstart on the <img> pieces so
+  // the browser never starts its own image-drag gesture, which is what
+  // triggers the long-press callout on some mobile browsers.
+  $boardEl.off('dragstart.cpt').on('dragstart.cpt', 'img', function(e){
+    e.preventDefault();
+    return false;
+  });
+}
+
+function rebuildBoard(){
+  if(state.board && state.board.destroy) state.board.destroy();
+  state.board = null;
+  initBoardIfNeeded();
+  refreshBoardPosition(false);
+}
+
+function pieceThemeUrl(piece){
+  const style = state.settings.pieceStyle || 'wikipedia';
+  return `https://chessboardjs.com/img/chesspieces/${style}/${piece}.png`;
+}
+
+async function startTraining(themeKey, difficulty, presetPuzzle){
+  showScreen('trainer');
+  initBoardIfNeeded();
+  state.currentTheme = themeKey;
+  state.currentDifficulty = difficulty;
+  
+  const titleDisplay = themeKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+  document.getElementById('trainerTitle').textContent = titleDisplay + ' Drill';
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+  setDragEnabled(false);
+  
+  try{
+    const puzzle = presetPuzzle || await getPuzzlePayload(themeKey, difficulty);
+    loadPuzzle(themeKey, difficulty, puzzle);
+  }catch(err){
+    toast('Couldn\'t load that puzzle — check your connection and try again.');
+    console.error(err);
+  }finally{
+    document.getElementById('loadingOverlay').classList.add('hidden');
+  }
+}
+
+function loadPuzzle(themeKey, difficulty, puzzle){
+  state.currentTheme = themeKey;
+  state.currentDifficulty = difficulty;
+  state.currentPuzzle = puzzle;
+  state.chess = new Chess(puzzle.f); // 'f' maps directly to initial FEN state
+  state.moveCursor = 0;
+  state.fenHistory = [puzzle.f];
+  state.sanHistory = [];
+  state.viewIndex = 0;
+  state.solving = false;
+  state.puzzleStartTime = Date.now();
+  setDragEnabled(false);
+  clearHighlights();
+  state.sfBestLine = {};
+  renderEnginePanel();
+
+  const sideToSolve = state.chess.turn() === 'w' ? 'black' : 'white';
+  state.boardOrientation = state.settings.autoFlip ? sideToSolve : 'white';
+  state.board.orientation(state.boardOrientation);
+  state.board.position(puzzle.f, false);
+
+  renderPuzzleInfo(themeKey, difficulty, puzzle);
+  renderMoveList();
+  updateFavoriteButton();
+  updateNavButtons();
+  updateMoveDisplay();
+  
+  // Opponent setup instruction execution context
+  setTimeout(()=>{
+    if(state.currentPuzzle !== puzzle) return;
+    const puzzleMoves = puzzle.m.split(' '); // 'm' splits to standard notation sequence arrays
+    applyMoveToBoard(puzzleMoves[0], true);
+    state.moveCursor = 1;
+    state.solving = true;
+    setDragEnabled(true);
+    toast('Your move, Knight Trainer — find the winning shot.');
+  }, 600);
+}
+
+function renderPuzzleInfo(themeKey, difficulty, puzzle){
+  const formatted = themeKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+  document.getElementById('infoPiece').textContent = formatted;
+  document.getElementById('infoDifficulty').textContent = capitalize(difficulty);
+  document.getElementById('infoRating').textContent = puzzle.r ?? '—'; // 'r' maps to standard ELO ranking metrics
+  document.getElementById('infoId').textContent = puzzle.id ?? '—';
+  document.getElementById('infoSession').textContent = state.sessionSolved;
+}
+
+function updateMoveCounter(){
+  if (!state.currentPuzzle) return;
+  const puzzleMoves = state.currentPuzzle.m.split(' ');
+  const total = puzzleMoves.length;
+  document.getElementById('infoMoveCount').textContent = `${Math.min(state.moveCursor, total)} / ${total}`;
+}
+
+function applyMoveToBoard(uci, showOnBoard){
+  const mv = parseUCI(uci);
+  const result = state.chess.move(mv);
+  if(!result) return null;
+  state.fenHistory.push(state.chess.fen());
+  state.sanHistory.push(result.san);
+  const wasAtLatest = state.viewIndex === state.fenHistory.length - 2;
+  if(wasAtLatest){
+    state.viewIndex = state.fenHistory.length - 1;
+    if(showOnBoard !== false) state.board.position(state.chess.fen());
+  }
+  sfx.move();
+  renderMoveList();
+  updateMoveCounter();
+  updateNavButtons();
+  updateMoveDisplay();
+  return result;
+}
+
+function updateMoveDisplay(flashClass){
+  clearBoardArrows();
+  const el = document.getElementById('statusBar');
+  if(!state.chess || !state.fenHistory.length){
+    el.textContent = 'Choose a puzzle to start training';
+    el.className = 'status-bar info';
+    return;
+  }
+  scheduleLiveAnalysis();
+  const idx = state.viewIndex;
+  if(idx <= 0){
+    el.textContent = 'Starting Position';
+    el.className = 'status-bar info';
+    return;
+  }
+  const san = state.sanHistory[idx - 1];
+  if(!san){ el.textContent = 'Starting Position'; el.className = 'status-bar info'; return; }
+  const moveNum = Math.ceil(idx / 2);
+  const isWhiteMove = idx % 2 === 1;
+  el.textContent = moveNum + (isWhiteMove ? '. ' : '… ') + san;
+  el.className = 'status-bar' + (flashClass ? ' ' + flashClass : '');
+  if(flashClass){
+    setTimeout(()=>{ if(el.textContent) el.className = 'status-bar'; }, 900);
+  }
+}
+
+function setDragEnabled(enabled){
+  state.dragEnabled = enabled;
+}
+
+/* ============================================================
+   TARGET SELECTION & INTERACTION VALIDATION
+   ============================================================ */
+function squareEl(square) {
+  return document.querySelector(`#board [data-square="${square}"]`);
+}
+function clearHighlights(){
+  document.querySelectorAll('#board .sq-legal, #board .sq-legal-capture, #board .sq-selected')
+    .forEach(el=>el.classList.remove('sq-legal','sq-legal-capture','sq-selected'));
+  state.selectedSquare = null;
+  state.legalTargets = [];
+}
+function viewChess(){
+  const fen = state.fenHistory[state.viewIndex];
+  return fen ? new Chess(fen) : new Chess();
+}
+function highlightLegalMoves(square){
+  clearHighlights();
+  const moves = viewChess().moves({square, verbose:true});
+  if(!moves.length) return;
+  state.selectedSquare = square;
+  state.legalTargets = moves.map(m=>m.to);
+  const originEl = squareEl(square);
+  if(originEl) originEl.classList.add('sq-selected');
+  moves.forEach(m=>{
+    const el = squareEl(m.to);
+    if(el) el.classList.add(m.captured ? 'sq-legal-capture' : 'sq-legal');
+  });
+}
+function canSelect(square){
+  if(!state.fenHistory.length || !state.dragEnabled) return false;
+  if(state.analysisMode){
+    // Allow variable selection across active analysis configurations
+  }else{
+    if(state.viewIndex !== state.fenHistory.length - 1) return false;
+    if(!(state.solving && state.currentPuzzle)) return false;
+  }
+  const vc = viewChess();
+  if(vc.game_over()) return false;
+  const piece = vc.get(square);
+  if(!piece) return false;
+  return (vc.turn() === 'w') === (piece.color === 'w');
+}
+function onBoardSquareClick(square){
+  if(!state.fenHistory.length || !state.dragEnabled) return;
+
+  if(!state.analysisMode){
+    if(state.viewIndex !== state.fenHistory.length - 1) return;
+    if(!(state.solving && state.currentPuzzle)) return;
+  }
+
+  if (canSelect(square) && square !== state.selectedSquare) {
+    highlightLegalMoves(square);
+    return;
+  }
+
+  if(state.selectedSquare){
+    if(square === state.selectedSquare){
+      clearHighlights();
+      return;
+    }
+
+    const outcome = state.analysisMode
+      ? attemptFreeMove(state.selectedSquare, square)
+      : attemptSolvingMove(state.selectedSquare, square);
+
+    clearHighlights();
+    if(outcome === 'accepted'){
+      state.board.position(state.chess.fen());
+    }
+    return;
+  }
+
+  if(canSelect(square)){
+    highlightLegalMoves(square);
+  }
+}
+
+function attemptSolvingMove(source, target){
+  if(!state.dragEnabled || !state.solving) return 'rejected';
+  const puzzleMoves = state.currentPuzzle.m.split(' ');
+  if(!state.currentPuzzle || state.moveCursor >= puzzleMoves.length) return 'rejected';
+
+  const expected = parseUCI(puzzleMoves[state.moveCursor]);
+  const legalMoves = state.chess.moves({verbose:true});
+  const isLegal = legalMoves.some(m=>m.from===source && m.to===target);
+  if(!isLegal) return 'rejected';
+
+  if(source !== expected.from || target !== expected.to){
+    registerAttempt(false);
+    flashSquare(target, 'sq-wrong');
+    sfx.wrong();
+    toast('Good try, but not the sharpest move — look again.');
+    return 'rejected';
+  }
+
+  const isPromotion = (state.chess.get(source)||{}).type === 'p' && (target[1] === '8' || target[1] === '1');
+  let promotionPiece = expected.promotion || 'q';
+  if(isPromotion && expected.promotion === 'q'){
+    const choice = window.prompt('Promote to — Queen(q), Rook(r), Bishop(b), or Knight(n)?', 'q');
+    if(choice && /^[qrbn]$/i.test(choice.trim())) promotionPiece = choice.trim().toLowerCase();
+  }
+
+  const moveObj = { from: source, to: target, promotion: promotionPiece };
+  const result = state.chess.move(moveObj);
+  if(!result) return 'rejected';
+
+  state.fenHistory.push(state.chess.fen());
+  state.sanHistory.push(result.san);
+  state.viewIndex = state.fenHistory.length - 1;
+
+  flashSquare(target, 'sq-correct');
+  sfx.correct();
+  registerAttempt(true);
+  state.moveCursor++;
+  state.solving = false;
+  setDragEnabled(false);
+  toast('That\'s the move! 🐴');
+  updateMoveDisplay('correct');
+  renderMoveList();
+  updateMoveCounter();
+  updateNavButtons();
+
+  if(state.moveCursor >= puzzleMoves.length){
+    finishPuzzle();
+  }else{
+    setTimeout(playNextAutoMove, CONFIG.AUTO_MOVE_DELAY);
+  }
+  return 'accepted';
+}
+
+function attemptFreeMove(source, target){
+  const vc = viewChess();
+  if(vc.game_over()) return 'rejected';
+  const legalMoves = vc.moves({verbose:true});
+  const isLegal = legalMoves.some(m=>m.from===source && m.to===target);
+  if(!isLegal) return 'rejected';
+
+  const isPromotion = (vc.get(source)||{}).type === 'p' && (target[1] === '8' || target[1] === '1');
+  let promotionPiece = 'q';
+  if(isPromotion){
+    const choice = window.prompt('Promote to — Queen(q), Rook(r), Bishop(b), or Knight(n)?', 'q');
+    if(choice && /^[qrbn]$/i.test(choice.trim())) promotionPiece = choice.trim().toLowerCase();
+  }
+
+  const result = vc.move({ from: source, to: target, promotion: promotionPiece });
+  if(!result) return 'rejected';
+
+  state.fenHistory = state.fenHistory.slice(0, state.viewIndex + 1);
+  state.sanHistory = state.sanHistory.slice(0, state.viewIndex);
+  state.fenHistory.push(vc.fen());
+  state.sanHistory.push(result.san);
+  state.viewIndex = state.fenHistory.length - 1;
+  state.chess = vc;
+  state.solving = false;
+
+  flashSquare(target, 'sq-correct');
+  sfx.move();
+  renderMoveList();
+  updateMoveCounter();
+  updateNavButtons();
+  updateMoveDisplay();
+  return 'accepted';
+}
+
+function onDragStart(source, piece){
+  if(!canSelect(source)) return false;
+  highlightLegalMoves(source);
+  return true;
+}
+
+function onDrop(source, target){
+  clearHighlights();
+  const outcome = state.analysisMode ? attemptFreeMove(source, target) : attemptSolvingMove(source, target);
+  return outcome === 'accepted' ? undefined : 'snapback';
+}
+function onSnapEnd(){
+  const fen = state.fenHistory[state.viewIndex] || (state.chess && state.chess.fen());
+  if(fen) state.board.position(fen, false);
+}
+
+function playNextAutoMove(){
+  const puzzleMoves = state.currentPuzzle.m.split(' ');
+  if(!state.currentPuzzle || state.moveCursor >= puzzleMoves.length) return;
+  clearHighlights();
+  applyMoveToBoard(puzzleMoves[state.moveCursor]);
+  state.moveCursor++;
+  updateMoveCounter();
+  if(state.moveCursor >= puzzleMoves.length){
+    finishPuzzle();
+  }else{
+    state.solving = true;
+    setDragEnabled(true);
+    updateMoveDisplay();
+  }
+}
+
+function flashSquare(square, cls){
+  if(!state.settings.animations) return;
+  const sq = document.querySelector(`#board .square-${square}`);
+  if(!sq) return;
+  sq.classList.add(cls);
+  setTimeout(()=>sq.classList.remove(cls), 500);
+}
+
+function finishPuzzle(){
+  toast('Combination cracked! 🎉');
+  updateMoveDisplay('correct');
+  sfx.success();
+  setDragEnabled(false);
+  clearHighlights();
+  const elapsed = Date.now() - state.puzzleStartTime;
+  recordSolve(state.currentTheme, state.currentPuzzle.r, elapsed);
+  addToRecents(state.currentTheme, state.currentDifficulty, state.currentPuzzle);
+  state.sessionSolved++;
+  document.getElementById('infoSession').textContent = state.sessionSolved;
+  if(state.settings.autoAdvance){
+    setTimeout(()=>{ if(state.currentTheme) startTraining(state.currentTheme, state.currentDifficulty); }, CONFIG.AUTO_ADVANCE_DELAY);
+  }
+}
+
+/* ============================================================
+   STATS STORAGE & RETRIEVAL ENGINE
+   ============================================================ */
+function registerAttempt(correct){
+  state.stats.totalAttempts++;
+  if(correct) state.stats.correctFirstTry++;
+  saveStats();
+}
+function recordSolve(theme, rating, elapsedMs){
+  const s = state.stats;
+  s.totalSolved++;
+  s.currentStreak++;
+  s.bestStreak = Math.max(s.bestStreak, s.currentStreak);
+  if(typeof rating === 'number'){ s.ratingSum += rating; s.ratingCount++; }
+  s.totalTimeMs += elapsedMs;
+  const today = new Date().toISOString().slice(0,10);
+  if(s.dailyDate !== today){ s.dailyDate = today; s.dailyCount = 0; }
+  s.dailyCount++;
+  saveStats();
+}
+function breakStreak(){
+  state.stats.currentStreak = 0;
+  saveStats();
+}
+function addToRecents(theme, difficulty, puzzle){
+  state.recents = state.recents.filter(r=>r.puzzle.id !== puzzle.id);
+  state.recents.unshift({ theme, difficulty, puzzle });
+  state.recents = state.recents.slice(0, 20);
+  saveJSON('knt_recents', state.recents);
+}
+
+/* ============================================================
+   HISTORICAL CONFIGURATION REVIEW
+   ============================================================ */
+function renderMoveList(){
+  const el = document.getElementById('moveList');
+  const history = state.sanHistory || [];
+  if(!history.length){ el.textContent = '—'; return; }
+  el.innerHTML = '';
+  history.forEach((san, i)=>{
+    if(i % 2 === 0){
+      const num = document.createElement('span');
+      num.className = 'mnum';
+      num.textContent = (Math.floor(i/2)+1) + '.';
+      el.appendChild(num);
+    }
+    const mv = document.createElement('span');
+    mv.className = 'mv' + (i + 1 === state.viewIndex ? ' current' : '');
+    mv.textContent = san;
+    mv.dataset.idx = i + 1;
+    mv.addEventListener('click', ()=>jumpToFenIndex(i+1));
+    el.appendChild(mv);
+  });
+}
+
+function jumpToFenIndex(idx){
+  if(!state.fenHistory.length) return;
+  idx = Math.max(0, Math.min(idx, state.fenHistory.length - 1));
+  state.viewIndex = idx;
+  clearHighlights();
+  state.board.position(state.fenHistory[idx], false);
+  renderMoveList();
+  updateNavButtons();
+  updateMoveDisplay();
+  setDragEnabled(state.analysisMode || (idx === state.fenHistory.length - 1 && state.solving));
+}
+
+function updateNavButtons(){
+  const atStart = state.viewIndex <= 0;
+  const atLatest = !state.fenHistory.length || state.viewIndex >= state.fenHistory.length - 1;
+  document.getElementById('btnFirst').disabled = atStart;
+  document.getElementById('btnPrev').disabled = atStart;
+  document.getElementById('btnNextMove').disabled = atLatest;
+  document.getElementById('btnLast').disabled = atLatest;
+  document.getElementById('btnReset').disabled = !state.currentPuzzle;
+}
+
+document.getElementById('btnFirst').addEventListener('click', ()=>jumpToFenIndex(0));
+document.getElementById('btnPrev').addEventListener('click', ()=>jumpToFenIndex(state.viewIndex - 1));
+document.getElementById('btnNextMove').addEventListener('click', ()=>jumpToFenIndex(state.viewIndex + 1));
+document.getElementById('btnLast').addEventListener('click', ()=>jumpToFenIndex(state.fenHistory.length - 1));
+
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  if(!state.currentPuzzle) return;
+  toast('Puzzle reset — go again.');
+  loadPuzzle(state.currentTheme, state.currentDifficulty, state.currentPuzzle);
+});
+
+/* ============================================================
+   INTERFACE COMMAND BINDINGS
+   ============================================================ */
+document.getElementById('btnHint').addEventListener('click', ()=>{
+  if(!state.solving || !state.currentPuzzle) return toast('Pick a puzzle first — then I\'ll show you the way.');
+  if(state.viewIndex !== state.fenHistory.length - 1){ toast('Jump back to the current position first.'); return; }
+  const puzzleMoves = state.currentPuzzle.m.split(' ');
+  const expected = parseUCI(puzzleMoves[state.moveCursor]);
+  clearHighlights();
+  flashSquare(expected.from, 'sq-hint');
+});
+
+document.getElementById('btnSolution').addEventListener('click', ()=>{
+  if(!state.currentPuzzle) return;
+  state.solving = false;
+  setDragEnabled(false);
+  clearHighlights();
+  breakStreak();
+  jumpToFenIndex(state.fenHistory.length - 1);
+  playOutSolutionFromCursor();
+});
+
+function playOutSolutionFromCursor(){
+  const puzzleMoves = state.currentPuzzle.m.split(' ');
+  if(!state.currentPuzzle || state.moveCursor >= puzzleMoves.length){
+    return;
+  }
+  applyMoveToBoard(puzzleMoves[state.moveCursor]);
+  state.moveCursor++;
+  updateMoveCounter();
+  setTimeout(playOutSolutionFromCursor, CONFIG.AUTO_MOVE_DELAY);
+}
+
+document.getElementById('btnNext').addEventListener('click', ()=>{
+  if(state.currentTheme) startTraining(state.currentTheme, state.currentDifficulty);
+});
+document.getElementById('btnFlip').addEventListener('click', ()=>{
+  state.board.flip();
+  state.boardOrientation = state.boardOrientation === 'white' ? 'black' : 'white';
+  renderEnginePanel();
+});
+document.getElementById('toggleAnalysis').addEventListener('click', ()=>{
+  const el = document.getElementById('toggleAnalysis');
+  state.analysisMode = !state.analysisMode;
+  el.classList.toggle('on', state.analysisMode);
+  clearHighlights();
+  if(state.analysisMode){
+    setDragEnabled(true);
+    toast('Free Play unlocked — try anything.');
+  }else{
+    setDragEnabled(state.solving);
+    toast('Free Play off — back to training mode.');
+  }
+});
+
+document.getElementById('btnFavorite').addEventListener('click', toggleFavorite);
+function toggleFavorite(){
+  if(!state.currentPuzzle) return;
+  const id = state.currentPuzzle.id;
+  const idx = state.favorites.findIndex(f=>f.puzzle.id === id);
+  if(idx >= 0){ state.favorites.splice(idx,1); toast('Removed from favorites'); }
+  else{ state.favorites.push({theme:state.currentTheme, difficulty:state.currentDifficulty, puzzle:state.currentPuzzle}); toast('Saved to favorites ⭐'); }
+  saveJSON('knt_favorites', state.favorites);
+  updateFavoriteButton();
+}
+function updateFavoriteButton(){
+  const id = state.currentPuzzle && state.currentPuzzle.id;
+  const isFav = state.favorites.some(f=>f.puzzle.id === id);
+  document.getElementById('btnFavorite').textContent = isFav ? '★' : '☆';
+}
+
+/* ============================================================
+   STOCKFISH PROCESSING AND ARROW DATA VECTOR MATH
+   ============================================================ */
+function squareCenterPct(square){
+  const file = square.charCodeAt(0) - 97;
+  const rank = parseInt(square[1], 10);
+  let col = file, row = 8 - rank;
+  if(state.boardOrientation === 'black'){ col = 7 - file; row = rank - 1; }
+  return { x: (col + 0.5) / 8 * 100, y: (row + 0.5) / 8 * 100 };
+}
+function clearBoardArrows(){
+  const svg = document.getElementById('boardArrows');
+  if(svg) svg.innerHTML = '';
+}
+function drawArrow(from, to, color){
+  const svg = document.getElementById('boardArrows');
+  if(!svg || from === to) return;
+  const NS = 'http://www.w3.org/2000/svg';
+  const markerId = 'cptArrow-' + color.replace(/[^a-zA-Z0-9]/g, '');
+  if(!svg.querySelector('#' + markerId)){
+    let defs = svg.querySelector('defs');
+    if(!defs){ defs = document.createElementNS(NS, 'defs'); svg.appendChild(defs); }
+    const marker = document.createElementNS(NS, 'marker');
+    marker.setAttribute('id', markerId);
+    marker.setAttribute('markerWidth', '3');
+    marker.setAttribute('markerHeight', '3');
+    marker.setAttribute('refX', '1.6');
+    marker.setAttribute('refY', '1.5');
+    marker.setAttribute('orient', 'auto');
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('d', 'M0,0 L3,1.5 L0,3 z');
+    path.setAttribute('fill', color);
+    marker.appendChild(path);
+    defs.appendChild(marker);
+  }
+  const p1 = squareCenterPct(from);
+  const p2 = squareCenterPct(to);
+  const dx = p2.x - p1.x, dy = p2.y - p1.y;
+  const len = Math.sqrt(dx*dx + dy*dy) || 1;
+  const shorten = 5.5;
+  const ex = p2.x - (dx/len) * shorten;
+  const ey = p2.y - (dy/len) * shorten;
+  const line = document.createElementNS(NS, 'line');
+  line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
+  line.setAttribute('x2', ex); line.setAttribute('y2', ey);
+  line.setAttribute('stroke', color);
+  line.setAttribute('stroke-width', '2.6');
+  line.setAttribute('stroke-linecap', 'round');
+  line.setAttribute('marker-end', 'url(#' + markerId + ')');
+  svg.appendChild(line);
+}
+
+function initStockfish(){
+  if(state.sf) return state.sf;
+  try{
+    const bootstrap = `importScripts('${CONFIG.STOCKFISH_URL}');`;
+    const blobUrl = URL.createObjectURL(new Blob([bootstrap], {type:'application/javascript'}));
+    const worker = new Worker(blobUrl);
+    worker.onmessage = (e)=> handleEngineLine(typeof e.data === 'string' ? e.data : '');
+    worker.onerror = ()=>{
+      toast('Engine synchronization fault.');
+      state.sf = null;
+    };
+    worker.postMessage('uci');
+    state.sf = worker;
+  }catch(err){
+    state.sf = null;
+  }
+  return state.sf;
+}
+
+function handleEngineLine(line){
+  if(!line) return;
+  if(line.startsWith('info') && line.includes(' pv ')){
+    const cpMatch = line.match(/score cp (-?\d+)/);
+    const mateMatch = line.match(/score mate (-?\d+)/);
+    const depthMatch = line.match(/\bdepth (\d+)/);
+    const pvMatch = line.match(/ pv (.+)$/);
+    state.sfBestLine = {
+      cp: cpMatch ? parseInt(cpMatch[1], 10) : null,
+      mate: mateMatch ? parseInt(mateMatch[1], 10) : null,
+      depth: depthMatch ? parseInt(depthMatch[1], 10) : null,
+      pv: pvMatch ? pvMatch[1].trim().split(' ') : []
+    };
+    renderEnginePanel();
+  }else if(line.startsWith('bestmove')){
+    const best = line.split(' ')[1];
+    const wasContinueMode = state.sfMode === 'continue';
+    state.sfMode = null;
+    setEngineSearching(false);
+    document.getElementById('btnStockfishGo').disabled = false;
+    if(wasContinueMode && best && best !== '(none)') playFreeMove(best);
+    if(wasContinueMode && state.analysisMode) setDragEnabled(true);
+  }
+}
+
+function setEngineSearching(isSearching){
+  const dot = document.getElementById('engineLiveDot');
+  if(!dot) return;
+  dot.classList.toggle('searching', isSearching);
+  if(!state.analysisMode){ dot.textContent = '○ idle'; return; }
+  dot.textContent = isSearching ? '● thinking…' : '● ready';
+}
+
+function renderEnginePanel(){
+  const evalEl = document.getElementById('engineEval');
+  const bestEl = document.getElementById('engineBest');
+  const depthEl = document.getElementById('engineDepth');
+  const line = state.sfBestLine || {};
+  if(line.mate != null){
+    evalEl.textContent = '#' + line.mate;
+  }else if(line.cp != null){
+    const turn = state.chess ? state.chess.turn() : 'w';
+    const whiteCp = turn === 'w' ? line.cp : -line.cp;
+    evalEl.textContent = (whiteCp >= 0 ? '+' : '') + (whiteCp / 100).toFixed(2);
+  }else{
+    evalEl.textContent = '—';
+  }
+  depthEl.textContent = line.depth ?? '—';
+  clearBoardArrows();
+  if(!state.analysisMode){
+    bestEl.textContent = '—';
+    return;
+  }
+  if(line.pv && line.pv.length && state.fenHistory.length){
+    try{
+      const tmp = new Chess(state.fenHistory[state.viewIndex]);
+      const mv = parseUCI(line.pv[0]);
+      const res = tmp.move(mv);
+      bestEl.textContent = res ? res.san : line.pv[0];
+      drawArrow(mv.from, mv.to, '#d4af37');
+      if(line.pv[1]){
+        const mv2 = parseUCI(line.pv[1]);
+        if(tmp.move(mv2)) drawArrow(mv2.from, mv2.to, 'rgba(232,207,118,0.5)');
+      }
+    }catch(e){ bestEl.textContent = line.pv[0]; }
+  }else{
+    bestEl.textContent = '—';
+  }
+}
+
+let liveAnalysisTimer = null;
+function scheduleLiveAnalysis(){
+  if(!state.analysisMode || !state.fenHistory.length || state.sfMode === 'continue') return;
+  clearTimeout(liveAnalysisTimer);
+  liveAnalysisTimer = setTimeout(runLiveAnalysis, 220);
+}
+function runLiveAnalysis(){
+  if(!state.analysisMode || !state.fenHistory.length || state.sfMode === 'continue') return;
+  const w = initStockfish();
+  if(!w) return;
+  state.sfMode = 'analyze';
+  state.sfBestLine = {};
+  renderEnginePanel();
+  setEngineSearching(true);
+  w.postMessage('stop');
+  w.postMessage('position fen ' + state.fenHistory[state.viewIndex]);
+  w.postMessage('go depth ' + CONFIG.ENGINE_DEPTH);
+}
+
+function playFreeMove(uciStr){
+  if(!state.chess) return;
+  const mv = parseUCI(uciStr);
+  const result = state.chess.move(mv);
+  if(!result) return;
+  state.fenHistory.push(state.chess.fen());
+  state.sanHistory.push(result.san);
+  state.viewIndex = state.fenHistory.length - 1;
+  clearHighlights();
+  state.board.position(state.chess.fen());
+  sfx.move();
+  renderMoveList();
+  updateMoveDisplay();
+  updateNavButtons();
+  toast('Engine plays: ' + result.san);
+}
+
+document.getElementById('btnStockfishGo').addEventListener('click', ()=>{
+  if(!state.chess) return toast('Load a puzzle before calling in the engine.');
+  if(state.viewIndex !== state.fenHistory.length - 1){ toast('Jump to the latest position before asking the engine.'); return; }
+  const w = initStockfish();
+  if(!w) return;
+  state.solving = false;
+  setDragEnabled(false);
+  state.sfMode = 'continue';
+  setEngineSearching(true);
+  document.getElementById('btnStockfishGo').disabled = true;
+  w.postMessage('stop');
+  w.postMessage('position fen ' + state.chess.fen());
+  w.postMessage('go depth ' + CONFIG.ENGINE_DEPTH);
+});
+
+document.getElementById('btnCopyFen').addEventListener('click', async ()=>{
+  if(!state.fenHistory.length) return;
+  const fen = state.fenHistory[state.viewIndex];
+  try{ await navigator.clipboard.writeText(fen); toast('FEN copied to clipboard'); }
+  catch(e){ toast(fen); }
+});
+document.getElementById('btnCopyPgn').addEventListener('click', async ()=>{
+  if(!state.fenHistory.length) return;
+  let pgn = '';
+  try{
+    const g = new Chess(state.fenHistory[0]);
+    state.sanHistory.forEach(san=>g.move(san));
+    pgn = g.pgn();
+  }catch(e){ pgn = ''; }
+  try{ await navigator.clipboard.writeText(pgn); toast('PGN copied to clipboard'); }
+  catch(e){ toast('Couldn\'t copy the PGN — try again.'); }
+});
+
+/* ---- keyboard shortcuts ---- */
+document.addEventListener('keydown', (e)=>{
+  if(!document.getElementById('screen-trainer').classList.contains('active')) return;
+  if(e.target && /input|textarea|select/i.test(e.target.tagName)) return;
+  if(e.key === 'ArrowLeft'){ jumpToFenIndex(state.viewIndex - 1); }
+  else if(e.key === 'ArrowRight'){ jumpToFenIndex(state.viewIndex + 1); }
+  else if(e.key.toLowerCase() === 'h'){ document.getElementById('btnHint').click(); }
+  else if(e.key.toLowerCase() === 'n'){ document.getElementById('btnNext').click(); }
+});
+
+/* ============================================================
+   STATISTICS RE-CALCULATION
+   ============================================================ */
+function renderStats(){
+  const s = state.stats;
+  document.getElementById('stTotal').textContent = s.totalSolved;
+  const acc = s.totalAttempts ? Math.round((s.correctFirstTry / s.totalAttempts) * 100) : 0;
+  document.getElementById('stAccuracy').textContent = acc + '%';
+  document.getElementById('stStreak').textContent = s.currentStreak;
+  document.getElementById('stBest').textContent = s.bestStreak;
+  document.getElementById('stAvgRating').textContent = s.ratingCount ? Math.round(s.ratingSum / s.ratingCount) : '—';
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('stDaily').textContent = (s.dailyDate === today) ? s.dailyCount : 0;
+  document.getElementById('stTime').textContent = Math.round(s.totalTimeMs / 60000) + 'm';
+  document.getElementById('stAttempts').textContent = s.totalAttempts;
+}
+document.getElementById('btnResetStats').addEventListener('click', ()=>{
+  if(!confirm('Reset all your stats? This can\'t be undone.')) return;
+  state.stats = loadStats();
+  localStorage.removeItem('knt_stats');
+  renderStats();
+  toast('Stats cleared — fresh start.');
+});
+
+/* ============================================================
+   CONFIGURATION UTILITIES
+   ============================================================ */
+function wireToggle(id, key, onChange){
+  const el = document.getElementById(id);
+  el.classList.toggle('on', !!state.settings[key]);
+  el.addEventListener('click', ()=>{
+    state.settings[key] = !state.settings[key];
+    el.classList.toggle('on', state.settings[key]);
+    saveSettings();
+    if(onChange) onChange(state.settings[key]);
+  });
+}
+wireToggle('toggleSound', 'sound');
+wireToggle('toggleAnim', 'animations');
+wireToggle('toggleCoords', 'coordinates', v=>{ rebuildBoard(); });
+wireToggle('toggleAutoFlip', 'autoFlip');
+wireToggle('toggleAutoAdvance', 'autoAdvance');
+
+document.getElementById('selPieceStyle').value = state.settings.pieceStyle;
+document.getElementById('selPieceStyle').addEventListener('change', e=>{
+  state.settings.pieceStyle = e.target.value;
+  saveSettings();
+  rebuildBoard();
+});
+
+document.querySelectorAll('#boardColorRow .color-dot').forEach(dot=>{
+  dot.addEventListener('click', ()=>{
+    state.settings.boardColor = dot.dataset.c;
+    saveSettings();
+    applyBoardColor();
+  });
+});
+function applyBoardColor(){
+  const map = {
+    brown:{light:'#f0d9b5',dark:'#b58863'},
+    green:{light:'#eeeed2',dark:'#779556'},
+    blue:{light:'#dee3e6',dark:'#4b6f9e'},
+    gray:{light:'#e8e8e8',dark:'#6e6e6e'}
+  };
+  const c = map[state.settings.boardColor] || map.brown;
+  document.documentElement.style.setProperty('--board-light', c.light);
+  document.documentElement.style.setProperty('--board-dark', c.dark);
+  document.querySelectorAll('#board [data-square-color="white"]').forEach(el=>el.style.background = c.light);
+  document.querySelectorAll('#board [data-square-color="black"]').forEach(el=>el.style.background = c.dark);
+}
+
+function refreshBoardPosition(animate){
+  if(!state.board) return;
+  state.board.orientation(state.boardOrientation);
+  if(state.fenHistory.length){
+    state.board.position(state.fenHistory[state.viewIndex], !!animate);
+  }
+  applyBoardColor();
+}
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+
+async function init(){
+  applyBoardColor();
+  updateNavButtons();
+  await loadMasterThemes();
+
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+}
+init();
+</script>
+</body>
+</html>
