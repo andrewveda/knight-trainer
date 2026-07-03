@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -19,8 +19,8 @@
 
 <style>
 /* ============================================================
-   DESIGN TOKENS & SYSTEM DEFAULTS
-   ============================================================ */
+     DESIGN TOKENS & SYSTEM DEFAULTS
+     ============================================================ */
 :root {
   --bg: #0b0e14;
   --bg2: #11151f;
@@ -85,8 +85,8 @@ h1, h2, h3 {
 }
 
 /* ============================================================
-   AMBIENT VISUAL EFFECTS
-   ============================================================ */
+     AMBIENT VISUAL EFFECTS
+     ============================================================ */
 .bg-glow {
   position: fixed;
   inset: 0;
@@ -140,8 +140,8 @@ h1, h2, h3 {
 }
 
 /* ============================================================
-   SCREEN ARCHITECTURE & APPLICATION BASE
-   ============================================================ */
+     SCREEN ARCHITECTURE & APPLICATION BASE
+     ============================================================ */
 .screen {
   display: none;
   animation: fadeIn 0.35s ease;
@@ -237,8 +237,8 @@ h1, h2, h3 {
 .hidden { display: none !important; }
 
 /* ============================================================
-   INTERACTIVE REUSABLE COMPONENTS
-   ============================================================ */
+     INTERACTIVE REUSABLE COMPONENTS
+     ============================================================ */
 .btn {
   font-family: var(--sans);
   font-size: 13px;
@@ -316,8 +316,8 @@ h1, h2, h3 {
 .switch.small.on .knob { left: 19px; }
 
 /* ============================================================
-   HOME MODULE
-   ============================================================ */
+     HOME MODULE
+     ============================================================ */
 .home-header {
   padding: 48px 20px 18px;
   text-align: center;
@@ -390,8 +390,8 @@ h1, h2, h3 {
 @keyframes rip { to { transform: scale(2.5); opacity: 0; } }
 
 /* ============================================================
-   TRAINER GROUND MODULE (FLUID TWO-COLUMN WORKSPACE)
-   ============================================================ */
+     TRAINER GROUND MODULE (FLUID TWO-COLUMN WORKSPACE)
+     ============================================================ */
 .trainer-wrap {
   display: flex;
   flex-direction: column;
@@ -503,8 +503,8 @@ h1, h2, h3 {
 }
 
 /* ============================================================
-   CONTROL UTILITIES PANEL
-   ============================================================ */
+     CONTROL UTILITIES PANEL
+     ============================================================ */
 .side-panel {
   flex: 1;
   width: 100%;
@@ -595,8 +595,8 @@ h1, h2, h3 {
 .move-list .mnum { color: var(--text-dim); font-size: 11px; padding-right: 2px; }
 
 /* ============================================================
-   ANALYTICS & HISTORICAL INSIGHTS MODULE
-   ============================================================ */
+     ANALYTICS & HISTORICAL INSIGHTS MODULE
+     ============================================================ */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
@@ -614,8 +614,8 @@ h1, h2, h3 {
 .stat-card .lbl { font-size: 11px; color: var(--text-dim); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.6px; }
 
 /* ============================================================
-   PREFERENCES, UTILITIES & FOOTER SETTINGS
-   ============================================================ */
+     PREFERENCES, UTILITIES & FOOTER SETTINGS
+     ============================================================ */
 .simple-screen {
   max-width: 600px;
   margin: 0 auto;
@@ -657,8 +657,8 @@ h1, h2, h3 {
 .about-card p:last-child { margin-bottom: 0; }
 
 /* ============================================================
-   GLOBAL NAVIGATION DOCK
-   ============================================================ */
+     GLOBAL NAVIGATION DOCK
+     ============================================================ */
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -748,6 +748,7 @@ h1, h2, h3 {
     <div class="board-col">
       <div class="board-shell">
         <div id="board"></div>
+        <div id="promoOverlay" class="glass hidden" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 70; gap: 12px; background: rgba(11, 14, 20, 0.85); border-radius: 10px;"></div>
         <svg id="boardArrows" class="board-arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
         <div id="loadingOverlay" class="loading hidden">
           <div class="spinner"></div>
@@ -908,8 +909,8 @@ h1, h2, h3 {
 'use strict';
 
 /* ============================================================
-   CONFIGURATION
-   ============================================================ */
+     CONFIGURATION
+     ============================================================ */
 const CONFIG = {
   REPO_BASE: 'https://raw.githubusercontent.com/andrewveda/knight-trainer/main/data',
   CACHE_LIMIT: 30,
@@ -922,8 +923,8 @@ const CONFIG = {
 const IS_TOUCH_DEVICE = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
 
 /* ============================================================
-   STATE
-   ============================================================ */
+     STATE
+     ============================================================ */
 const state = {
   cache: new Map(),
   themesMeta: null,
@@ -953,9 +954,34 @@ const state = {
   analysisMode: false,
 };
 
+function getPromotionPieceUI(color) {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('promoOverlay');
+    overlay.innerHTML = '';
+    overlay.classList.remove('hidden');
+
+    ['q', 'r', 'b', 'n'].forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'icon-btn';
+      btn.style.cssText = 'width: 70px; height: 70px; border-radius: 14px; background: var(--bg2);';
+      
+      const img = document.createElement('img');
+      img.src = pieceThemeUrl(color + p.toUpperCase());
+      img.style.width = '100%';
+      
+      btn.appendChild(img);
+      btn.addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        resolve(p);
+      });
+      overlay.appendChild(btn);
+    });
+  });
+}
+
 /* ============================================================
-   STORAGE HELPERS
-   ============================================================ */
+     STORAGE HELPERS
+     ============================================================ */
 function loadJSON(key, fallback){
   try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
   catch(e){ return fallback; }
@@ -981,8 +1007,8 @@ function loadStats(){
 function saveStats(){ saveJSON('knt_stats', state.stats); }
 
 /* ============================================================
-   NETWORKING & THEME PROCESSING
-   ============================================================ */
+     NETWORKING & THEME PROCESSING
+     ============================================================ */
 async function fetchJSONCached(url){
   if(state.cache.has(url)) return state.cache.get(url);
   const res = await fetch(url);
@@ -1014,8 +1040,8 @@ async function getPuzzlePayload(theme, difficulty) {
 }
 
 /* ============================================================
-   UCI MOVE PARSING
-   ============================================================ */
+     UCI MOVE PARSING
+     ============================================================ */
 function parseUCI(uci){
   return {
     from: uci.slice(0,2),
@@ -1025,8 +1051,8 @@ function parseUCI(uci){
 }
 
 /* ============================================================
-   AUDIO ARCHITECTURE
-   ============================================================ */
+     AUDIO ARCHITECTURE
+     ============================================================ */
 let audioCtx = null;
 function beep(freq, duration, type='sine'){
   if(!state.settings.sound) return;
@@ -1049,8 +1075,8 @@ const sfx = {
 };
 
 /* ============================================================
-   TOAST NOTIFICATION ENGINE
-   ============================================================ */
+     TOAST NOTIFICATION ENGINE
+     ============================================================ */
 let toastTimer = null;
 function toast(msg){
   const el = document.getElementById('toast');
@@ -1061,8 +1087,8 @@ function toast(msg){
 }
 
 /* ============================================================
-   SCREEN CONTROL & VIEW SWAPPING
-   ============================================================ */
+     SCREEN CONTROL & VIEW SWAPPING
+     ============================================================ */
 function showScreen(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
@@ -1082,8 +1108,8 @@ document.getElementById('trainerBack').addEventListener('click', ()=>{
 });
 
 /* ============================================================
-   UI COMPONENT RENDERING (HOME SCREEN)
-   ============================================================ */
+     UI COMPONENT RENDERING (HOME SCREEN)
+     ============================================================ */
 function renderThemeGrid(filterText = '') {
   const grid = document.getElementById('themeGrid');
   if (!state.themesMeta) return;
@@ -1101,7 +1127,6 @@ function renderThemeGrid(filterText = '') {
     const card = document.createElement('div');
     card.className = 'theme-card glass' + (state.currentTheme === key ? ' selected' : '');
     
-    // Formatting matching TitleCase conventions
     const formattedName = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
     const specificCount = diffs[state.currentDifficulty] || 0;
 
@@ -1138,7 +1163,6 @@ function ripple(el, evt){
   setTimeout(()=>r.remove(), 650);
 }
 
-// Wire configuration event listeners
 document.querySelectorAll('#difficultyRow .chip').forEach(chip=>{
   chip.addEventListener('click', ()=>{
     document.querySelectorAll('#difficultyRow .chip').forEach(c=>c.classList.remove('active'));
@@ -1172,8 +1196,8 @@ document.getElementById('chipRecent').addEventListener('click', ()=>{
 });
 
 /* ============================================================
-   CHESSBOARD MANAGEMENT ENGINE
-   ============================================================ */
+     CHESSBOARD MANAGEMENT ENGINE
+     ============================================================ */
 function initBoardIfNeeded(){
   if(state.board) return;
   state.board = Chessboard('board', {
@@ -1195,17 +1219,11 @@ function initBoardIfNeeded(){
     if (square) onBoardSquareClick(square);
   });
 
-  // Block the native long-press "save/copy image" context menu on piece
-  // images and the board itself (this is what was popping up an
-  // Android/iOS "Download image" sheet on long-press).
   $boardEl.off('contextmenu.cpt').on('contextmenu.cpt', function(e){
     e.preventDefault();
     return false;
   });
 
-  // Belt-and-braces: also stop the native dragstart on the <img> pieces so
-  // the browser never starts its own image-drag gesture, which is what
-  // triggers the long-press callout on some mobile browsers.
   $boardEl.off('dragstart.cpt').on('dragstart.cpt', 'img', function(e){
     e.preventDefault();
     return false;
@@ -1250,7 +1268,7 @@ function loadPuzzle(themeKey, difficulty, puzzle){
   state.currentTheme = themeKey;
   state.currentDifficulty = difficulty;
   state.currentPuzzle = puzzle;
-  state.chess = new Chess(puzzle.f); // 'f' maps directly to initial FEN state
+  state.chess = new Chess(puzzle.f);
   state.moveCursor = 0;
   state.fenHistory = [puzzle.f];
   state.sanHistory = [];
@@ -1273,10 +1291,9 @@ function loadPuzzle(themeKey, difficulty, puzzle){
   updateNavButtons();
   updateMoveDisplay();
   
-  // Opponent setup instruction execution context
   setTimeout(()=>{
     if(state.currentPuzzle !== puzzle) return;
-    const puzzleMoves = puzzle.m.split(' '); // 'm' splits to standard notation sequence arrays
+    const puzzleMoves = puzzle.m.split(' ');
     applyMoveToBoard(puzzleMoves[0], true);
     state.moveCursor = 1;
     state.solving = true;
@@ -1289,7 +1306,7 @@ function renderPuzzleInfo(themeKey, difficulty, puzzle){
   const formatted = themeKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
   document.getElementById('infoPiece').textContent = formatted;
   document.getElementById('infoDifficulty').textContent = capitalize(difficulty);
-  document.getElementById('infoRating').textContent = puzzle.r ?? '—'; // 'r' maps to standard ELO ranking metrics
+  document.getElementById('infoRating').textContent = puzzle.r ?? '—';
   document.getElementById('infoId').textContent = puzzle.id ?? '—';
   document.getElementById('infoSession').textContent = state.sessionSolved;
 }
@@ -1351,8 +1368,8 @@ function setDragEnabled(enabled){
 }
 
 /* ============================================================
-   TARGET SELECTION & INTERACTION VALIDATION
-   ============================================================ */
+     TARGET SELECTION & INTERACTION VALIDATION
+     ============================================================ */
 function squareEl(square) {
   return document.querySelector(`#board [data-square="${square}"]`);
 }
@@ -1393,7 +1410,8 @@ function canSelect(square){
   if(!piece) return false;
   return (vc.turn() === 'w') === (piece.color === 'w');
 }
-function onBoardSquareClick(square){
+
+async function onBoardSquareClick(square){
   if(!state.fenHistory.length || !state.dragEnabled) return;
 
   if(!state.analysisMode){
@@ -1412,13 +1430,13 @@ function onBoardSquareClick(square){
       return;
     }
 
-    const outcome = state.analysisMode
-      ? attemptFreeMove(state.selectedSquare, square)
-      : attemptSolvingMove(state.selectedSquare, square);
-
+    const fromSquare = state.selectedSquare;
     clearHighlights();
-    if(outcome === 'accepted'){
-      state.board.position(state.chess.fen());
+    
+    if(state.analysisMode) {
+      await attemptFreeMove(fromSquare, square);
+    } else {
+      await attemptSolvingMove(fromSquare, square);
     }
     return;
   }
@@ -1428,7 +1446,31 @@ function onBoardSquareClick(square){
   }
 }
 
-function attemptSolvingMove(source, target){
+function onDrop(source, target){
+  clearHighlights();
+  
+  const currentPiece = state.chess.get(source);
+  const isPromo = currentPiece && currentPiece.type === 'p' && (target[1] === '8' || target[1] === '1');
+  
+  if (isPromo) {
+    setTimeout(async () => {
+      if(state.analysisMode) {
+        await attemptFreeMove(source, target);
+      } else {
+        await attemptSolvingMove(source, target);
+      }
+    }, 50);
+    return undefined; 
+  }
+
+  if(state.analysisMode) {
+    attemptFreeMove(source, target).then(res => { if(res === 'rejected') state.board.position(state.chess.fen()); });
+  } else {
+    attemptSolvingMove(source, target).then(res => { if(res === 'rejected') state.board.position(state.chess.fen()); });
+  }
+}
+
+async function attemptSolvingMove(source, target){
   if(!state.dragEnabled || !state.solving) return 'rejected';
   const puzzleMoves = state.currentPuzzle.m.split(' ');
   if(!state.currentPuzzle || state.moveCursor >= puzzleMoves.length) return 'rejected';
@@ -1448,9 +1490,17 @@ function attemptSolvingMove(source, target){
 
   const isPromotion = (state.chess.get(source)||{}).type === 'p' && (target[1] === '8' || target[1] === '1');
   let promotionPiece = expected.promotion || 'q';
-  if(isPromotion && expected.promotion === 'q'){
-    const choice = window.prompt('Promote to — Queen(q), Rook(r), Bishop(b), or Knight(n)?', 'q');
-    if(choice && /^[qrbn]$/i.test(choice.trim())) promotionPiece = choice.trim().toLowerCase();
+  
+  if(isPromotion) {
+    const turnColor = state.chess.turn();
+    promotionPiece = await getPromotionPieceUI(turnColor);
+    if(promotionPiece !== expected.promotion) {
+      registerAttempt(false);
+      sfx.wrong();
+      toast('Wrong promotion piece option chosen.');
+      state.board.position(state.chess.fen());
+      return 'rejected';
+    }
   }
 
   const moveObj = { from: source, to: target, promotion: promotionPiece };
@@ -1478,10 +1528,11 @@ function attemptSolvingMove(source, target){
   }else{
     setTimeout(playNextAutoMove, CONFIG.AUTO_MOVE_DELAY);
   }
+  state.board.position(state.chess.fen());
   return 'accepted';
 }
 
-function attemptFreeMove(source, target){
+async function attemptFreeMove(source, target){
   const vc = viewChess();
   if(vc.game_over()) return 'rejected';
   const legalMoves = vc.moves({verbose:true});
@@ -1490,9 +1541,9 @@ function attemptFreeMove(source, target){
 
   const isPromotion = (vc.get(source)||{}).type === 'p' && (target[1] === '8' || target[1] === '1');
   let promotionPiece = 'q';
+  
   if(isPromotion){
-    const choice = window.prompt('Promote to — Queen(q), Rook(r), Bishop(b), or Knight(n)?', 'q');
-    if(choice && /^[qrbn]$/i.test(choice.trim())) promotionPiece = choice.trim().toLowerCase();
+    promotionPiece = await getPromotionPieceUI(vc.turn());
   }
 
   const result = vc.move({ from: source, to: target, promotion: promotionPiece });
@@ -1512,6 +1563,7 @@ function attemptFreeMove(source, target){
   updateMoveCounter();
   updateNavButtons();
   updateMoveDisplay();
+  state.board.position(state.chess.fen());
   return 'accepted';
 }
 
@@ -1521,11 +1573,6 @@ function onDragStart(source, piece){
   return true;
 }
 
-function onDrop(source, target){
-  clearHighlights();
-  const outcome = state.analysisMode ? attemptFreeMove(source, target) : attemptSolvingMove(source, target);
-  return outcome === 'accepted' ? undefined : 'snapback';
-}
 function onSnapEnd(){
   const fen = state.fenHistory[state.viewIndex] || (state.chess && state.chess.fen());
   if(fen) state.board.position(fen, false);
@@ -1572,8 +1619,8 @@ function finishPuzzle(){
 }
 
 /* ============================================================
-   STATS STORAGE & RETRIEVAL ENGINE
-   ============================================================ */
+     STATS STORAGE & RETRIEVAL ENGINE
+     ============================================================ */
 function registerAttempt(correct){
   state.stats.totalAttempts++;
   if(correct) state.stats.correctFirstTry++;
@@ -1603,8 +1650,8 @@ function addToRecents(theme, difficulty, puzzle){
 }
 
 /* ============================================================
-   HISTORICAL CONFIGURATION REVIEW
-   ============================================================ */
+     HISTORICAL CONFIGURATION REVIEW
+     ============================================================ */
 function renderMoveList(){
   const el = document.getElementById('moveList');
   const history = state.sanHistory || [];
@@ -1660,8 +1707,8 @@ document.getElementById('btnReset').addEventListener('click', ()=>{
 });
 
 /* ============================================================
-   INTERFACE COMMAND BINDINGS
-   ============================================================ */
+     INTERFACE COMMAND BINDINGS
+     ============================================================ */
 document.getElementById('btnHint').addEventListener('click', ()=>{
   if(!state.solving || !state.currentPuzzle) return toast('Pick a puzzle first — then I\'ll show you the way.');
   if(state.viewIndex !== state.fenHistory.length - 1){ toast('Jump back to the current position first.'); return; }
@@ -1731,8 +1778,8 @@ function updateFavoriteButton(){
 }
 
 /* ============================================================
-   STOCKFISH PROCESSING AND ARROW DATA VECTOR MATH
-   ============================================================ */
+     STOCKFISH PROCESSING AND ARROW DATA VECTOR MATH
+     ============================================================ */
 function squareCenterPct(square){
   const file = square.charCodeAt(0) - 97;
   const rank = parseInt(square[1], 10);
@@ -1951,8 +1998,8 @@ document.addEventListener('keydown', (e)=>{
 });
 
 /* ============================================================
-   STATISTICS RE-CALCULATION
-   ============================================================ */
+     STATISTICS RE-CALCULATION
+     ============================================================ */
 function renderStats(){
   const s = state.stats;
   document.getElementById('stTotal').textContent = s.totalSolved;
@@ -1975,8 +2022,8 @@ document.getElementById('btnResetStats').addEventListener('click', ()=>{
 });
 
 /* ============================================================
-   CONFIGURATION UTILITIES
-   ============================================================ */
+     CONFIGURATION UTILITIES
+     ============================================================ */
 function wireToggle(id, key, onChange){
   const el = document.getElementById(id);
   el.classList.toggle('on', !!state.settings[key]);
@@ -2031,8 +2078,8 @@ function refreshBoardPosition(animate){
 }
 
 /* ============================================================
-   INITIALIZATION
-   ============================================================ */
+     INITIALIZATION
+     ============================================================ */
 function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
 
 async function init(){
