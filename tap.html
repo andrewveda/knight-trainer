@@ -4,24 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Knight Tactical Trainer</title>
-<meta name="description" content="Master the structural elegance of knight trajectories, forks, and mating nets.">
-<meta name="theme-color" content="#0d0e12">
+<meta name="description" content="Every player falls for the knight eventually. Train its forks, outposts and mating nets in bite-sized puzzles and start thinking like a tactician today.">
+<meta name="theme-color" content="#0b0e14">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='30' fill='%230d0e12'/%3E%3Ctext x='50' y='68' font-size='55' text-anchor='middle' fill='%23c5a059'%3E%E2%99%9E%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230b0e14'/%3E%3Ctext x='50' y='68' font-size='60' text-anchor='middle' fill='%23d4af37'%3E%E2%99%9E%3C/text%3E%3C/svg%3E">
 
-<!-- External Core Mechanics Libraries -->
+<!-- ============================================================
+     EXTERNAL LIBRARIES (the only two allowed)
+     ============================================================ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
 
-<!-- Premium Display Typography -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-
 <style>
-/* ============================================================
+   /* ============================================================
    JONY IVE METICULOUS DESIGN SYSTEM TOKENS
    ============================================================ */
 :root {
@@ -634,42 +631,44 @@ body.theme-light .dock-container {
 .hidden { display: none !important; }
 </style>
 </head>
-<body class="theme-dark">
+<body>
 
-<div class="canvas-glow"><span></span></div>
+<div class="bg-glow"><span></span><span></span><span></span></div>
+<div class="bg-pieces" aria-hidden="true">
+  <span style="left:8%;top:10%;">♞</span><span style="left:70%;top:6%;animation-delay:-6s;">♞</span>
+  <span style="left:30%;top:60%;animation-delay:-12s;">♞</span><span style="left:85%;top:55%;animation-delay:-4s;">♞</span>
+</div>
 
 <!-- =========================================================
-     HOME MODULE
+     HOME SCREEN
      ========================================================= -->
 <section id="screen-home" class="screen active">
-  <div style="text-align: center; padding: 60px 20px 24px;">
-    <h1 style="font-size: clamp(36px, 6vw, 54px); font-style: italic; margin-bottom: 12px;">Knight Tactical Trainer</h1>
-    <p style="color: var(--text-dim); max-width: 540px; margin: 0 auto; font-size: 15px; font-weight: 300; line-height: 1.5;">
-      Master the atypical, non-linear trajectories of chess's most enigmatic operative. Designed for surgical pattern mastery.
-    </p>
+  <div class="home-header">
+    <h1>Knight Tactical Trainer</h1>
+    <p>It's the piece every player falls for first — awkward, brilliant, and impossible to predict. Train its patterns here and start thinking like a tactician.</p>
   </div>
 
-  <div class="section-caption">Structural Threshold</div>
-  <div class="pill-group" id="difficultyRow">
-    <div class="pill active" data-diff="easy">Easy</div>
-    <div class="pill" data-diff="medium">Medium</div>
-    <div class="pill" data-diff="hard">Hard</div>
+  <div class="section-label">1. Choose Your Level</div>
+  <div class="quick-row" id="difficultyRow">
+    <div class="chip glass active" data-diff="easy">Easy</div>
+    <div class="chip glass" data-diff="medium">Medium</div>
+    <div class="chip glass" data-diff="hard">Hard</div>
   </div>
 
-  <div class="section-caption">Fast Systems</div>
-  <div class="pill-group">
-    <div class="pill" id="chipRandom">Surprise Matrix</div>
-    <div class="pill" id="chipFav">Saved Coordinates</div>
-    <div class="pill" id="chipRecent">Resume Progress</div>
+  <div class="section-label">Fast Track</div>
+  <div class="quick-row">
+    <div class="chip glass" id="chipRandom">🎲 Surprise Me</div>
+    <div class="chip glass" id="chipFav">⭐ My Favorites</div>
+    <div class="chip glass" id="chipRecent">🕘 Pick Up Where I Left Off</div>
   </div>
 
-  <div class="section-caption">Tactical Coordinates</div>
-  <div class="search-container">
-    <input type="text" id="themeSearch" placeholder="Search operational matrices (e.g. fork, mate)...">
+  <div class="section-label">2. Choose Your Pattern</div>
+  <div class="theme-search-box">
+    <input type="text" id="themeSearch" placeholder="Search knight patterns — try “fork,” “mate,” or “sacrifice”…">
   </div>
-   
-  <div class="theme-matrix" id="themeGrid">
-    <div style="text-align:center; padding: 40px; color: var(--text-dim); grid-column:1/-1;">Synchronizing tactical array...</div>
+  
+  <div class="theme-grid" id="themeGrid">
+    <div class="loading"><div class="spinner"></div>Warming up the knight…</div>
   </div>
 </section>
 
@@ -679,59 +678,70 @@ body.theme-light .dock-container {
 <section id="screen-trainer" class="screen">
   <div class="topbar">
     <button class="back-btn" id="trainerBack">←</button>
-    <h2 id="trainerTitle">Operational Ground</h2>
-    <div></div>
+    <h2 id="trainerTitle">Knight Training Ground</h2>
   </div>
 
-  <div class="workspace">
-    <div class="board-column">
-      <div class="board-container">
+  <div class="trainer-wrap">
+    <div class="board-col">
+      <div class="board-shell">
         <div id="board"></div>
         <svg id="boardArrows" class="board-arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+        <div id="loadingOverlay" class="loading hidden">
+          <div class="spinner"></div>
+          <div>Setting the board…</div>
+        </div>
       </div>
-      
-      <div class="workspace-controls">
-        <button class="icon-btn" id="btnFlip">⇅</button>
-        <div class="status-text" id="statusBar">Ready</div>
-        <button class="icon-btn" id="btnFavorite">☆</button>
+      <div class="board-toolbar">
+        <button class="icon-btn" id="btnFlip" title="Flip the board">⇅</button>
+        <div class="status-bar info" id="statusBar">Pick a pattern to begin your training</div>
+        <button class="icon-btn" id="btnFavorite" title="Save this puzzle">☆</button>
       </div>
-
-      <div class="control-row">
-        <button class="btn" id="btnFirst">⏮</button>
-        <button class="btn" id="btnPrev">◀</button>
-        <button class="btn" id="btnReset">⟲</button>
-        <button class="btn" id="btnNextMove">▶</button>
-        <button class="btn" id="btnLast">⏭</button>
+      <div class="nav-row">
+        <button class="icon-btn" id="btnFirst" title="Back to the beginning">⏮</button>
+        <button class="icon-btn" id="btnPrev" title="Step back one move">◀</button>
+        <button class="icon-btn" id="btnReset" title="Run it back">⟲</button>
+        <button class="icon-btn" id="btnNextMove" title="Step forward one move">▶</button>
+        <button class="icon-btn" id="btnLast" title="Jump to the end">⏭</button>
       </div>
-      
-      <div class="control-row" style="margin-top: 12px;">
-        <button class="btn" id="btnHint">Clue</button>
-        <button class="btn" id="btnSolution">Reveal</button>
-        <button class="btn primary" id="btnNext">Advance Drill</button>
+      <div class="action-row">
+        <button class="btn" id="btnHint">💡 Give Me a Clue</button>
+        <button class="btn" id="btnSolution">📖 Show the Line</button>
+        <button class="btn primary" id="btnNext">Next Drill →</button>
       </div>
     </div>
 
-    <div class="meta-column">
-      <div class="premium-card glass-panel" id="puzzleInfoCard">
-        <h3>Telemetry Specs</h3>
-        <div class="data-row"><span>Operational Line</span><span class="val" id="infoPiece">—</span></div>
-        <div class="data-row"><span>Complexity Tier</span><span class="val" id="infoDifficulty">—</span></div>
-        <div class="data-row"><span>Target Weight</span><span class="val" id="infoRating">—</span></div>
-        <div class="data-row"><span>Index Ref</span><span class="val" id="infoId">—</span></div>
-        <div class="data-row"><span>Sequence</span><span class="val" id="infoMoveCount">—</span></div>
+    <div class="side-panel">
+      <div class="info-card glass" id="puzzleInfoCard">
+        <h3>Puzzle Intel</h3>
+        <div class="info-row"><span>Pattern</span><span class="v" id="infoPiece">—</span></div>
+        <div class="info-row"><span>Level</span><span class="v" id="infoDifficulty">—</span></div>
+        <div class="info-row"><span>Rating</span><span class="v" id="infoRating">—</span></div>
+        <div class="info-row"><span>Puzzle ID</span><span class="v" id="infoId">—</span></div>
+        <div class="info-row"><span>Move</span><span class="v" id="infoMoveCount">—</span></div>
+        <div class="info-row"><span>Solved This Session</span><span class="v" id="infoSession">0</span></div>
       </div>
-
-      <div class="premium-card glass-panel">
-        <h3>Stockfish Co-Processor <span id="engineLiveDot" style="font-weight:400; text-transform:none;">○ idle</span></h3>
-        <div class="data-row"><span>Calculated Valuation</span><span class="val" id="engineEval">—</span></div>
-        <div class="data-row"><span>Depth Vector</span><span class="val" id="engineDepth">—</span></div>
-        <div class="data-row"><span>Optimal Vector</span><span class="val" id="engineBest">—</span></div>
-        
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:16px; border-top:1px solid var(--panel-border);">
-          <span style="font-size:13px;">Free Play Mode</span>
-          <div class="switch" id="toggleAnalysis"><div class="knob"></div></div>
+      <div class="info-card glass">
+        <h3>Stockfish Engine <span id="engineLiveDot" style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0;">○ idle</span></h3>
+        <div class="engine-compact-row">
+          <span>Eval <strong id="engineEval">—</strong></span>
+          <span>Depth <strong id="engineDepth">—</strong></span>
+          <span>Best <strong id="engineBest">—</strong></span>
         </div>
-        <button class="btn" id="btnStockfishGo" style="width:100%; margin-top:12px; font-size:11px;">Delegate to Engine</button>
+        <div class="engine-toggle-row">
+          <div><div class="lbl">Free Play Mode</div><div class="sub">Try any move — there's no wrong answer here</div></div>
+          <div class="switch small" id="toggleAnalysis"><div class="knob"></div></div>
+        </div>
+        <div class="mini-actions">
+          <button class="btn" id="btnStockfishGo">▶ Let the Engine Continue</button>
+        </div>
+      </div>
+      <div class="info-card glass">
+        <h3>Move List</h3>
+        <div class="move-list" id="moveList">—</div>
+        <div class="mini-actions">
+          <button class="btn" id="btnCopyFen">Copy FEN</button>
+          <button class="btn" id="btnCopyPgn">Copy PGN</button>
+        </div>
       </div>
     </div>
   </div>
@@ -741,66 +751,116 @@ body.theme-light .dock-container {
      STATISTICS SCREEN
      ========================================================= -->
 <section id="screen-stats" class="screen">
-  <div class="topbar"><h2>Performance Metrics</h2><div></div></div>
-  <div class="analytics-grid">
-    <div class="analytics-card glass-panel"><div class="num" id="stTotal">0</div><div class="label">Solved Matrix</div></div>
-    <div class="analytics-card glass-panel"><div class="num" id="stAccuracy">0%</div><div class="label">Accuracy Index</div></div>
-    <div class="analytics-card glass-panel"><div class="num" id="stStreak">0</div><div class="label">Active Streak</div></div>
-    <div class="analytics-card glass-panel"><div class="num" id="stBest">0</div><div class="label">Peak Streak</div></div>
-    <div class="analytics-card glass-panel"><div class="num" id="stAvgRating">—</div><div class="label">Mean Weight</div></div>
+  <div class="topbar"><h2>Statistics</h2></div>
+  <div class="stats-grid">
+    <div class="stat-card glass"><div class="big" id="stTotal">0</div><div class="lbl">Puzzles Solved</div></div>
+    <div class="stat-card glass"><div class="big" id="stAccuracy">0%</div><div class="lbl">Accuracy</div></div>
+    <div class="stat-card glass"><div class="big" id="stStreak">0</div><div class="lbl">Current Streak</div></div>
+    <div class="stat-card glass"><div class="big" id="stBest">0</div><div class="lbl">Best Streak</div></div>
+    <div class="stat-card glass"><div class="big" id="stAvgRating">—</div><div class="lbl">Avg Rating</div></div>
+    <div class="stat-card glass"><div class="big" id="stDaily">0</div><div class="lbl">Solved Today</div></div>
+    <div class="stat-card glass"><div class="big" id="stTime">0m</div><div class="lbl">Training Time</div></div>
+    <div class="stat-card glass"><div class="big" id="stAttempts">0</div><div class="lbl">Total Attempts</div></div>
   </div>
-  <div style="text-align:center; margin-top:40px;">
-    <button class="btn danger" id="btnResetStats">Purge Diagnostics</button>
+  <div style="text-align:center; margin-top:24px; padding-bottom:20px;">
+    <button class="btn danger" id="btnResetStats">Reset Statistics</button>
   </div>
 </section>
 
 <!-- =========================================================
-     SETTINGS MODULE
+     SETTINGS SCREEN
      ========================================================= -->
 <section id="screen-settings" class="screen">
-  <div class="topbar"><h2>Preferences</h2><div></div></div>
-  <div style="max-width:600px; margin:0 auto; display:flex; flex-direction:column; gap:12px;">
-    <div class="premium-card glass-panel" style="display:flex; justify-content:space-between; align-items:center;">
-      <div><div style="font-size:14px; font-weight:500;">Interface Space</div><div style="font-size:12px; color:var(--text-dim);">Light monochrome baseline preference</div></div>
-      <div class="switch" id="toggleLightMode"><div class="knob"></div></div>
-    </div>
-    <div class="premium-card glass-panel" style="display:flex; justify-content:space-between; align-items:center;">
-      <div><div style="font-size:14px; font-weight:500;">Acoustic Feedback</div><div style="font-size:12px; color:var(--text-dim);">Audio structural confirmations</div></div>
+  <div class="simple-screen">
+    <div class="topbar" style="padding:2px 0 4px;"><h2>Settings</h2></div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Sound</div><div class="sub">Hear every correct strike and missed shot</div></div>
       <div class="switch on" id="toggleSound"><div class="knob"></div></div>
     </div>
-    <div class="premium-card glass-panel" style="display:flex; justify-content:space-between; align-items:center;">
-      <div><div style="font-size:14px; font-weight:500;">Automated Progression</div><div style="font-size:12px; color:var(--text-dim);">Seamlessly serve subsequent sequences</div></div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Animations</div><div class="sub">Visual shake and transition effects</div></div>
+      <div class="switch on" id="toggleAnim"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Coordinates</div><div class="sub">Show board file and rank labels</div></div>
+      <div class="switch on" id="toggleCoords"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Flip Board Automatically</div><div class="sub">Always face the side you're training</div></div>
+      <div class="switch" id="toggleAutoFlip"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Auto-Advance</div><div class="sub">Keep the reps coming — no tapping required</div></div>
       <div class="switch" id="toggleAutoAdvance"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Piece Style</div></div>
+      <select class="select-pill" id="selPieceStyle">
+        <option value="wikipedia">Classic</option>
+        <option value="alpha">Alpha</option>
+        <option value="merida">Merida</option>
+      </select>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Board Color</div></div>
+      <div class="color-row" id="boardColorRow">
+        <div class="color-dot" data-c="brown" style="background:#b58863;"></div>
+        <div class="color-dot" data-c="green" style="background:#779556;"></div>
+        <div class="color-dot" data-c="blue" style="background:#4b6f9e;"></div>
+        <div class="color-dot" data-c="gray" style="background:#6e6e6e;"></div>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- =========================================================
-     NAVIGATION DOCK
+     ABOUT SCREEN
      ========================================================= -->
-<nav class="dock-container">
-  <button class="dock-item active" data-screen="home">Matrix</button>
-  <button class="dock-item" data-screen="stats">Metrics</button>
-  <button class="dock-item" data-screen="settings">Specs</button>
+<section id="screen-about" class="screen">
+  <div class="simple-screen">
+    <div class="topbar" style="padding:2px 0 4px;"><h2>About</h2></div>
+    <div class="about-card glass">
+      <h3>Welcome to the Knight's Academy</h3>
+      <p>Ask any player which piece they fell in love with first, and most will say the <strong>knight</strong>. It jumps where nothing else can, threatens two pieces at once, and turns "impossible" positions into forced wins. Beginners light up the moment they spot their first fork. Grandmasters still smile at a well-placed outpost. This is where that love affair becomes a skill.</p>
+      <p>Chess strength is built from pattern recognition, not memorization. Every puzzle here isolates one knight idea — a fork, an outpost, a mating net like <strong>Anastasia's</strong> or the <strong>Arabian</strong> — so your brain can drill it until it's instinct. Short reps, tight feedback, real progress. That's deliberate practice, knight-style.</p>
+      <p>Train a little every day and you won't just get better at chess — you'll start seeing the whole board differently. Welcome to your knight era.</p>
+      <p>Keyboard shortcuts: <strong>←</strong> / <strong>→</strong> step through moves, <strong>H</strong> for a clue, <strong>N</strong> for the next puzzle.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     BOTTOM NAVIGATION
+     ========================================================= -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-screen="home"><span class="ic">♞</span>Home</button>
+  <button class="nav-btn" data-screen="stats"><span class="ic">📊</span>Stats</button>
+  <button class="nav-btn" data-screen="settings"><span class="ic">⚙️</span>Settings</button>
+  <button class="nav-btn" data-screen="about"><span class="ic">ℹ️</span>About</button>
 </nav>
 
 <div class="toast" id="toast"></div>
 
-<!-- ============================================================
-     APPLICATION CORE LOGIC IMPLEMENTATION
-     ============================================================ -->
 <script>
 'use strict';
 
+/* ============================================================
+   CONFIGURATION
+   ============================================================ */
 const CONFIG = {
   REPO_BASE: 'https://raw.githubusercontent.com/andrewveda/knight-trainer/main/data',
   CACHE_LIMIT: 30,
-  AUTO_MOVE_DELAY: 400,
-  AUTO_ADVANCE_DELAY: 1200,
+  AUTO_MOVE_DELAY: 480,
+  AUTO_ADVANCE_DELAY: 1400,
   STOCKFISH_URL: 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js',
-  ENGINE_DEPTH: 13
+  ENGINE_DEPTH: 14,
 };
 
+const IS_TOUCH_DEVICE = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
+
+/* ============================================================
+   STATE
+   ============================================================ */
 const state = {
   cache: new Map(),
   themesMeta: null,
@@ -809,386 +869,1119 @@ const state = {
   currentPuzzle: null,
   chess: null,
   board: null,
+  boardResizeWired: false,
   solving: false,
   moveCursor: 0,
   fenHistory: [],
   sanHistory: [],
   viewIndex: 0,
   boardOrientation: 'white',
+  puzzleStartTime: null,
   sessionSolved: 0,
-  settings: loadJSON('knt_settings_v2', { theme:'dark', sound:true, autoAdvance:false }),
-  stats: loadJSON('knt_stats_v2', { totalSolved:0, totalAttempts:0, correctFirstTry:0, currentStreak:0, bestStreak:0, ratingSum:0, ratingCount:0 }),
-  favorites: loadJSON('knt_favorites_v2', []),
-  recents: loadJSON('knt_recents_v2', []),
+  settings: loadSettings(),
+  stats: loadStats(),
+  favorites: loadJSON('knt_favorites', []),
+  recents: loadJSON('knt_recents', []),
   selectedSquare: null,
+  legalTargets: [],
   sf: null,
   sfMode: null,
   sfBestLine: {},
-  analysisMode: false
+  analysisMode: false,
 };
 
-function loadJSON(key, fallback){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):fallback; }catch(e){return fallback;} }
-function saveJSON(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+/* ============================================================
+   STORAGE HELPERS
+   ============================================================ */
+function loadJSON(key, fallback){
+  try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch(e){ return fallback; }
+}
+function saveJSON(key, val){
+  try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+}
+function loadSettings(){
+  return loadJSON('knt_settings', {
+    theme:'dark', sound:true, animations:true, coordinates:true,
+    autoFlip:false, autoAdvance:false, pieceStyle:'wikipedia', boardColor:'brown'
+  });
+}
+function saveSettings(){ saveJSON('knt_settings', state.settings); }
 
-/* Architecture Sync Engine */
-async function fetchSystem(url) {
+function loadStats(){
+  return loadJSON('knt_stats', {
+    totalSolved:0, totalAttempts:0, correctFirstTry:0,
+    currentStreak:0, bestStreak:0, ratingSum:0, ratingCount:0,
+    totalTimeMs:0, dailyDate:null, dailyCount:0
+  });
+}
+function saveStats(){ saveJSON('knt_stats', state.stats); }
+
+/* ============================================================
+   NETWORKING & THEME PROCESSING
+   ============================================================ */
+async function fetchJSONCached(url){
   if(state.cache.has(url)) return state.cache.get(url);
   const res = await fetch(url);
-  if(!res.ok) throw new Error('Data drop fail.');
+  if(!res.ok) throw new Error('Failed to fetch ' + url + ' (' + res.status + ')');
   const data = await res.json();
+  if(state.cache.size >= CONFIG.CACHE_LIMIT){
+    const oldestKey = state.cache.keys().next().value;
+    state.cache.delete(oldestKey);
+  }
   state.cache.set(url, data);
   return data;
 }
 
 async function loadMasterThemes() {
   try {
-    state.themesMeta = await fetchSystem(`${CONFIG.REPO_BASE}/index.json`);
+    state.themesMeta = await fetchJSONCached(`${CONFIG.REPO_BASE}/index.json`);
     renderThemeGrid();
-  } catch(e) {
-    document.getElementById('themeGrid').innerHTML = `<div class="status-text wrong">System Alignment Deficit.</div>`;
+  } catch (e) {
+    document.getElementById('themeGrid').innerHTML = `<div class="status-bar wrong">Failed to sync tactical indices.</div>`;
   }
 }
 
+async function getPuzzlePayload(theme, difficulty) {
+  const url = `${CONFIG.REPO_BASE}/${theme}/${difficulty}.json`;
+  const puzzles = await fetchJSONCached(url);
+  const arr = Array.isArray(puzzles) ? puzzles : [];
+  if (!arr.length) throw new Error('No puzzles found in ' + theme + '/' + difficulty);
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+/* ============================================================
+   UCI MOVE PARSING
+   ============================================================ */
+function parseUCI(uci){
+  return {
+    from: uci.slice(0,2),
+    to: uci.slice(2,4),
+    promotion: uci.length > 4 ? uci.slice(4) : 'q'
+  };
+}
+
+/* ============================================================
+   AUDIO ARCHITECTURE
+   ============================================================ */
+let audioCtx = null;
+function beep(freq, duration, type='sine'){
+  if(!state.settings.sound) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + duration);
+  }catch(e){}
+}
+const sfx = {
+  move: ()=>beep(450,0.08),
+  correct: ()=>beep(680,0.18),
+  wrong: ()=>beep(150,0.25,'square'),
+  success: ()=>{beep(523,0.12);setTimeout(()=>beep(659,0.12),120);setTimeout(()=>beep(784,0.22),240);}
+};
+
+/* ============================================================
+   TOAST NOTIFICATION ENGINE
+   ============================================================ */
+let toastTimer = null;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 1800);
+}
+
+/* ============================================================
+   SCREEN CONTROL & VIEW SWAPPING
+   ============================================================ */
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.screen === name);
+  });
+  if(name === 'stats') renderStats();
+  if(name === 'trainer' && state.board) setTimeout(()=>state.board.resize(), 50);
+}
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>showScreen(btn.dataset.screen));
+});
+document.getElementById('trainerBack').addEventListener('click', ()=>{
+  if(state.sf) state.sf.postMessage('stop');
+  clearTimeout(liveAnalysisTimer);
+  showScreen('home');
+});
+
+/* ============================================================
+   UI COMPONENT RENDERING (HOME SCREEN)
+   ============================================================ */
 function renderThemeGrid(filterText = '') {
   const grid = document.getElementById('themeGrid');
-  if(!state.themesMeta) return;
-  grid.innerHTML = '';
-  const query = filterText.toLowerCase().trim();
+  if (!state.themesMeta) return;
   
-  let layoutIdx = 0;
+  grid.innerHTML = '';
+  const search = filterText.toLowerCase().trim();
+  
   Object.keys(state.themesMeta).forEach(key => {
-    if(query && !key.toLowerCase().includes(query)) return;
+    if (search && !key.toLowerCase().includes(search)) return;
+    
     const diffs = state.themesMeta[key];
-    if(((diffs.easy||0)+(diffs.medium||0)+(diffs.hard||0)) === 0) return;
+    const totalCount = (diffs.easy || 0) + (diffs.medium || 0) + (diffs.hard || 0);
+    if (totalCount === 0) return;
     
     const card = document.createElement('div');
-    // Alternates custom pastel visual frames seamlessly
-    card.className = `editorial-card pastel-${layoutIdx % 3}${state.currentTheme === key ? ' selected' : ''}`;
-    const name = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+    card.className = 'theme-card glass' + (state.currentTheme === key ? ' selected' : '');
     
+    // Formatting matching TitleCase conventions
+    const formattedName = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+    const specificCount = diffs[state.currentDifficulty] || 0;
+
     card.innerHTML = `
-      <div class="card-title">${name}</div>
-      <div class="card-metric">${diffs[state.currentDifficulty] || 0} Modules Available</div>
+      <div class="tname">${formattedName}</div>
+      <div class="tcount">${specificCount.toLocaleString()} Puzzles (${state.currentDifficulty})</div>
     `;
     
-    card.addEventListener('click', () => {
+    card.addEventListener('click', (e) => { 
+      ripple(card, e); 
       state.currentTheme = key;
-      startTraining(key, state.currentDifficulty);
+      document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      startTraining(key, state.currentDifficulty); 
     });
     grid.appendChild(card);
-    layoutIdx++;
+  });
+  
+  if (grid.children.length === 0) {
+    grid.innerHTML = `<div class="status-bar info" style="grid-column: 1/-1;">No matching tactical patterns found.</div>`;
+  }
+}
+
+function ripple(el, evt){
+  if(!state.settings.animations) return;
+  const r = document.createElement('span');
+  r.className = 'ripple';
+  const rect = el.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  r.style.width = r.style.height = size + 'px';
+  r.style.left = (evt.clientX - rect.left - size/2) + 'px';
+  r.style.top = (evt.clientY - rect.top - size/2) + 'px';
+  el.appendChild(r);
+  setTimeout(()=>r.remove(), 650);
+}
+
+// Wire configuration event listeners
+document.querySelectorAll('#difficultyRow .chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('#difficultyRow .chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    state.currentDifficulty = chip.dataset.diff;
+    renderThemeGrid(document.getElementById('themeSearch').value);
+  });
+});
+
+document.getElementById('themeSearch').addEventListener('input', (e) => {
+  renderThemeGrid(e.target.value);
+});
+
+document.getElementById('chipRandom').addEventListener('click', ()=>{
+  if(!state.themesMeta) return;
+  const keys = Object.keys(state.themesMeta);
+  const randomKey = keys[Math.floor(Math.random() * keys.length)];
+  startTraining(randomKey, state.currentDifficulty);
+});
+
+document.getElementById('chipFav').addEventListener('click', ()=>{
+  if(!state.favorites.length){ toast('No favorites saved yet — tap the star on a puzzle you love.'); return; }
+  const fav = state.favorites[Math.floor(Math.random()*state.favorites.length)];
+  startTraining(fav.theme, fav.difficulty, fav.puzzle);
+});
+
+document.getElementById('chipRecent').addEventListener('click', ()=>{
+  if(!state.recents.length){ toast('No recent puzzles yet — go solve one!'); return; }
+  const r = state.recents[0];
+  startTraining(r.theme, r.difficulty, r.puzzle);
+});
+
+/* ============================================================
+   CHESSBOARD MANAGEMENT ENGINE
+   ============================================================ */
+function initBoardIfNeeded(){
+  if(state.board) return;
+  state.board = Chessboard('board', {
+    draggable: !IS_TOUCH_DEVICE,
+    position: 'start',
+    pieceTheme: pieceThemeUrl,
+    showNotation: state.settings.coordinates,
+    onDragStart, onDrop, onSnapEnd
+  });
+  if(!state.boardResizeWired){
+    window.addEventListener('resize', ()=>state.board && state.board.resize());
+    state.boardResizeWired = true;
+  }
+
+  const $boardEl = $('#board');
+
+  $boardEl.off('click.cpt').on('click.cpt', '[data-square]', function(e) {
+    const square = $(this).attr('data-square');
+    if (square) onBoardSquareClick(square);
+  });
+
+  // Block the native long-press "save/copy image" context menu on piece
+  // images and the board itself (this is what was popping up an
+  // Android/iOS "Download image" sheet on long-press).
+  $boardEl.off('contextmenu.cpt').on('contextmenu.cpt', function(e){
+    e.preventDefault();
+    return false;
+  });
+
+  // Belt-and-braces: also stop the native dragstart on the <img> pieces so
+  // the browser never starts its own image-drag gesture, which is what
+  // triggers the long-press callout on some mobile browsers.
+  $boardEl.off('dragstart.cpt').on('dragstart.cpt', 'img', function(e){
+    e.preventDefault();
+    return false;
   });
 }
 
-async function startTraining(themeKey, diff) {
-  showScreen('trainer');
-  if(!state.board) {
-    state.board = Chessboard('board', {
-      draggable: true,
-      position: 'start',
-      showNotation: false,
-      pieceTheme: p => `https://chessboardjs.com/img/chesspieces/wikipedia/${p}.png`,
-      onDragStart: (s) => { if(!state.analysisMode && state.viewIndex !== state.fenHistory.length-1) return false; return true; },
-      onDrop: (s, t) => {
-        const out = state.analysisMode ? attemptFreeMove(s,t) : attemptSolvingMove(s,t);
-        return out === 'accepted' ? undefined : 'snapback';
-      }
-    });
-    window.addEventListener('resize', () => state.board && state.board.resize());
-    
-    // Completely unbind unwanted browser long-press image callouts on mobile touch screens
-    $('#board').on('contextmenu dragstart', e => { e.preventDefault(); return false; });
-  }
-  
-  try {
-    const arr = await fetchSystem(`${CONFIG.REPO_BASE}/${themeKey}/${diff}.json`);
-    const puzzle = arr[Math.floor(Math.random() * arr.length)];
-    loadPuzzle(themeKey, diff, puzzle);
-  } catch(e) { toast('Operational array drop error.'); }
+function rebuildBoard(){
+  if(state.board && state.board.destroy) state.board.destroy();
+  state.board = null;
+  initBoardIfNeeded();
+  refreshBoardPosition(false);
 }
 
-function loadPuzzle(themeKey, diff, puzzle) {
+function pieceThemeUrl(piece){
+  const style = state.settings.pieceStyle || 'wikipedia';
+  return `https://chessboardjs.com/img/chesspieces/${style}/${piece}.png`;
+}
+
+async function startTraining(themeKey, difficulty, presetPuzzle){
+  showScreen('trainer');
+  initBoardIfNeeded();
+  state.currentTheme = themeKey;
+  state.currentDifficulty = difficulty;
+  
+  const titleDisplay = themeKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+  document.getElementById('trainerTitle').textContent = titleDisplay + ' Drill';
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+  setDragEnabled(false);
+  
+  try{
+    const puzzle = presetPuzzle || await getPuzzlePayload(themeKey, difficulty);
+    loadPuzzle(themeKey, difficulty, puzzle);
+  }catch(err){
+    toast('Couldn\'t load that puzzle — check your connection and try again.');
+    console.error(err);
+  }finally{
+    document.getElementById('loadingOverlay').classList.add('hidden');
+  }
+}
+
+function loadPuzzle(themeKey, difficulty, puzzle){
+  state.currentTheme = themeKey;
+  state.currentDifficulty = difficulty;
   state.currentPuzzle = puzzle;
-  state.chess = new Chess(puzzle.f);
+  state.chess = new Chess(puzzle.f); // 'f' maps directly to initial FEN state
+  state.moveCursor = 0;
   state.fenHistory = [puzzle.f];
   state.sanHistory = [];
   state.viewIndex = 0;
-  state.moveCursor = 0;
-  state.analysisMode = false;
-  document.getElementById('toggleAnalysis').classList.remove('on');
-  
-  state.boardOrientation = state.chess.turn() === 'w' ? 'black' : 'white';
+  state.solving = false;
+  state.puzzleStartTime = Date.now();
+  setDragEnabled(false);
+  clearHighlights();
+  state.sfBestLine = {};
+  renderEnginePanel();
+
+  const sideToSolve = state.chess.turn() === 'w' ? 'black' : 'white';
+  state.boardOrientation = state.settings.autoFlip ? sideToSolve : 'white';
   state.board.orientation(state.boardOrientation);
   state.board.position(puzzle.f, false);
-  applyBoardColor();
-  clearArrows();
+
+  renderPuzzleInfo(themeKey, difficulty, puzzle);
+  renderMoveList();
+  updateFavoriteButton();
+  updateNavButtons();
+  updateMoveDisplay();
   
-  document.getElementById('infoPiece').textContent = themeKey.replace(/([A-Z])/g, ' $1');
-  document.getElementById('infoDifficulty').textContent = diff.toUpperCase();
-  document.getElementById('infoRating').textContent = puzzle.r || '—';
-  document.getElementById('infoId').textContent = puzzle.id || '—';
-  
-  setTimeout(() => {
-    const mvs = puzzle.m.split(' ');
-    executeUciMove(mvs[0]);
+  // Opponent setup instruction execution context
+  setTimeout(()=>{
+    if(state.currentPuzzle !== puzzle) return;
+    const puzzleMoves = puzzle.m.split(' '); // 'm' splits to standard notation sequence arrays
+    applyMoveToBoard(puzzleMoves[0], true);
     state.moveCursor = 1;
     state.solving = true;
-    updateTelemetry();
-    toast('Operational opening committed. Resolve line.');
-  }, 500);
+    setDragEnabled(true);
+    toast('Your move, Knight Trainer — find the winning shot.');
+  }, 600);
 }
 
-function executeUciMove(uci) {
-  const moveObj = { from: uci.slice(0,2), to: uci.slice(2,4), promotion: 'q' };
-  const res = state.chess.move(moveObj);
-  if(res) {
-    state.fenHistory.push(state.chess.fen());
-    state.sanHistory.push(res.san);
+function renderPuzzleInfo(themeKey, difficulty, puzzle){
+  const formatted = themeKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+  document.getElementById('infoPiece').textContent = formatted;
+  document.getElementById('infoDifficulty').textContent = capitalize(difficulty);
+  document.getElementById('infoRating').textContent = puzzle.r ?? '—'; // 'r' maps to standard ELO ranking metrics
+  document.getElementById('infoId').textContent = puzzle.id ?? '—';
+  document.getElementById('infoSession').textContent = state.sessionSolved;
+}
+
+function updateMoveCounter(){
+  if (!state.currentPuzzle) return;
+  const puzzleMoves = state.currentPuzzle.m.split(' ');
+  const total = puzzleMoves.length;
+  document.getElementById('infoMoveCount').textContent = `${Math.min(state.moveCursor, total)} / ${total}`;
+}
+
+function applyMoveToBoard(uci, showOnBoard){
+  const mv = parseUCI(uci);
+  const result = state.chess.move(mv);
+  if(!result) return null;
+  state.fenHistory.push(state.chess.fen());
+  state.sanHistory.push(result.san);
+  const wasAtLatest = state.viewIndex === state.fenHistory.length - 2;
+  if(wasAtLatest){
     state.viewIndex = state.fenHistory.length - 1;
-    state.board.position(state.chess.fen());
+    if(showOnBoard !== false) state.board.position(state.chess.fen());
+  }
+  sfx.move();
+  renderMoveList();
+  updateMoveCounter();
+  updateNavButtons();
+  updateMoveDisplay();
+  return result;
+}
+
+function updateMoveDisplay(flashClass){
+  clearBoardArrows();
+  const el = document.getElementById('statusBar');
+  if(!state.chess || !state.fenHistory.length){
+    el.textContent = 'Choose a puzzle to start training';
+    el.className = 'status-bar info';
+    return;
+  }
+  scheduleLiveAnalysis();
+  const idx = state.viewIndex;
+  if(idx <= 0){
+    el.textContent = 'Starting Position';
+    el.className = 'status-bar info';
+    return;
+  }
+  const san = state.sanHistory[idx - 1];
+  if(!san){ el.textContent = 'Starting Position'; el.className = 'status-bar info'; return; }
+  const moveNum = Math.ceil(idx / 2);
+  const isWhiteMove = idx % 2 === 1;
+  el.textContent = moveNum + (isWhiteMove ? '. ' : '… ') + san;
+  el.className = 'status-bar' + (flashClass ? ' ' + flashClass : '');
+  if(flashClass){
+    setTimeout(()=>{ if(el.textContent) el.className = 'status-bar'; }, 900);
   }
 }
 
-function attemptSolvingMove(source, target) {
-  if(!state.solving) return 'rejected';
-  const mvs = state.currentPuzzle.m.split(' ');
-  const expected = mvs[state.moveCursor];
-  if(!expected) return 'rejected';
-  
-  if(source !== expected.slice(0,2) || target !== expected.slice(2,4)) {
-    state.stats.totalAttempts++;
-    saveJSON('knt_stats_v2', state.stats);
-    document.getElementById('statusBar').textContent = "Suboptimal Trajectory";
-    document.getElementById('statusBar').className = "status-text wrong";
+function setDragEnabled(enabled){
+  state.dragEnabled = enabled;
+}
+
+/* ============================================================
+   TARGET SELECTION & INTERACTION VALIDATION
+   ============================================================ */
+function squareEl(square) {
+  return document.querySelector(`#board [data-square="${square}"]`);
+}
+function clearHighlights(){
+  document.querySelectorAll('#board .sq-legal, #board .sq-legal-capture, #board .sq-selected')
+    .forEach(el=>el.classList.remove('sq-legal','sq-legal-capture','sq-selected'));
+  state.selectedSquare = null;
+  state.legalTargets = [];
+}
+function viewChess(){
+  const fen = state.fenHistory[state.viewIndex];
+  return fen ? new Chess(fen) : new Chess();
+}
+function highlightLegalMoves(square){
+  clearHighlights();
+  const moves = viewChess().moves({square, verbose:true});
+  if(!moves.length) return;
+  state.selectedSquare = square;
+  state.legalTargets = moves.map(m=>m.to);
+  const originEl = squareEl(square);
+  if(originEl) originEl.classList.add('sq-selected');
+  moves.forEach(m=>{
+    const el = squareEl(m.to);
+    if(el) el.classList.add(m.captured ? 'sq-legal-capture' : 'sq-legal');
+  });
+}
+function canSelect(square){
+  if(!state.fenHistory.length || !state.dragEnabled) return false;
+  if(state.analysisMode){
+    // Allow variable selection across active analysis configurations
+  }else{
+    if(state.viewIndex !== state.fenHistory.length - 1) return false;
+    if(!(state.solving && state.currentPuzzle)) return false;
+  }
+  const vc = viewChess();
+  if(vc.game_over()) return false;
+  const piece = vc.get(square);
+  if(!piece) return false;
+  return (vc.turn() === 'w') === (piece.color === 'w');
+}
+function onBoardSquareClick(square){
+  if(!state.fenHistory.length || !state.dragEnabled) return;
+
+  if(!state.analysisMode){
+    if(state.viewIndex !== state.fenHistory.length - 1) return;
+    if(!(state.solving && state.currentPuzzle)) return;
+  }
+
+  if (canSelect(square) && square !== state.selectedSquare) {
+    highlightLegalMoves(square);
+    return;
+  }
+
+  if(state.selectedSquare){
+    if(square === state.selectedSquare){
+      clearHighlights();
+      return;
+    }
+
+    const outcome = state.analysisMode
+      ? attemptFreeMove(state.selectedSquare, square)
+      : attemptSolvingMove(state.selectedSquare, square);
+
+    clearHighlights();
+    if(outcome === 'accepted'){
+      state.board.position(state.chess.fen());
+    }
+    return;
+  }
+
+  if(canSelect(square)){
+    highlightLegalMoves(square);
+  }
+}
+
+function attemptSolvingMove(source, target){
+  if(!state.dragEnabled || !state.solving) return 'rejected';
+  const puzzleMoves = state.currentPuzzle.m.split(' ');
+  if(!state.currentPuzzle || state.moveCursor >= puzzleMoves.length) return 'rejected';
+
+  const expected = parseUCI(puzzleMoves[state.moveCursor]);
+  const legalMoves = state.chess.moves({verbose:true});
+  const isLegal = legalMoves.some(m=>m.from===source && m.to===target);
+  if(!isLegal) return 'rejected';
+
+  if(source !== expected.from || target !== expected.to){
+    registerAttempt(false);
+    flashSquare(target, 'sq-wrong');
+    sfx.wrong();
+    toast('Good try, but not the sharpest move — look again.');
     return 'rejected';
   }
-  
-  executeUciMove(expected);
-  state.stats.totalAttempts++;
-  state.stats.correctFirstTry++;
-  state.moveCursor++;
-  
-  document.getElementById('statusBar').textContent = "Trajectory Confirmed";
-  document.getElementById('statusBar').className = "status-text correct";
-  
-  if(state.moveCursor >= mvs.length) {
-    state.solving = false;
-    state.stats.totalSolved++;
-    saveJSON('knt_stats_v2', state.stats);
-    toast('Matrix Resolved successfully.');
-    if(state.settings.autoAdvance) {
-      setTimeout(() => startTraining(state.currentTheme, state.currentDifficulty), CONFIG.AUTO_ADVANCE_DELAY);
-    }
-  } else {
-    setTimeout(() => {
-      executeUciMove(mvs[state.moveCursor]);
-      state.moveCursor++;
-      updateTelemetry();
-    }, CONFIG.AUTO_MOVE_DELAY);
+
+  const isPromotion = (state.chess.get(source)||{}).type === 'p' && (target[1] === '8' || target[1] === '1');
+  let promotionPiece = expected.promotion || 'q';
+  if(isPromotion && expected.promotion === 'q'){
+    const choice = window.prompt('Promote to — Queen(q), Rook(r), Bishop(b), or Knight(n)?', 'q');
+    if(choice && /^[qrbn]$/i.test(choice.trim())) promotionPiece = choice.trim().toLowerCase();
   }
-  
-  updateTelemetry();
+
+  const moveObj = { from: source, to: target, promotion: promotionPiece };
+  const result = state.chess.move(moveObj);
+  if(!result) return 'rejected';
+
+  state.fenHistory.push(state.chess.fen());
+  state.sanHistory.push(result.san);
+  state.viewIndex = state.fenHistory.length - 1;
+
+  flashSquare(target, 'sq-correct');
+  sfx.correct();
+  registerAttempt(true);
+  state.moveCursor++;
+  state.solving = false;
+  setDragEnabled(false);
+  toast('That\'s the move! 🐴');
+  updateMoveDisplay('correct');
+  renderMoveList();
+  updateMoveCounter();
+  updateNavButtons();
+
+  if(state.moveCursor >= puzzleMoves.length){
+    finishPuzzle();
+  }else{
+    setTimeout(playNextAutoMove, CONFIG.AUTO_MOVE_DELAY);
+  }
   return 'accepted';
 }
 
-function attemptFreeMove(source, target) {
-  const tc = new Chess(state.fenHistory[state.viewIndex]);
-  const res = tc.move({ from: source, to: target, promotion: 'q' });
-  if(!res) return 'rejected';
-  
+function attemptFreeMove(source, target){
+  const vc = viewChess();
+  if(vc.game_over()) return 'rejected';
+  const legalMoves = vc.moves({verbose:true});
+  const isLegal = legalMoves.some(m=>m.from===source && m.to===target);
+  if(!isLegal) return 'rejected';
+
+  const isPromotion = (vc.get(source)||{}).type === 'p' && (target[1] === '8' || target[1] === '1');
+  let promotionPiece = 'q';
+  if(isPromotion){
+    const choice = window.prompt('Promote to — Queen(q), Rook(r), Bishop(b), or Knight(n)?', 'q');
+    if(choice && /^[qrbn]$/i.test(choice.trim())) promotionPiece = choice.trim().toLowerCase();
+  }
+
+  const result = vc.move({ from: source, to: target, promotion: promotionPiece });
+  if(!result) return 'rejected';
+
   state.fenHistory = state.fenHistory.slice(0, state.viewIndex + 1);
   state.sanHistory = state.sanHistory.slice(0, state.viewIndex);
-  state.fenHistory.push(tc.fen());
-  state.sanHistory.push(res.san);
+  state.fenHistory.push(vc.fen());
+  state.sanHistory.push(result.san);
   state.viewIndex = state.fenHistory.length - 1;
-  state.board.position(tc.fen());
-  updateTelemetry();
+  state.chess = vc;
+  state.solving = false;
+
+  flashSquare(target, 'sq-correct');
+  sfx.move();
+  renderMoveList();
+  updateMoveCounter();
+  updateNavButtons();
+  updateMoveDisplay();
   return 'accepted';
 }
 
-function updateTelemetry() {
-  const mvs = state.currentPuzzle ? state.currentPuzzle.m.split(' ') : [];
-  document.getElementById('infoMoveCount').textContent = `${state.moveCursor} / ${mvs.length}`;
-  
+function onDragStart(source, piece){
+  if(!canSelect(source)) return false;
+  highlightLegalMoves(source);
+  return true;
+}
+
+function onDrop(source, target){
+  clearHighlights();
+  const outcome = state.analysisMode ? attemptFreeMove(source, target) : attemptSolvingMove(source, target);
+  return outcome === 'accepted' ? undefined : 'snapback';
+}
+function onSnapEnd(){
+  const fen = state.fenHistory[state.viewIndex] || (state.chess && state.chess.fen());
+  if(fen) state.board.position(fen, false);
+}
+
+function playNextAutoMove(){
+  const puzzleMoves = state.currentPuzzle.m.split(' ');
+  if(!state.currentPuzzle || state.moveCursor >= puzzleMoves.length) return;
+  clearHighlights();
+  applyMoveToBoard(puzzleMoves[state.moveCursor]);
+  state.moveCursor++;
+  updateMoveCounter();
+  if(state.moveCursor >= puzzleMoves.length){
+    finishPuzzle();
+  }else{
+    state.solving = true;
+    setDragEnabled(true);
+    updateMoveDisplay();
+  }
+}
+
+function flashSquare(square, cls){
+  if(!state.settings.animations) return;
+  const sq = document.querySelector(`#board .square-${square}`);
+  if(!sq) return;
+  sq.classList.add(cls);
+  setTimeout(()=>sq.classList.remove(cls), 500);
+}
+
+function finishPuzzle(){
+  toast('Combination cracked! 🎉');
+  updateMoveDisplay('correct');
+  sfx.success();
+  setDragEnabled(false);
+  clearHighlights();
+  const elapsed = Date.now() - state.puzzleStartTime;
+  recordSolve(state.currentTheme, state.currentPuzzle.r, elapsed);
+  addToRecents(state.currentTheme, state.currentDifficulty, state.currentPuzzle);
+  state.sessionSolved++;
+  document.getElementById('infoSession').textContent = state.sessionSolved;
+  if(state.settings.autoAdvance){
+    setTimeout(()=>{ if(state.currentTheme) startTraining(state.currentTheme, state.currentDifficulty); }, CONFIG.AUTO_ADVANCE_DELAY);
+  }
+}
+
+/* ============================================================
+   STATS STORAGE & RETRIEVAL ENGINE
+   ============================================================ */
+function registerAttempt(correct){
+  state.stats.totalAttempts++;
+  if(correct) state.stats.correctFirstTry++;
+  saveStats();
+}
+function recordSolve(theme, rating, elapsedMs){
+  const s = state.stats;
+  s.totalSolved++;
+  s.currentStreak++;
+  s.bestStreak = Math.max(s.bestStreak, s.currentStreak);
+  if(typeof rating === 'number'){ s.ratingSum += rating; s.ratingCount++; }
+  s.totalTimeMs += elapsedMs;
+  const today = new Date().toISOString().slice(0,10);
+  if(s.dailyDate !== today){ s.dailyDate = today; s.dailyCount = 0; }
+  s.dailyCount++;
+  saveStats();
+}
+function breakStreak(){
+  state.stats.currentStreak = 0;
+  saveStats();
+}
+function addToRecents(theme, difficulty, puzzle){
+  state.recents = state.recents.filter(r=>r.puzzle.id !== puzzle.id);
+  state.recents.unshift({ theme, difficulty, puzzle });
+  state.recents = state.recents.slice(0, 20);
+  saveJSON('knt_recents', state.recents);
+}
+
+/* ============================================================
+   HISTORICAL CONFIGURATION REVIEW
+   ============================================================ */
+function renderMoveList(){
+  const el = document.getElementById('moveList');
+  const history = state.sanHistory || [];
+  if(!history.length){ el.textContent = '—'; return; }
+  el.innerHTML = '';
+  history.forEach((san, i)=>{
+    if(i % 2 === 0){
+      const num = document.createElement('span');
+      num.className = 'mnum';
+      num.textContent = (Math.floor(i/2)+1) + '.';
+      el.appendChild(num);
+    }
+    const mv = document.createElement('span');
+    mv.className = 'mv' + (i + 1 === state.viewIndex ? ' current' : '');
+    mv.textContent = san;
+    mv.dataset.idx = i + 1;
+    mv.addEventListener('click', ()=>jumpToFenIndex(i+1));
+    el.appendChild(mv);
+  });
+}
+
+function jumpToFenIndex(idx){
+  if(!state.fenHistory.length) return;
+  idx = Math.max(0, Math.min(idx, state.fenHistory.length - 1));
+  state.viewIndex = idx;
+  clearHighlights();
+  state.board.position(state.fenHistory[idx], false);
+  renderMoveList();
+  updateNavButtons();
+  updateMoveDisplay();
+  setDragEnabled(state.analysisMode || (idx === state.fenHistory.length - 1 && state.solving));
+}
+
+function updateNavButtons(){
   const atStart = state.viewIndex <= 0;
-  const atLatest = state.viewIndex >= state.fenHistory.length - 1;
+  const atLatest = !state.fenHistory.length || state.viewIndex >= state.fenHistory.length - 1;
   document.getElementById('btnFirst').disabled = atStart;
   document.getElementById('btnPrev').disabled = atStart;
   document.getElementById('btnNextMove').disabled = atLatest;
   document.getElementById('btnLast').disabled = atLatest;
-  
-  if(state.analysisMode) scheduleEngine();
+  document.getElementById('btnReset').disabled = !state.currentPuzzle;
 }
 
-function jumpToIndex(idx) {
-  if(!state.fenHistory[idx]) return;
-  state.viewIndex = idx;
-  state.board.position(state.fenHistory[idx], false);
-  updateTelemetry();
-}
+document.getElementById('btnFirst').addEventListener('click', ()=>jumpToFenIndex(0));
+document.getElementById('btnPrev').addEventListener('click', ()=>jumpToFenIndex(state.viewIndex - 1));
+document.getElementById('btnNextMove').addEventListener('click', ()=>jumpToFenIndex(state.viewIndex + 1));
+document.getElementById('btnLast').addEventListener('click', ()=>jumpToFenIndex(state.fenHistory.length - 1));
 
-document.getElementById('btnFirst').addEventListener('click', () => jumpToIndex(0));
-document.getElementById('btnPrev').addEventListener('click', () => jumpToIndex(state.viewIndex - 1));
-document.getElementById('btnNextMove').addEventListener('click', () => jumpToIndex(state.viewIndex + 1));
-document.getElementById('btnLast').addEventListener('click', () => jumpToIndex(state.fenHistory.length - 1));
-document.getElementById('btnReset').addEventListener('click', () => { if(state.currentPuzzle) loadPuzzle(state.currentTheme, state.currentDifficulty, state.currentPuzzle); });
-
-document.getElementById('btnHint').addEventListener('click', () => {
-  if(!state.solving) return;
-  const expected = state.currentPuzzle.m.split(' ')[state.moveCursor];
-  const fromSq = expected.slice(0,2);
-  $(`#board .square-${fromSq}`).css('box-shadow', 'inset 0 0 0 9999px rgba(197, 160, 89, 0.6)');
-  setTimeout(() => $(`#board .square-${fromSq}`).css('box-shadow', ''), 800);
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  if(!state.currentPuzzle) return;
+  toast('Puzzle reset — go again.');
+  loadPuzzle(state.currentTheme, state.currentDifficulty, state.currentPuzzle);
 });
 
-document.getElementById('btnSolution').addEventListener('click', () => {
+/* ============================================================
+   INTERFACE COMMAND BINDINGS
+   ============================================================ */
+document.getElementById('btnHint').addEventListener('click', ()=>{
+  if(!state.solving || !state.currentPuzzle) return toast('Pick a puzzle first — then I\'ll show you the way.');
+  if(state.viewIndex !== state.fenHistory.length - 1){ toast('Jump back to the current position first.'); return; }
+  const puzzleMoves = state.currentPuzzle.m.split(' ');
+  const expected = parseUCI(puzzleMoves[state.moveCursor]);
+  clearHighlights();
+  flashSquare(expected.from, 'sq-hint');
+});
+
+document.getElementById('btnSolution').addEventListener('click', ()=>{
   if(!state.currentPuzzle) return;
   state.solving = false;
-  const mvs = state.currentPuzzle.m.split(' ');
-  const run = () => {
-    if(state.moveCursor >= mvs.length) return;
-    executeUciMove(mvs[state.moveCursor]);
-    state.moveCursor++;
-    updateTelemetry();
-    setTimeout(run, CONFIG.AUTO_MOVE_DELAY);
-  };
-  run();
+  setDragEnabled(false);
+  clearHighlights();
+  breakStreak();
+  jumpToFenIndex(state.fenHistory.length - 1);
+  playOutSolutionFromCursor();
 });
 
-/* Interface Space Framework Switches */
-function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
-  document.querySelectorAll('.dock-item').forEach(b => b.classList.toggle('active', b.dataset.screen === name));
-  if(name === 'stats') {
-    const s = state.stats;
-    document.getElementById('stTotal').textContent = s.totalSolved;
-    document.getElementById('stAccuracy').textContent = s.totalAttempts ? Math.round((s.correctFirstTry / s.totalAttempts)*100)+'%' : '100%';
-    document.getElementById('stStreak').textContent = s.currentStreak;
-    document.getElementById('stBest').textContent = s.bestStreak;
-    document.getElementById('stAvgRating').textContent = s.ratingCount ? Math.round(s.ratingSum / s.ratingCount) : '1650';
+function playOutSolutionFromCursor(){
+  const puzzleMoves = state.currentPuzzle.m.split(' ');
+  if(!state.currentPuzzle || state.moveCursor >= puzzleMoves.length){
+    return;
   }
+  applyMoveToBoard(puzzleMoves[state.moveCursor]);
+  state.moveCursor++;
+  updateMoveCounter();
+  setTimeout(playOutSolutionFromCursor, CONFIG.AUTO_MOVE_DELAY);
 }
 
-document.querySelectorAll('.dock-item').forEach(b => {
-  b.addEventListener('click', () => showScreen(b.dataset.screen));
+document.getElementById('btnNext').addEventListener('click', ()=>{
+  if(state.currentTheme) startTraining(state.currentTheme, state.currentDifficulty);
+});
+document.getElementById('btnFlip').addEventListener('click', ()=>{
+  state.board.flip();
+  state.boardOrientation = state.boardOrientation === 'white' ? 'black' : 'white';
+  renderEnginePanel();
+});
+document.getElementById('toggleAnalysis').addEventListener('click', ()=>{
+  const el = document.getElementById('toggleAnalysis');
+  state.analysisMode = !state.analysisMode;
+  el.classList.toggle('on', state.analysisMode);
+  clearHighlights();
+  if(state.analysisMode){
+    setDragEnabled(true);
+    toast('Free Play unlocked — try anything.');
+  }else{
+    setDragEnabled(state.solving);
+    toast('Free Play off — back to training mode.');
+  }
 });
 
-document.getElementById('trainerBack').addEventListener('click', () => showScreen('home'));
-
-/* Engine Vector Math Geometry & Overlay Drawing */
-function getSquarePct(square) {
-  const f = square.charCodeAt(0) - 97;
-  const r = parseInt(square[1], 10);
-  let c = f, row = 8 - r;
-  if(state.boardOrientation === 'black') { c = 7 - f; row = r - 1; }
-  return { x: (c + 0.5) / 8 * 100, y: (row + 0.5) / 8 * 100 };
+document.getElementById('btnFavorite').addEventListener('click', toggleFavorite);
+function toggleFavorite(){
+  if(!state.currentPuzzle) return;
+  const id = state.currentPuzzle.id;
+  const idx = state.favorites.findIndex(f=>f.puzzle.id === id);
+  if(idx >= 0){ state.favorites.splice(idx,1); toast('Removed from favorites'); }
+  else{ state.favorites.push({theme:state.currentTheme, difficulty:state.currentDifficulty, puzzle:state.currentPuzzle}); toast('Saved to favorites ⭐'); }
+  saveJSON('knt_favorites', state.favorites);
+  updateFavoriteButton();
+}
+function updateFavoriteButton(){
+  const id = state.currentPuzzle && state.currentPuzzle.id;
+  const isFav = state.favorites.some(f=>f.puzzle.id === id);
+  document.getElementById('btnFavorite').textContent = isFav ? '★' : '☆';
 }
 
-function clearArrows() { document.getElementById('boardArrows').innerHTML = ''; }
-
-function drawEngineArrow(from, to) {
+/* ============================================================
+   STOCKFISH PROCESSING AND ARROW DATA VECTOR MATH
+   ============================================================ */
+function squareCenterPct(square){
+  const file = square.charCodeAt(0) - 97;
+  const rank = parseInt(square[1], 10);
+  let col = file, row = 8 - rank;
+  if(state.boardOrientation === 'black'){ col = 7 - file; row = rank - 1; }
+  return { x: (col + 0.5) / 8 * 100, y: (row + 0.5) / 8 * 100 };
+}
+function clearBoardArrows(){
   const svg = document.getElementById('boardArrows');
-  if(!svg) return;
-  const p1 = getSquarePct(from);
-  const p2 = getSquarePct(to);
-  
-  const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  if(svg) svg.innerHTML = '';
+}
+function drawArrow(from, to, color){
+  const svg = document.getElementById('boardArrows');
+  if(!svg || from === to) return;
+  const NS = 'http://www.w3.org/2000/svg';
+  const markerId = 'cptArrow-' + color.replace(/[^a-zA-Z0-9]/g, '');
+  if(!svg.querySelector('#' + markerId)){
+    let defs = svg.querySelector('defs');
+    if(!defs){ defs = document.createElementNS(NS, 'defs'); svg.appendChild(defs); }
+    const marker = document.createElementNS(NS, 'marker');
+    marker.setAttribute('id', markerId);
+    marker.setAttribute('markerWidth', '3');
+    marker.setAttribute('markerHeight', '3');
+    marker.setAttribute('refX', '1.6');
+    marker.setAttribute('refY', '1.5');
+    marker.setAttribute('orient', 'auto');
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('d', 'M0,0 L3,1.5 L0,3 z');
+    path.setAttribute('fill', color);
+    marker.appendChild(path);
+    defs.appendChild(marker);
+  }
+  const p1 = squareCenterPct(from);
+  const p2 = squareCenterPct(to);
+  const dx = p2.x - p1.x, dy = p2.y - p1.y;
+  const len = Math.sqrt(dx*dx + dy*dy) || 1;
+  const shorten = 5.5;
+  const ex = p2.x - (dx/len) * shorten;
+  const ey = p2.y - (dy/len) * shorten;
+  const line = document.createElementNS(NS, 'line');
   line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
-  line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
-  line.setAttribute('stroke', '#c5a059');
-  line.setAttribute('stroke-width', '2');
-  line.setAttribute('opacity', '0.7');
+  line.setAttribute('x2', ex); line.setAttribute('y2', ey);
+  line.setAttribute('stroke', color);
+  line.setAttribute('stroke-width', '2.6');
+  line.setAttribute('stroke-linecap', 'round');
+  line.setAttribute('marker-end', 'url(#' + markerId + ')');
   svg.appendChild(line);
 }
 
-/* Engine Process Logic */
-function initEngine() {
-  if(state.sf) return;
-  try {
-    state.sf = new Worker(URL.createObjectURL(new Blob([`importScripts('${CONFIG.STOCKFISH_URL}');`], {type:'application/javascript'})));
-    state.sf.onmessage = e => {
-      const line = e.data;
-      if(line.includes('pv ')) {
-        const cp = line.match(/score cp (-?\d+)/);
-        const depth = line.match(/depth (\d+)/);
-        const pv = line.match(/pv (.+)$/);
-        
-        if(cp) document.getElementById('engineEval').textContent = (parseInt(cp[1],10)/100).toFixed(2);
-        if(depth) document.getElementById('engineDepth').textContent = depth[1];
-        if(pv) {
-          const move = pv[1].split(' ')[0];
-          document.getElementById('engineBest').textContent = move;
-          clearArrows();
-          drawEngineArrow(move.slice(0,2), move.slice(2,4));
-        }
-      }
+function initStockfish(){
+  if(state.sf) return state.sf;
+  try{
+    const bootstrap = `importScripts('${CONFIG.STOCKFISH_URL}');`;
+    const blobUrl = URL.createObjectURL(new Blob([bootstrap], {type:'application/javascript'}));
+    const worker = new Worker(blobUrl);
+    worker.onmessage = (e)=> handleEngineLine(typeof e.data === 'string' ? e.data : '');
+    worker.onerror = ()=>{
+      toast('Engine synchronization fault.');
+      state.sf = null;
     };
-    state.sf.postMessage('uci');
-  } catch(err) {}
-}
-
-let sfTime = null;
-function scheduleEngine() {
-  clearTimeout(sfTime);
-  sfTime = setTimeout(() => {
-    initEngine();
-    if(!state.sf) return;
-    document.getElementById('engineLiveDot').textContent = '● processing';
-    state.sf.postMessage('stop');
-    state.sf.postMessage(`position fen ${state.fenHistory[state.viewIndex]}`);
-    state.sf.postMessage(`go depth ${CONFIG.ENGINE_DEPTH}`);
-  }, 300);
-}
-
-document.getElementById('toggleAnalysis').addEventListener('click', () => {
-  state.analysisMode = !state.analysisMode;
-  document.getElementById('toggleAnalysis').classList.toggle('on', state.analysisMode);
-  if(state.analysisMode) {
-    initEngine();
-    scheduleEngine();
-  } else {
-    document.getElementById('engineLiveDot').textContent = '○ idle';
-    clearArrows();
+    worker.postMessage('uci');
+    state.sf = worker;
+  }catch(err){
+    state.sf = null;
   }
-});
-
-/* Base Interface Polish Overrides */
-function applyBoardColor() {
-  const lightColor = '#f0d9b5', darkColor = '#b58863';
-  document.querySelectorAll('#board [data-square-color="white"]').forEach(el => el.style.background = lightColor);
-  document.querySelectorAll('#board [data-square-color="black"]').forEach(el => el.style.background = darkColor);
+  return state.sf;
 }
 
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2000);
+function handleEngineLine(line){
+  if(!line) return;
+  if(line.startsWith('info') && line.includes(' pv ')){
+    const cpMatch = line.match(/score cp (-?\d+)/);
+    const mateMatch = line.match(/score mate (-?\d+)/);
+    const depthMatch = line.match(/\bdepth (\d+)/);
+    const pvMatch = line.match(/ pv (.+)$/);
+    state.sfBestLine = {
+      cp: cpMatch ? parseInt(cpMatch[1], 10) : null,
+      mate: mateMatch ? parseInt(mateMatch[1], 10) : null,
+      depth: depthMatch ? parseInt(depthMatch[1], 10) : null,
+      pv: pvMatch ? pvMatch[1].trim().split(' ') : []
+    };
+    renderEnginePanel();
+  }else if(line.startsWith('bestmove')){
+    const best = line.split(' ')[1];
+    const wasContinueMode = state.sfMode === 'continue';
+    state.sfMode = null;
+    setEngineSearching(false);
+    document.getElementById('btnStockfishGo').disabled = false;
+    if(wasContinueMode && best && best !== '(none)') playFreeMove(best);
+    if(wasContinueMode && state.analysisMode) setDragEnabled(true);
+  }
 }
 
-/* Theme Preference Initializations */
-document.getElementById('toggleLightMode').addEventListener('click', () => {
-  const active = document.body.classList.toggle('theme-light');
-  document.body.classList.toggle('theme-dark', !active);
-  document.getElementById('toggleLightMode').classList.toggle('on', active);
+function setEngineSearching(isSearching){
+  const dot = document.getElementById('engineLiveDot');
+  if(!dot) return;
+  dot.classList.toggle('searching', isSearching);
+  if(!state.analysisMode){ dot.textContent = '○ idle'; return; }
+  dot.textContent = isSearching ? '● thinking…' : '● ready';
+}
+
+function renderEnginePanel(){
+  const evalEl = document.getElementById('engineEval');
+  const bestEl = document.getElementById('engineBest');
+  const depthEl = document.getElementById('engineDepth');
+  const line = state.sfBestLine || {};
+  if(line.mate != null){
+    evalEl.textContent = '#' + line.mate;
+  }else if(line.cp != null){
+    const turn = state.chess ? state.chess.turn() : 'w';
+    const whiteCp = turn === 'w' ? line.cp : -line.cp;
+    evalEl.textContent = (whiteCp >= 0 ? '+' : '') + (whiteCp / 100).toFixed(2);
+  }else{
+    evalEl.textContent = '—';
+  }
+  depthEl.textContent = line.depth ?? '—';
+  clearBoardArrows();
+  if(!state.analysisMode){
+    bestEl.textContent = '—';
+    return;
+  }
+  if(line.pv && line.pv.length && state.fenHistory.length){
+    try{
+      const tmp = new Chess(state.fenHistory[state.viewIndex]);
+      const mv = parseUCI(line.pv[0]);
+      const res = tmp.move(mv);
+      bestEl.textContent = res ? res.san : line.pv[0];
+      drawArrow(mv.from, mv.to, '#d4af37');
+      if(line.pv[1]){
+        const mv2 = parseUCI(line.pv[1]);
+        if(tmp.move(mv2)) drawArrow(mv2.from, mv2.to, 'rgba(232,207,118,0.5)');
+      }
+    }catch(e){ bestEl.textContent = line.pv[0]; }
+  }else{
+    bestEl.textContent = '—';
+  }
+}
+
+let liveAnalysisTimer = null;
+function scheduleLiveAnalysis(){
+  if(!state.analysisMode || !state.fenHistory.length || state.sfMode === 'continue') return;
+  clearTimeout(liveAnalysisTimer);
+  liveAnalysisTimer = setTimeout(runLiveAnalysis, 220);
+}
+function runLiveAnalysis(){
+  if(!state.analysisMode || !state.fenHistory.length || state.sfMode === 'continue') return;
+  const w = initStockfish();
+  if(!w) return;
+  state.sfMode = 'analyze';
+  state.sfBestLine = {};
+  renderEnginePanel();
+  setEngineSearching(true);
+  w.postMessage('stop');
+  w.postMessage('position fen ' + state.fenHistory[state.viewIndex]);
+  w.postMessage('go depth ' + CONFIG.ENGINE_DEPTH);
+}
+
+function playFreeMove(uciStr){
+  if(!state.chess) return;
+  const mv = parseUCI(uciStr);
+  const result = state.chess.move(mv);
+  if(!result) return;
+  state.fenHistory.push(state.chess.fen());
+  state.sanHistory.push(result.san);
+  state.viewIndex = state.fenHistory.length - 1;
+  clearHighlights();
+  state.board.position(state.chess.fen());
+  sfx.move();
+  renderMoveList();
+  updateMoveDisplay();
+  updateNavButtons();
+  toast('Engine plays: ' + result.san);
+}
+
+document.getElementById('btnStockfishGo').addEventListener('click', ()=>{
+  if(!state.chess) return toast('Load a puzzle before calling in the engine.');
+  if(state.viewIndex !== state.fenHistory.length - 1){ toast('Jump to the latest position before asking the engine.'); return; }
+  const w = initStockfish();
+  if(!w) return;
+  state.solving = false;
+  setDragEnabled(false);
+  state.sfMode = 'continue';
+  setEngineSearching(true);
+  document.getElementById('btnStockfishGo').disabled = true;
+  w.postMessage('stop');
+  w.postMessage('position fen ' + state.chess.fen());
+  w.postMessage('go depth ' + CONFIG.ENGINE_DEPTH);
 });
 
-document.querySelectorAll('#difficultyRow .pill').forEach(p => {
-  p.addEventListener('click', () => {
-    document.querySelectorAll('#difficultyRow .pill').forEach(x => x.classList.remove('active'));
-    p.classList.add('active');
-    state.currentDifficulty = p.dataset.diff;
-    renderThemeGrid();
+document.getElementById('btnCopyFen').addEventListener('click', async ()=>{
+  if(!state.fenHistory.length) return;
+  const fen = state.fenHistory[state.viewIndex];
+  try{ await navigator.clipboard.writeText(fen); toast('FEN copied to clipboard'); }
+  catch(e){ toast(fen); }
+});
+document.getElementById('btnCopyPgn').addEventListener('click', async ()=>{
+  if(!state.fenHistory.length) return;
+  let pgn = '';
+  try{
+    const g = new Chess(state.fenHistory[0]);
+    state.sanHistory.forEach(san=>g.move(san));
+    pgn = g.pgn();
+  }catch(e){ pgn = ''; }
+  try{ await navigator.clipboard.writeText(pgn); toast('PGN copied to clipboard'); }
+  catch(e){ toast('Couldn\'t copy the PGN — try again.'); }
+});
+
+/* ---- keyboard shortcuts ---- */
+document.addEventListener('keydown', (e)=>{
+  if(!document.getElementById('screen-trainer').classList.contains('active')) return;
+  if(e.target && /input|textarea|select/i.test(e.target.tagName)) return;
+  if(e.key === 'ArrowLeft'){ jumpToFenIndex(state.viewIndex - 1); }
+  else if(e.key === 'ArrowRight'){ jumpToFenIndex(state.viewIndex + 1); }
+  else if(e.key.toLowerCase() === 'h'){ document.getElementById('btnHint').click(); }
+  else if(e.key.toLowerCase() === 'n'){ document.getElementById('btnNext').click(); }
+});
+
+/* ============================================================
+   STATISTICS RE-CALCULATION
+   ============================================================ */
+function renderStats(){
+  const s = state.stats;
+  document.getElementById('stTotal').textContent = s.totalSolved;
+  const acc = s.totalAttempts ? Math.round((s.correctFirstTry / s.totalAttempts) * 100) : 0;
+  document.getElementById('stAccuracy').textContent = acc + '%';
+  document.getElementById('stStreak').textContent = s.currentStreak;
+  document.getElementById('stBest').textContent = s.bestStreak;
+  document.getElementById('stAvgRating').textContent = s.ratingCount ? Math.round(s.ratingSum / s.ratingCount) : '—';
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('stDaily').textContent = (s.dailyDate === today) ? s.dailyCount : 0;
+  document.getElementById('stTime').textContent = Math.round(s.totalTimeMs / 60000) + 'm';
+  document.getElementById('stAttempts').textContent = s.totalAttempts;
+}
+document.getElementById('btnResetStats').addEventListener('click', ()=>{
+  if(!confirm('Reset all your stats? This can\'t be undone.')) return;
+  state.stats = loadStats();
+  localStorage.removeItem('knt_stats');
+  renderStats();
+  toast('Stats cleared — fresh start.');
+});
+
+/* ============================================================
+   CONFIGURATION UTILITIES
+   ============================================================ */
+function wireToggle(id, key, onChange){
+  const el = document.getElementById(id);
+  el.classList.toggle('on', !!state.settings[key]);
+  el.addEventListener('click', ()=>{
+    state.settings[key] = !state.settings[key];
+    el.classList.toggle('on', state.settings[key]);
+    saveSettings();
+    if(onChange) onChange(state.settings[key]);
+  });
+}
+wireToggle('toggleSound', 'sound');
+wireToggle('toggleAnim', 'animations');
+wireToggle('toggleCoords', 'coordinates', v=>{ rebuildBoard(); });
+wireToggle('toggleAutoFlip', 'autoFlip');
+wireToggle('toggleAutoAdvance', 'autoAdvance');
+
+document.getElementById('selPieceStyle').value = state.settings.pieceStyle;
+document.getElementById('selPieceStyle').addEventListener('change', e=>{
+  state.settings.pieceStyle = e.target.value;
+  saveSettings();
+  rebuildBoard();
+});
+
+document.querySelectorAll('#boardColorRow .color-dot').forEach(dot=>{
+  dot.addEventListener('click', ()=>{
+    state.settings.boardColor = dot.dataset.c;
+    saveSettings();
+    applyBoardColor();
   });
 });
-
-document.getElementById('themeSearch').addEventListener('input', e => renderThemeGrid(e.target.value));
-
-async function boot() {
-  await loadMasterThemes();
+function applyBoardColor(){
+  const map = {
+    brown:{light:'#f0d9b5',dark:'#b58863'},
+    green:{light:'#eeeed2',dark:'#779556'},
+    blue:{light:'#dee3e6',dark:'#4b6f9e'},
+    gray:{light:'#e8e8e8',dark:'#6e6e6e'}
+  };
+  const c = map[state.settings.boardColor] || map.brown;
+  document.documentElement.style.setProperty('--board-light', c.light);
+  document.documentElement.style.setProperty('--board-dark', c.dark);
+  document.querySelectorAll('#board [data-square-color="white"]').forEach(el=>el.style.background = c.light);
+  document.querySelectorAll('#board [data-square-color="black"]').forEach(el=>el.style.background = c.dark);
 }
-boot();
+
+function refreshBoardPosition(animate){
+  if(!state.board) return;
+  state.board.orientation(state.boardOrientation);
+  if(state.fenHistory.length){
+    state.board.position(state.fenHistory[state.viewIndex], !!animate);
+  }
+  applyBoardColor();
+}
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+
+async function init(){
+  applyBoardColor();
+  updateNavButtons();
+  await loadMasterThemes();
+
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+}
+init();
 </script>
 </body>
 </html>
