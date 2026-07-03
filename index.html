@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Knight Tactical Trainer</title>
-<meta name="description" content="Master tactical patterns using the ultimate weapon of geometry.">
+<meta name="description" content="Every player falls for the knight eventually. Train its forks, outposts and mating nets in bite-sized puzzles and start thinking like a tactician today.">
 <meta name="theme-color" content="#0b0e14">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230b0e14'/%3E%3Ctext x='50' y='68' font-size='60' text-anchor='middle' fill='%23d4af37'%3E%E2%99%9E%3C/text%3E%3C/svg%3E">
@@ -101,8 +101,19 @@ h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:0.2px;margin:0;
 .trainer-wrap{display:flex;flex-direction:column;max-width:1100px;margin:0 auto;padding:14px 12px 20px;gap:14px;}
 @media (min-width:880px){.trainer-wrap{flex-direction:row;align-items:flex-start;}}
 .board-col{flex:1;min-width:0;}
-.board-shell{max-width:560px;margin:0 auto;position:relative;}
+.board-shell{max-width:560px;margin:0 auto;position:relative;touch-action:manipulation;}
 #board{width:100%;border-radius:10px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,0.5);}
+#board, #board *{
+  -webkit-touch-callout:none;
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  -ms-user-select:none;
+  user-select:none;
+  -webkit-user-drag:none;
+  user-drag:none;
+}
+#board img{ pointer-events:auto; }
+#board [data-square]{ touch-action:manipulation; }
 .board-arrows{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:6;}
 .board-toolbar{display:flex;justify-content:space-between;align-items:center;padding:6px 2px 10px;max-width:560px;margin:0 auto;}
 .icon-btn{background:var(--panel);border:1px solid var(--panel-border);color:var(--text);width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;}
@@ -204,6 +215,13 @@ h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:0.2px;margin:0;
 
 .panel-hidden{display:none!important;}
 .hidden{display:none!important;}
+
+/* ===========================================================
+    MOBILE-ONLY OVERRIDES
+   =========================================================== */
+@media (max-width:899px){
+  #puzzleInfoCard{ display:none !important; }
+}
 
 /* ===========================================================
     DESKTOP LAYOUT (single source of truth — 900px+)
@@ -374,30 +392,30 @@ h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:0.2px;margin:0;
 <section id="screen-home" class="screen active">
   <div class="home-header">
     <h1>Knight Tactical Trainer</h1>
-    <p>Master complex geometry and tactical patterns using the ultimate weapon.</p>
+    <p>It's the piece every player falls for first — awkward, brilliant, and impossible to predict. Train its patterns here and start thinking like a tactician.</p>
   </div>
 
-  <div class="section-label">1. Select Difficulty</div>
+  <div class="section-label">1. Choose Your Level</div>
   <div class="quick-row" id="difficultyRow">
     <div class="chip glass active" data-diff="easy">Easy</div>
     <div class="chip glass" data-diff="medium">Medium</div>
     <div class="chip glass" data-diff="hard">Hard</div>
   </div>
 
-  <div class="section-label">Quick Actions</div>
+  <div class="section-label">Fast Track</div>
   <div class="quick-row">
-    <div class="chip glass" id="chipRandom">🎲 Random Theme</div>
-    <div class="chip glass" id="chipFav">⭐ Favorites</div>
-    <div class="chip glass" id="chipRecent">🕘 Recent Puzzles</div>
+    <div class="chip glass" id="chipRandom">🎲 Surprise Me</div>
+    <div class="chip glass" id="chipFav">⭐ My Favorites</div>
+    <div class="chip glass" id="chipRecent">🕘 Pick Up Where I Left Off</div>
   </div>
 
-  <div class="section-label">2. Select Tactical Motif</div>
+  <div class="section-label">2. Choose Your Pattern</div>
   <div class="theme-search-box">
-    <input type="text" id="themeSearch" placeholder="Search tactical themes (e.g., fork, mate, sacrifice)...">
+    <input type="text" id="themeSearch" placeholder="Search knight patterns — try “fork,” “mate,” or “sacrifice”…">
   </div>
   
   <div class="theme-grid" id="themeGrid">
-    <div class="loading"><div class="spinner"></div>Loading tactical themes...</div>
+    <div class="loading"><div class="spinner"></div>Warming up the knight…</div>
   </div>
 </section>
 
@@ -407,7 +425,7 @@ h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:0.2px;margin:0;
 <section id="screen-trainer" class="screen">
   <div class="topbar">
     <button class="back-btn" id="trainerBack">←</button>
-    <h2 id="trainerTitle">Trainer</h2>
+    <h2 id="trainerTitle">Knight Training Ground</h2>
   </div>
 
   <div class="trainer-wrap">
@@ -417,55 +435,55 @@ h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:0.2px;margin:0;
         <svg id="boardArrows" class="board-arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
         <div id="loadingOverlay" class="loading hidden">
           <div class="spinner"></div>
-          <div>Fetching puzzle payload…</div>
+          <div>Setting the board…</div>
         </div>
       </div>
       <div class="board-toolbar">
-        <button class="icon-btn" id="btnFlip" title="Flip board">⇅</button>
-        <div class="status-bar info" id="statusBar">Choose a theme to begin</div>
-        <button class="icon-btn" id="btnFavorite" title="Favorite">☆</button>
+        <button class="icon-btn" id="btnFlip" title="Flip the board">⇅</button>
+        <div class="status-bar info" id="statusBar">Pick a pattern to begin your training</div>
+        <button class="icon-btn" id="btnFavorite" title="Save this puzzle">☆</button>
       </div>
       <div class="nav-row">
-        <button class="icon-btn" id="btnFirst" title="Jump to start">⏮</button>
-        <button class="icon-btn" id="btnPrev" title="Previous move">◀</button>
-        <button class="icon-btn" id="btnReset" title="Restart this puzzle">⟲</button>
-        <button class="icon-btn" id="btnNextMove" title="Next move">▶</button>
-        <button class="icon-btn" id="btnLast" title="Jump to latest">⏭</button>
+        <button class="icon-btn" id="btnFirst" title="Back to the beginning">⏮</button>
+        <button class="icon-btn" id="btnPrev" title="Step back one move">◀</button>
+        <button class="icon-btn" id="btnReset" title="Run it back">⟲</button>
+        <button class="icon-btn" id="btnNextMove" title="Step forward one move">▶</button>
+        <button class="icon-btn" id="btnLast" title="Jump to the end">⏭</button>
       </div>
       <div class="action-row">
         <button class="btn" id="btnHint">💡 Hint</button>
-        <button class="btn" id="btnSolution">📖 Solution</button>
-        <button class="btn primary" id="btnNext">Next Puzzle →</button>
+        <button class="btn" id="btnSolution">📖 Show the Line</button>
+        <button class="btn primary" id="btnNext">Next →</button>
       </div>
     </div>
 
     <div class="side-panel">
-      <div class="info-card glass">
-        <h3>Puzzle Info</h3>
-        <div class="info-row"><span>Theme</span><span class="v" id="infoPiece">—</span></div>
-        <div class="info-row"><span>Difficulty</span><span class="v" id="infoDifficulty">—</span></div>
+      <div class="info-card glass" id="puzzleInfoCard">
+        <h3>Puzzle Intel</h3>
+        <div class="info-row"><span>Pattern</span><span class="v" id="infoPiece">—</span></div>
+        <div class="info-row"><span>Level</span><span class="v" id="infoDifficulty">—</span></div>
         <div class="info-row"><span>Rating</span><span class="v" id="infoRating">—</span></div>
         <div class="info-row"><span>Puzzle ID</span><span class="v" id="infoId">—</span></div>
         <div class="info-row"><span>Move</span><span class="v" id="infoMoveCount">—</span></div>
-        <div class="info-row"><span>Session Solved</span><span class="v" id="infoSession">0</span></div>
+        <div class="info-row"><span>Solved This Session</span><span class="v" id="infoSession">0</span></div>
       </div>
       <div class="info-card glass">
-        <h3>Stockfish Engine <span id="engineLiveDot" style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0;">○ off</span></h3>
+        <h3>Stockfish Engine <span id="engineLiveDot" style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0;">○ idle</span></h3>
         <div class="engine-compact-row">
           <span>Eval <strong id="engineEval">—</strong></span>
           <span>Depth <strong id="engineDepth">—</strong></span>
           <span>Best <strong id="engineBest">—</strong></span>
         </div>
         <div class="engine-toggle-row">
-          <div><div class="lbl">Analysis Mode</div><div class="sub">Play any legal move freely</div></div>
+          <div><div class="lbl">Free Play Mode</div><div class="sub">Try any move — there's no wrong answer here</div></div>
           <div class="switch small" id="toggleAnalysis"><div class="knob"></div></div>
         </div>
         <div class="mini-actions">
-          <button class="btn" id="btnStockfishGo">▶ Continue with Stockfish</button>
+          <button class="btn" id="btnStockfishGo">▶ Let the Engine Continue</button>
         </div>
       </div>
       <div class="info-card glass">
-        <h3>Notation</h3>
+        <h3>Move List</h3>
         <div class="move-list" id="moveList">—</div>
         <div class="mini-actions">
           <button class="btn" id="btnCopyFen">Copy FEN</button>
@@ -482,14 +500,14 @@ h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:0.2px;margin:0;
 <section id="screen-stats" class="screen">
   <div class="topbar"><h2>Statistics</h2></div>
   <div class="stats-grid">
-    <div class="stat-card glass"><div class="big" id="stTotal">0</div><div class="lbl">Solved</div></div>
+    <div class="stat-card glass"><div class="big" id="stTotal">0</div><div class="lbl">Puzzles Solved</div></div>
     <div class="stat-card glass"><div class="big" id="stAccuracy">0%</div><div class="lbl">Accuracy</div></div>
     <div class="stat-card glass"><div class="big" id="stStreak">0</div><div class="lbl">Current Streak</div></div>
     <div class="stat-card glass"><div class="big" id="stBest">0</div><div class="lbl">Best Streak</div></div>
     <div class="stat-card glass"><div class="big" id="stAvgRating">—</div><div class="lbl">Avg Rating</div></div>
     <div class="stat-card glass"><div class="big" id="stDaily">0</div><div class="lbl">Solved Today</div></div>
-    <div class="stat-card glass"><div class="big" id="stTime">0m</div><div class="lbl">Total Time</div></div>
-    <div class="stat-card glass"><div class="big" id="stAttempts">0</div><div class="lbl">Attempts</div></div>
+    <div class="stat-card glass"><div class="big" id="stTime">0m</div><div class="lbl">Training Time</div></div>
+    <div class="stat-card glass"><div class="big" id="stAttempts">0</div><div class="lbl">Total Attempts</div></div>
   </div>
   <div style="text-align:center; margin-top:24px; padding-bottom:20px;">
     <button class="btn danger" id="btnResetStats">Reset Statistics</button>
@@ -503,7 +521,7 @@ h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:0.2px;margin:0;
   <div class="simple-screen">
     <div class="topbar" style="padding:2px 0 4px;"><h2>Settings</h2></div>
     <div class="settings-row glass">
-      <div><div class="lbl">Sound</div><div class="sub">Move, correct, and wrong audio states</div></div>
+      <div><div class="lbl">Sound</div><div class="sub">Hear every correct strike and missed shot</div></div>
       <div class="switch on" id="toggleSound"><div class="knob"></div></div>
     </div>
     <div class="settings-row glass">
@@ -515,11 +533,11 @@ h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:0.2px;margin:0;
       <div class="switch on" id="toggleCoords"><div class="knob"></div></div>
     </div>
     <div class="settings-row glass">
-      <div><div class="lbl">Flip Board Automatically</div><div class="sub">Orient board to solving side</div></div>
+      <div><div class="lbl">Flip Board Automatically</div><div class="sub">Always face the side you're training</div></div>
       <div class="switch" id="toggleAutoFlip"><div class="knob"></div></div>
     </div>
     <div class="settings-row glass">
-      <div><div class="lbl">Auto-Advance</div><div class="sub">Load next puzzle automatically once solved</div></div>
+      <div><div class="lbl">Auto-Advance</div><div class="sub">Keep the reps coming — no tapping required</div></div>
       <div class="switch" id="toggleAutoAdvance"><div class="knob"></div></div>
     </div>
     <div class="settings-row glass">
@@ -549,10 +567,11 @@ h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:0.2px;margin:0;
   <div class="simple-screen">
     <div class="topbar" style="padding:2px 0 4px;"><h2>About</h2></div>
     <div class="about-card glass">
-      <h3>Knight Tactical Trainer</h3>
-      <p>A specialized training environment optimized exclusively for tactical patterns involving <strong>Knights</strong>. Master forks, outpost strategies, awkward geometry, and beautiful mating architectures (such as Anastasia's and Arabian variants) one theme at a time.</p>
-      <p>Puzzles are derived and organized dynamically by structural folders and directly queried by target difficulty metrics matching your exact configuration preferences.</p>
-      <p>Keyboard shortcuts: <strong>←</strong> / <strong>→</strong> step through moves, <strong>H</strong> hint, <strong>N</strong> next puzzle.</p>
+      <h3>Welcome to the Knight's Academy</h3>
+      <p>Ask any player which piece they fell in love with first, and most will say the <strong>knight</strong>. It jumps where nothing else can, threatens two pieces at once, and turns "impossible" positions into forced wins. Beginners light up the moment they spot their first fork. Grandmasters still smile at a well-placed outpost. This is where that love affair becomes a skill.</p>
+      <p>Chess strength is built from pattern recognition, not memorization. Every puzzle here isolates one knight idea — a fork, an outpost, a mating net like <strong>Anastasia's</strong> or the <strong>Arabian</strong> — so your brain can drill it until it's instinct. Short reps, tight feedback, real progress. That's deliberate practice, knight-style.</p>
+      <p>Train a little every day and you won't just get better at chess — you'll start seeing the whole board differently. Welcome to your knight era.</p>
+      <p>Keyboard shortcuts: <strong>←</strong> / <strong>→</strong> step through moves, <strong>H</strong> for a clue, <strong>N</strong> for the next puzzle.</p>
     </div>
   </div>
 </section>
@@ -583,6 +602,8 @@ const CONFIG = {
   STOCKFISH_URL: 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js',
   ENGINE_DEPTH: 14,
 };
+
+const IS_TOUCH_DEVICE = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
 
 /* ============================================================
    STATE
@@ -823,13 +844,13 @@ document.getElementById('chipRandom').addEventListener('click', ()=>{
 });
 
 document.getElementById('chipFav').addEventListener('click', ()=>{
-  if(!state.favorites.length){ toast('No active favorite items tracked.'); return; }
+  if(!state.favorites.length){ toast('No favorites saved yet — tap the star on a puzzle you love.'); return; }
   const fav = state.favorites[Math.floor(Math.random()*state.favorites.length)];
   startTraining(fav.theme, fav.difficulty, fav.puzzle);
 });
 
 document.getElementById('chipRecent').addEventListener('click', ()=>{
-  if(!state.recents.length){ toast('No execution history tracked.'); return; }
+  if(!state.recents.length){ toast('No recent puzzles yet — go solve one!'); return; }
   const r = state.recents[0];
   startTraining(r.theme, r.difficulty, r.puzzle);
 });
@@ -840,7 +861,7 @@ document.getElementById('chipRecent').addEventListener('click', ()=>{
 function initBoardIfNeeded(){
   if(state.board) return;
   state.board = Chessboard('board', {
-    draggable: true,
+    draggable: !IS_TOUCH_DEVICE,
     position: 'start',
     pieceTheme: pieceThemeUrl,
     showNotation: state.settings.coordinates,
@@ -851,9 +872,27 @@ function initBoardIfNeeded(){
     state.boardResizeWired = true;
   }
 
-  $('#board').off('click.cpt').on('click.cpt', '[data-square]', function(e) {
+  const $boardEl = $('#board');
+
+  $boardEl.off('click.cpt').on('click.cpt', '[data-square]', function(e) {
     const square = $(this).attr('data-square');
     if (square) onBoardSquareClick(square);
+  });
+
+  // Block the native long-press "save/copy image" context menu on piece
+  // images and the board itself (this is what was popping up an
+  // Android/iOS "Download image" sheet on long-press).
+  $boardEl.off('contextmenu.cpt').on('contextmenu.cpt', function(e){
+    e.preventDefault();
+    return false;
+  });
+
+  // Belt-and-braces: also stop the native dragstart on the <img> pieces so
+  // the browser never starts its own image-drag gesture, which is what
+  // triggers the long-press callout on some mobile browsers.
+  $boardEl.off('dragstart.cpt').on('dragstart.cpt', 'img', function(e){
+    e.preventDefault();
+    return false;
   });
 }
 
@@ -884,7 +923,7 @@ async function startTraining(themeKey, difficulty, presetPuzzle){
     const puzzle = presetPuzzle || await getPuzzlePayload(themeKey, difficulty);
     loadPuzzle(themeKey, difficulty, puzzle);
   }catch(err){
-    toast('Payload error — verifying connection context.');
+    toast('Couldn\'t load that puzzle — check your connection and try again.');
     console.error(err);
   }finally{
     document.getElementById('loadingOverlay').classList.add('hidden');
@@ -926,7 +965,7 @@ function loadPuzzle(themeKey, difficulty, puzzle){
     state.moveCursor = 1;
     state.solving = true;
     setDragEnabled(true);
-    toast('Your move — find the refutation.');
+    toast('Your move, Knight Trainer — find the winning shot.');
   }, 600);
 }
 
@@ -969,19 +1008,19 @@ function updateMoveDisplay(flashClass){
   clearBoardArrows();
   const el = document.getElementById('statusBar');
   if(!state.chess || !state.fenHistory.length){
-    el.textContent = 'Select tactical sequence context';
+    el.textContent = 'Choose a puzzle to start training';
     el.className = 'status-bar info';
     return;
   }
   scheduleLiveAnalysis();
   const idx = state.viewIndex;
   if(idx <= 0){
-    el.textContent = 'Starting Configuration';
+    el.textContent = 'Starting Position';
     el.className = 'status-bar info';
     return;
   }
   const san = state.sanHistory[idx - 1];
-  if(!san){ el.textContent = 'Starting Configuration'; el.className = 'status-bar info'; return; }
+  if(!san){ el.textContent = 'Starting Position'; el.className = 'status-bar info'; return; }
   const moveNum = Math.ceil(idx / 2);
   const isWhiteMove = idx % 2 === 1;
   el.textContent = moveNum + (isWhiteMove ? '. ' : '… ') + san;
@@ -1087,14 +1126,14 @@ function attemptSolvingMove(source, target){
     registerAttempt(false);
     flashSquare(target, 'sq-wrong');
     sfx.wrong();
-    toast('Alternative sequence matched — focus line variations.');
+    toast('Good try, but not the sharpest move — look again.');
     return 'rejected';
   }
 
   const isPromotion = (state.chess.get(source)||{}).type === 'p' && (target[1] === '8' || target[1] === '1');
   let promotionPiece = expected.promotion || 'q';
   if(isPromotion && expected.promotion === 'q'){
-    const choice = window.prompt('Promote to (q, r, b, n):', 'q');
+    const choice = window.prompt('Promote to — Queen(q), Rook(r), Bishop(b), or Knight(n)?', 'q');
     if(choice && /^[qrbn]$/i.test(choice.trim())) promotionPiece = choice.trim().toLowerCase();
   }
 
@@ -1112,7 +1151,7 @@ function attemptSolvingMove(source, target){
   state.moveCursor++;
   state.solving = false;
   setDragEnabled(false);
-  toast('Precise line optimization matched!');
+  toast('That\'s the move! 🐴');
   updateMoveDisplay('correct');
   renderMoveList();
   updateMoveCounter();
@@ -1136,7 +1175,7 @@ function attemptFreeMove(source, target){
   const isPromotion = (vc.get(source)||{}).type === 'p' && (target[1] === '8' || target[1] === '1');
   let promotionPiece = 'q';
   if(isPromotion){
-    const choice = window.prompt('Promote to (q, r, b, n):', 'q');
+    const choice = window.prompt('Promote to — Queen(q), Rook(r), Bishop(b), or Knight(n)?', 'q');
     if(choice && /^[qrbn]$/i.test(choice.trim())) promotionPiece = choice.trim().toLowerCase();
   }
 
@@ -1201,7 +1240,7 @@ function flashSquare(square, cls){
 }
 
 function finishPuzzle(){
-  toast('Combination Terminated! 🎉');
+  toast('Combination cracked! 🎉');
   updateMoveDisplay('correct');
   sfx.success();
   setDragEnabled(false);
@@ -1300,7 +1339,7 @@ document.getElementById('btnLast').addEventListener('click', ()=>jumpToFenIndex(
 
 document.getElementById('btnReset').addEventListener('click', ()=>{
   if(!state.currentPuzzle) return;
-  toast('Line reset execution complete.');
+  toast('Puzzle reset — go again.');
   loadPuzzle(state.currentTheme, state.currentDifficulty, state.currentPuzzle);
 });
 
@@ -1308,8 +1347,8 @@ document.getElementById('btnReset').addEventListener('click', ()=>{
    INTERFACE COMMAND BINDINGS
    ============================================================ */
 document.getElementById('btnHint').addEventListener('click', ()=>{
-  if(!state.solving || !state.currentPuzzle) return toast('No target puzzle sequence tracking active.');
-  if(state.viewIndex !== state.fenHistory.length - 1){ toast('Sync structural state configuration first.'); return; }
+  if(!state.solving || !state.currentPuzzle) return toast('Pick a puzzle first — then I\'ll show you the way.');
+  if(state.viewIndex !== state.fenHistory.length - 1){ toast('Jump back to the current position first.'); return; }
   const puzzleMoves = state.currentPuzzle.m.split(' ');
   const expected = parseUCI(puzzleMoves[state.moveCursor]);
   clearHighlights();
@@ -1352,10 +1391,10 @@ document.getElementById('toggleAnalysis').addEventListener('click', ()=>{
   clearHighlights();
   if(state.analysisMode){
     setDragEnabled(true);
-    toast('Analysis mode activated.');
+    toast('Free Play unlocked — try anything.');
   }else{
     setDragEnabled(state.solving);
-    toast('Analysis tracking detached.');
+    toast('Free Play off — back to training mode.');
   }
 });
 
@@ -1364,8 +1403,8 @@ function toggleFavorite(){
   if(!state.currentPuzzle) return;
   const id = state.currentPuzzle.id;
   const idx = state.favorites.findIndex(f=>f.puzzle.id === id);
-  if(idx >= 0){ state.favorites.splice(idx,1); toast('Context detached from favorites'); }
-  else{ state.favorites.push({theme:state.currentTheme, difficulty:state.currentDifficulty, puzzle:state.currentPuzzle}); toast('Context attached to favorites'); }
+  if(idx >= 0){ state.favorites.splice(idx,1); toast('Removed from favorites'); }
+  else{ state.favorites.push({theme:state.currentTheme, difficulty:state.currentDifficulty, puzzle:state.currentPuzzle}); toast('Saved to favorites ⭐'); }
   saveJSON('knt_favorites', state.favorites);
   updateFavoriteButton();
 }
@@ -1475,8 +1514,8 @@ function setEngineSearching(isSearching){
   const dot = document.getElementById('engineLiveDot');
   if(!dot) return;
   dot.classList.toggle('searching', isSearching);
-  if(!state.analysisMode){ dot.textContent = '○ off'; return; }
-  dot.textContent = isSearching ? '● engine pipeline busy…' : '● active';
+  if(!state.analysisMode){ dot.textContent = '○ idle'; return; }
+  dot.textContent = isSearching ? '● thinking…' : '● ready';
 }
 
 function renderEnginePanel(){
@@ -1549,12 +1588,12 @@ function playFreeMove(uciStr){
   renderMoveList();
   updateMoveDisplay();
   updateNavButtons();
-  toast('Stockfish deployed: ' + result.san);
+  toast('Engine plays: ' + result.san);
 }
 
 document.getElementById('btnStockfishGo').addEventListener('click', ()=>{
-  if(!state.chess) return toast('Initialize valid configuration board first.');
-  if(state.viewIndex !== state.fenHistory.length - 1){ toast('Sync review state ahead of engine continuation.'); return; }
+  if(!state.chess) return toast('Load a puzzle before calling in the engine.');
+  if(state.viewIndex !== state.fenHistory.length - 1){ toast('Jump to the latest position before asking the engine.'); return; }
   const w = initStockfish();
   if(!w) return;
   state.solving = false;
@@ -1570,7 +1609,7 @@ document.getElementById('btnStockfishGo').addEventListener('click', ()=>{
 document.getElementById('btnCopyFen').addEventListener('click', async ()=>{
   if(!state.fenHistory.length) return;
   const fen = state.fenHistory[state.viewIndex];
-  try{ await navigator.clipboard.writeText(fen); toast('FEN payload attached to clipboard'); }
+  try{ await navigator.clipboard.writeText(fen); toast('FEN copied to clipboard'); }
   catch(e){ toast(fen); }
 });
 document.getElementById('btnCopyPgn').addEventListener('click', async ()=>{
@@ -1581,8 +1620,8 @@ document.getElementById('btnCopyPgn').addEventListener('click', async ()=>{
     state.sanHistory.forEach(san=>g.move(san));
     pgn = g.pgn();
   }catch(e){ pgn = ''; }
-  try{ await navigator.clipboard.writeText(pgn); toast('PGN dynamic logs copied'); }
-  catch(e){ toast('Failed parsing notation stream.'); }
+  try{ await navigator.clipboard.writeText(pgn); toast('PGN copied to clipboard'); }
+  catch(e){ toast('Couldn\'t copy the PGN — try again.'); }
 });
 
 /* ---- keyboard shortcuts ---- */
@@ -1612,11 +1651,11 @@ function renderStats(){
   document.getElementById('stAttempts').textContent = s.totalAttempts;
 }
 document.getElementById('btnResetStats').addEventListener('click', ()=>{
-  if(!confirm('Purge structural execution logs permanently?')) return;
+  if(!confirm('Reset all your stats? This can\'t be undone.')) return;
   state.stats = loadStats();
   localStorage.removeItem('knt_stats');
   renderStats();
-  toast('Logs purged cleanly.');
+  toast('Stats cleared — fresh start.');
 });
 
 /* ============================================================
