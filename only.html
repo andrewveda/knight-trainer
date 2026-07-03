@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Knight Trainer</title>
+<meta name="description" content="Every player falls for the knight eventually. Train its forks, outposts and mating nets in bite-sized puzzles and start thinking like a tactician today.">
+<meta name="theme-color" content="#0b0e14">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230b0e14'/%3E%3Ctext x='50' y='68' font-size='60' text-anchor='middle' fill='%23d4af37'%3E%E2%99%9E%3C/text%3E%3C/svg%3E">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="bg-glow"><span></span><span></span><span></span></div>
+<div class="bg-pieces" aria-hidden="true">
+  <span style="left:8%;top:10%;">&#9822;</span><span style="left:70%;top:6%;animation-delay:-6s;">&#9822;</span>
+  <span style="left:30%;top:60%;animation-delay:-12s;">&#9822;</span><span style="left:85%;top:55%;animation-delay:-4s;">&#9822;</span>
+</div>
+
+<section id="screen-home" class="screen active">
+  <div class="home-header">
+    <h1>Knight Trainer</h1>
+    <p>It's the piece every player falls for first! Brilliant and impossible to predict. Train its patterns here and start thinking like a tactician.</p>
+  </div>
+
+  <div class="section-label">1. Choose Your Level</div>
+  <div class="quick-row" id="difficultyRow">
+    <div class="chip glass active" data-diff="easy">Easy</div>
+    <div class="chip glass" data-diff="medium">Medium</div>
+    <div class="chip glass" data-diff="hard">Hard</div>
+  </div>
+
+  <div class="section-label">Fast Track</div>
+  <div class="quick-row">
+    <div class="chip glass" id="chipRandom">&#127922; Surprise Me</div>
+    <div class="chip glass" id="chipFav">&#11088; My Favorites</div>
+    <div class="chip glass" id="chipRecent">&#128344; Pick Up Where I Left Off</div>
+  </div>
+
+  <div class="section-label">2. Choose Your Pattern</div>
+  <div class="theme-search-box">
+    <input type="text" id="themeSearch" placeholder="Search knight patterns — try &ldquo;fork,&rdquo; &ldquo;mate,&rdquo; or &ldquo;sacrifice&rdquo;&hellip;">
+  </div>
+  
+  <div class="theme-grid" id="themeGrid">
+    <div class="loading"><div class="spinner"></div>Warming up the knight&hellip;</div>
+  </div>
+</section>
+
+<section id="screen-trainer" class="screen">
+  <div class="topbar">
+    <button class="back-btn" id="trainerBack">&larr;</button>
+    <h2 id="trainerTitle">Knight Training Ground</h2>
+  </div>
+
+  <div class="trainer-wrap">
+    <div class="board-col">
+      <div class="board-shell">
+        <div id="board"></div>
+        <div id="promoOverlay" class="glass hidden" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 70; gap: 12px; background: rgba(11, 14, 20, 0.85); border-radius: 10px;"></div>
+        <svg id="boardArrows" class="board-arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+        <div id="loadingOverlay" class="loading hidden">
+          <div class="spinner"></div>
+          <div>Setting the board&hellip;</div>
+        </div>
+      </div>
+      <div class="board-toolbar">
+        <button class="icon-btn" id="btnFlip" title="Flip the board">&#8645;</button>
+        <div class="status-bar info" id="statusBar">Pick a pattern to begin your training</div>
+        <button class="icon-btn" id="btnFavorite" title="Save this puzzle">&#9734;</button>
+      </div>
+      <div class="nav-row">
+        <button class="icon-btn" id="btnFirst" title="Back to the beginning">&#9198;</button>
+        <button class="icon-btn" id="btnPrev" title="Step back one move">&#9664;</button>
+        <button class="icon-btn" id="btnReset" title="Run it back">&#10227;</button>
+        <button class="icon-btn" id="btnNextMove" title="Step forward one move">&#9654;</button>
+        <button class="icon-btn" id="btnLast" title="Jump to the end">&#9197;</button>
+      </div>
+      <div class="action-row">
+        <button class="btn" id="btnHint">&#128161; Give Me a Clue</button>
+        <button class="btn" id="btnSolution">&#128214; Show the Line</button>
+        <button class="btn primary" id="btnNext">Next Drill &rarr;</button>
+      </div>
+    </div>
+
+    <div class="side-panel">
+      <div class="info-card glass" id="puzzleInfoCard">
+        <h3>Puzzle Intel</h3>
+        <div class="info-row"><span>Pattern</span><span class="v" id="infoPiece">&mdash;</span></div>
+        <div class="info-row"><span>Level</span><span class="v" id="infoDifficulty">&mdash;</span></div>
+        <div class="info-row"><span>Rating</span><span class="v" id="infoRating">&mdash;</span></div>
+        <div class="info-row"><span>Puzzle ID</span><span class="v" id="infoId">&mdash;</span></div>
+        <div class="info-row"><span>Move</span><span class="v" id="infoMoveCount">&mdash;</span></div>
+        <div class="info-row"><span>Solved This Session</span><span class="v" id="infoSession">0</span></div>
+      </div>
+      <div class="info-card glass">
+        <h3>Stockfish Engine <span id="engineLiveDot" style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0;">&#9675; idle</span></h3>
+        <div class="engine-compact-row">
+          <span>Eval <strong id="engineEval">&mdash;</strong></span>
+          <span>Depth <strong id="engineDepth">&mdash;</strong></span>
+          <span>Best <strong id="engineBest">&mdash;</strong></span>
+        </div>
+        <div class="engine-toggle-row">
+          <div><div class="lbl">Free Play Mode</div><div class="sub">Try any move &mdash; there's no wrong answer here</div></div>
+          <div class="switch small" id="toggleAnalysis"><div class="knob"></div></div>
+        </div>
+        <div class="mini-actions">
+          <button class="btn" id="btnStockfishGo">&#9654; Let the Engine Continue</button>
+        </div>
+      </div>
+      <div class="info-card glass">
+        <h3>Move List</h3>
+        <div class="move-list" id="moveList">&mdash;</div>
+        <div class="mini-actions">
+          <button class="btn" id="btnCopyFen">Copy FEN</button>
+          <button class="btn" id="btnCopyPgn">Copy PGN</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="screen-stats" class="screen">
+  <div class="topbar"><h2>Statistics</h2></div>
+  <div class="stats-grid">
+    <div class="stat-card glass"><div class="big" id="stTotal">0</div><div class="lbl">Puzzles Solved</div></div>
+    <div class="stat-card glass"><div class="big" id="stAccuracy">0%</div><div class="lbl">Accuracy</div></div>
+    <div class="stat-card glass"><div class="big" id="stStreak">0</div><div class="lbl">Current Streak</div></div>
+    <div class="stat-card glass"><div class="big" id="stBest">0</div><div class="lbl">Best Streak</div></div>
+    <div class="stat-card glass"><div class="big" id="stAvgRating">&mdash;</div><div class="lbl">Avg Rating</div></div>
+    <div class="stat-card glass"><div class="big" id="stDaily">0</div><div class="lbl">Solved Today</div></div>
+    <div class="stat-card glass"><div class="big" id="stTime">0m</div><div class="lbl">Training Time</div></div>
+    <div class="stat-card glass"><div class="big" id="stAttempts">0</div><div class="lbl">Total Attempts</div></div>
+  </div>
+  <div style="text-align:center; margin-top:24px; padding-bottom:20px;">
+    <button class="btn danger" id="btnResetStats">Reset Statistics</button>
+  </div>
+</section>
+
+<section id="screen-settings" class="screen">
+  <div class="simple-screen">
+    <div class="topbar" style="padding:2px 0 4px;"><h2>Settings</h2></div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Sound</div><div class="sub">Hear every correct strike and missed shot</div></div>
+      <div class="switch on" id="toggleSound"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Animations</div><div class="sub">Visual shake and transition effects</div></div>
+      <div class="switch on" id="toggleAnim"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Coordinates</div><div class="sub">Show board file and rank labels</div></div>
+      <div class="switch on" id="toggleCoords"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Flip Board Automatically</div><div class="sub">Always face the side you're training</div></div>
+      <div class="switch" id="toggleAutoFlip"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Auto-Advance</div><div class="sub">Keep the reps coming &mdash; no tapping required</div></div>
+      <div class="switch" id="toggleAutoAdvance"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Piece Style</div></div>
+      <select class="select-pill" id="selPieceStyle">
+        <option value="wikipedia">Classic</option>
+        <option value="alpha">Alpha</option>
+        <option value="merida">Merida</option>
+      </select>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Board Color</div></div>
+      <div class="color-row" id="boardColorRow">
+        <div class="color-dot" data-c="brown" style="background:#b58863;"></div>
+        <div class="color-dot" data-c="green" style="background:#779556;"></div>
+        <div class="color-dot" data-c="blue" style="background:#4b6f9e;"></div>
+        <div class="color-dot" data-c="gray" style="background:#6e6e6e;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="screen-about" class="screen">
+  <div class="simple-screen">
+    <div class="topbar" style="padding:2px 0 4px;"><h2>About</h2></div>
+    <div class="about-card glass">
+      <h3>Welcome to the Knight's Academy</h3>
+      <p>Ask any player which piece they fell in love with first, and most will say the <strong>knight</strong>. It jumps where nothing else can, threatens two pieces at once, and turns &ldquo;impossible&rdquo; positions into forced wins. Beginners light up the moment they spot their first fork. Grandmasters still smile at a well-placed outpost. This is where that love affair becomes a skill.</p>
+      <p>Chess strength is built from pattern recognition, not memorization. Every puzzle here isolates one knight idea &mdash; a fork, an outpost, a mating net like <strong>Anastasia's</strong> or the <strong>Arabian</strong> &mdash; so your brain can drill it until it's instinct. Short reps, tight feedback, real progress. That's deliberate practice, knight-style.</p>
+      <p>Train a little every day and you won't just get better at chess &mdash; you'll start seeing the whole board differently. Welcome to your knight era.</p>
+      <p>Keyboard shortcuts: <strong>&larr;</strong> / <strong>&rarr;</strong> step through moves, <strong>H</strong> for a clue, <strong>N</strong> for the next puzzle.</p>
+    </div>
+  </div>
+</section>
+
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-screen="home"><span class="ic">&#9822;</span>Home</button>
+  <button class="nav-btn" data-screen="stats"><span class="ic">&#128202;</span>Stats</button>
+  <button class="nav-btn" data-screen="settings"><span class="ic">&#9881;&#65039;</span>Settings</button>
+  <button class="nav-btn" data-screen="about"><span class="ic">&#8505;&#65039;</span>About</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
