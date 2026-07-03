@@ -13,75 +13,34 @@
      EXTERNAL LIBRARIES (the only two allowed)
      ============================================================ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+<link rel="stylesheet" href="https://cdnjs.chessboardjs.com/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
 
 <style>
-   /* ============================================================
-   JONY IVE METICULOUS DESIGN SYSTEM TOKENS
-   ============================================================ */
+/* ============================================================
+     DESIGN TOKENS & SYSTEM DEFAULTS
+     ============================================================ */
 :root {
-  --bg-dark: #0d0e12;
-  --bg-light: #fcfbfa;
-  --surface-dark: rgba(255, 255, 255, 0.03);
-  --surface-light: rgba(13, 14, 18, 0.02);
-  
-  --border-dark: rgba(197, 160, 89, 0.15);
-  --border-light: rgba(13, 14, 18, 0.06);
-  
-  /* Antique Metallic Gold Accents */
-  --gold: #c5a059;
-  --gold-cream: #f4edd9;
-  --gold-deep: #8a6d32;
-  
-  /* Soft Premium Historical Pastels */
-  --pastel-sage: #e3ece4;
-  --pastel-sage-text: #3b4e3d;
-  --pastel-terracotta: #f5eae6;
-  --pastel-terra-text: #6e4436;
-  --pastel-blue: #e3ecf0;
-  --pastel-blue-text: #344d5c;
-  
-  --text-dark: #e6e5df;
-  --text-dark-dim: #909296;
-  --text-light: #1c1d21;
-  --text-light-dim: #707278;
-  
-  /* State Feedbacks */
-  --green-soft: #ddead1;
-  --green-text: #2b4c2d;
-  --red-soft: #fada8a;
-  --red-text: #5c3818;
-  
-  --radius-lg: 24px;
-  --radius-md: 14px;
-  --radius-sm: 8px;
-  
-  --serif: 'Cormorant Garamond', Georgia, serif;
-  --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  
-  /* Default dynamic fallback variables */
-  --bg: var(--bg-dark);
-  --text: var(--text-dark);
-  --text-dim: var(--text-dark-dim);
-  --panel: var(--surface-dark);
-  --panel-border: var(--border-dark);
-}
-
-/* Dynamic State Custom Theme Classes */
-body.theme-light {
-  --bg: var(--bg-light);
-  --text: var(--text-light);
-  --text-dim: var(--text-light-dim);
-  --panel: var(--surface-light);
-  --panel-border: var(--border-light);
+  --bg: #0b0e14;
+  --bg2: #11151f;
+  --panel: rgba(255, 255, 255, 0.045);
+  --panel-border: rgba(212, 175, 55, 0.16);
+  --gold: #d4af37;
+  --gold-soft: #e8cf76;
+  --teal: #1f3a3a;
+  --text: #e8e6df;
+  --text-dim: #9aa0ad;
+  --green: #5fbf6e;
+  --red: #e1564e;
+  --radius: 18px;
+  --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
-  letter-spacing: -0.01em;
 }
 
 html, body {
@@ -91,365 +50,395 @@ html, body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--sans);
-  overflow: hidden;
-  transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-x: hidden;
 }
 
 body {
   position: fixed;
   inset: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-h1, h2, h3, h4 {
+h1, h2, h3 {
   font-family: var(--serif);
-  font-weight: 400;
+  font-weight: 600;
+  letter-spacing: 0.2px;
   margin: 0;
-  color: var(--text);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--panel-border);
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* ============================================================
-   AMBIENT LUXURY LAYER ARCHITECTURE
-   ============================================================ */
-.canvas-glow {
+     AMBIENT VISUAL EFFECTS
+     ============================================================ */
+.bg-glow {
   position: fixed;
   inset: 0;
   z-index: -1;
   overflow: hidden;
-  pointer-events: none;
 }
 
-.canvas-glow ::after {
-  content: '';
+.bg-glow span {
   position: absolute;
-  width: 500px;
-  height: 500px;
   border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.05;
-  background: var(--gold);
-  top: -150px;
-  left: -100px;
+  filter: blur(70px);
+  opacity: 0.18;
+  animation: float 16s ease-in-out infinite;
 }
 
-body.theme-light .canvas-glow ::after {
-  opacity: 0.035;
+.bg-glow span:nth-child(1) { width: 340px; height: 340px; background: var(--gold); top: -80px; left: -60px; animation-duration: 18s; }
+.bg-glow span:nth-child(2) { width: 260px; height: 260px; background: var(--teal); bottom: -60px; right: -40px; animation-duration: 22s; animation-delay: 2s; }
+.bg-glow span:nth-child(3) { width: 200px; height: 200px; background: #4a3f6b; top: 40%; left: 60%; animation-duration: 20s; animation-delay: 4s; }
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(30px, -25px); }
 }
 
-.glass-panel {
+.bg-pieces {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.04;
+  font-size: 120px;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bg-pieces span {
+  position: absolute;
+  animation: drift 30s linear infinite;
+}
+
+@keyframes drift {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(-40px) rotate(8deg); }
+}
+
+.glass {
   background: var(--panel);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   border: 1px solid var(--panel-border);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.02);
+  border-radius: var(--radius);
 }
 
 /* ============================================================
-   NAVIGATION & APPLICATION BASE FRAMEWORK
-   ============================================================ */
+     SCREEN ARCHITECTURE & APPLICATION BASE
+     ============================================================ */
 .screen {
   display: none;
+  animation: fadeIn 0.35s ease;
   flex: 1;
   overflow-y: auto;
-  padding: 24px 24px 120px;
-  animation: viewTransition 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0 16px 100px;
 }
 
 .screen.active {
   display: block;
 }
 
-@keyframes viewTransition {
-  from { opacity: 0; transform: translateY(6px); }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  max-width: 1040px;
-  margin: 0 auto 20px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--panel-border);
+  gap: 10px;
+  padding: 18px 0 4px;
+  max-width: 760px;
+  margin: 0 auto;
 }
 
 .topbar h2 {
-  font-size: 26px;
-  font-style: italic;
+  font-size: 22px;
 }
 
 .back-btn {
   background: none;
   border: none;
   color: var(--gold);
-  font-family: var(--serif);
-  font-size: 28px;
+  font-size: 22px;
   cursor: pointer;
-  padding: 0 10px;
-  transition: opacity 0.2s;
+  padding: 4px 8px;
 }
 
-.back-btn:hover { opacity: 0.7; }
-
-.section-caption {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.15em;
+.section-label {
+  padding: 18px 0 6px;
+  font-size: 12px;
+  letter-spacing: 1.4px;
   text-transform: uppercase;
   color: var(--text-dim);
   text-align: center;
-  margin: 32px 0 16px;
 }
 
-/* Premium Inputs */
-.search-container {
-  max-width: 480px;
-  margin: 0 auto 32px;
-  position: relative;
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 14px;
+  color: var(--text-dim);
 }
 
-.search-container input {
-  width: 100%;
-  padding: 14px 20px;
-  background: var(--panel);
+.spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid var(--panel-border);
+  border-top-color: var(--gold);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 24, 33, 0.95);
   border: 1px solid var(--panel-border);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  font-family: var(--sans);
-  font-size: 14px;
-  outline: none;
-  text-align: center;
-  transition: border-color 0.3s;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 13px;
+  z-index: 80;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s, transform .25s;
 }
 
-.search-container input:focus {
-  border-color: var(--gold);
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-6px);
 }
 
-/* Premium Buttons & Interactive Chips */
+.hidden { display: none !important; }
+
+/* ============================================================
+     INTERACTIVE REUSABLE COMPONENTS
+     ============================================================ */
 .btn {
   font-family: var(--sans);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  padding: 12px 24px;
-  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 11px 16px;
+  border-radius: 12px;
   border: 1px solid var(--panel-border);
   background: var(--panel);
   color: var(--text);
   cursor: pointer;
-  transition: all 0.2s ease;
+  min-height: 42px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-.btn:hover {
-  border-color: var(--gold);
-}
-
-.btn.primary {
-  background: var(--gold);
-  color: #fff;
-  border: none;
-}
-body.theme-light .btn.primary { color: var(--bg-light); }
-
-.btn.primary:hover {
-  background: var(--gold-deep);
-}
-
-.btn.danger {
-  background: transparent;
-  border-color: rgba(225, 86, 78, 0.2);
-  color: #e1564e;
-}
+.btn:active { transform: scale(0.96); }
+.btn:disabled { opacity: 0.35; cursor: default; transform: none; }
+.btn.primary { background: linear-gradient(135deg, var(--gold-soft), var(--gold)); color: #1a1404; border: none; }
+.btn.danger { border-color: rgba(225, 86, 78, 0.4); color: var(--red); }
 
 .icon-btn {
   background: var(--panel);
   border: 1px solid var(--panel-border);
   color: var(--text);
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-md);
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
   cursor: pointer;
-  transition: all 0.2s;
 }
-.icon-btn:hover { border-color: var(--gold); }
 
-.pill-group {
+.icon-btn:active { transform: scale(0.92); }
+.icon-btn:disabled { opacity: 0.35; cursor: default; }
+
+.chip {
+  flex: 0 0 auto;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.chip:active { transform: scale(0.96); }
+.chip.active { border-color: var(--gold); color: var(--gold-soft); background: rgba(212, 175, 55, 0.1); }
+
+.quick-row {
   display: flex;
-  gap: 8px;
+  gap: 10px;
+  padding: 0 0 20px;
   overflow-x: auto;
   justify-content: center;
-  padding-bottom: 8px;
 }
-
-.pill {
-  padding: 10px 20px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  background: var(--panel);
-  border: 1px solid var(--panel-border);
-  color: var(--text-dim);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.pill.active {
-  background: var(--gold);
-  color: #fff !important;
-  border-color: var(--gold);
-}
-body.theme-light .pill.active { color: var(--bg-light) !important; }
 
 .switch {
   position: relative;
-  width: 42px;
-  height: 24px;
+  width: 46px;
+  height: 26px;
   border-radius: 999px;
-  background: rgba(120, 120, 128, 0.16);
+  background: rgba(255, 255, 255, 0.12);
   cursor: pointer;
-  transition: background-color 0.2s;
 }
+
 .switch.on { background: var(--gold); }
-.switch .knob {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  transition: left 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.switch.on .knob { left: 20px; }
+.switch .knob { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: left .18s; }
+.switch.on .knob { left: 23px; }
+
+.switch.small { width: 38px; height: 22px; }
+.switch.small .knob { width: 16px; height: 16px; top: 3px; left: 3px; }
+.switch.small.on .knob { left: 19px; }
 
 /* ============================================================
-   THE ARCHITECTURAL THEME CARDS (EDITORIAL LUXURY LOOK)
-   ============================================================ */
-.theme-matrix {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
-  max-width: 1040px;
-  margin: 0 auto;
+     HOME MODULE
+     ============================================================ */
+.home-header {
+  padding: 48px 20px 18px;
+  text-align: center;
 }
 
-.editorial-card {
+.home-header h1 {
+  font-size: clamp(28px, 7vw, 42px);
+  background: linear-gradient(135deg, var(--gold-soft), var(--gold) 60%, #fff3d0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.home-header p {
+  color: var(--text-dim);
+  margin-top: 8px;
+  font-size: 15px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.theme-search-box {
+  max-width: 500px;
+  margin: 0 auto 16px;
+}
+
+.theme-search-box input {
+  width: 100%;
+  padding: 12px 16px;
   background: var(--panel);
   border: 1px solid var(--panel-border);
-  border-radius: var(--radius-lg);
-  padding: 28px 24px;
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+}
+
+.theme-search-box input:focus { border-color: var(--gold); }
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  max-width: 840px;
+  margin: 0 auto;
+  padding-bottom: 24px;
+}
+
+.theme-card {
+  position: relative;
+  overflow: hidden;
+  padding: 16px 14px;
   cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+  user-select: none;
+  -webkit-user-select: none;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 160px;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  overflow: hidden;
+  min-height: 95px;
 }
 
-.editorial-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 4px;
-  background: transparent;
-  transition: background-color 0.3s;
-}
+.theme-card:active { transform: scale(0.97); }
+.theme-card.selected { border-color: var(--gold); background: rgba(212, 175, 55, 0.08); }
+.theme-card .tname { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--text); word-break: break-word; }
+.theme-card .tcount { margin-top: 8px; font-size: 11px; color: var(--gold-soft); letter-spacing: 0.4px; }
+.theme-card .ripple { position: absolute; border-radius: 50%; background: rgba(212, 175, 55, 0.35); transform: scale(0); animation: rip 0.6s ease-out; pointer-events: none; }
 
-.editorial-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--gold);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.04);
-}
-
-.editorial-card.selected::before {
-  background: var(--gold);
-}
-
-.editorial-card .card-title {
-  font-family: var(--serif);
-  font-size: 22px;
-  line-height: 1.2;
-  color: var(--text);
-}
-
-.editorial-card .card-metric {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  margin-top: 20px;
-}
-
-/* Custom Soft Pastel Classes for Particular Card Variations */
-.editorial-card.pastel-0 { background: var(--pastel-sage); border-color: transparent; }
-.editorial-card.pastel-0 .card-title { color: var(--pastel-sage-text); }
-.editorial-card.pastel-0 .card-metric { color: var(--pastel-sage-text); opacity: 0.7; }
-
-.editorial-card.pastel-1 { background: var(--pastel-terracotta); border-color: transparent; }
-.editorial-card.pastel-1 .card-title { color: var(--pastel-terra-text); }
-.editorial-card.pastel-1 .card-metric { color: var(--pastel-terra-text); opacity: 0.7; }
-
-.editorial-card.pastel-2 { background: var(--pastel-blue); border-color: transparent; }
-.editorial-card.pastel-2 .card-title { color: var(--pastel-blue-text); }
-.editorial-card.pastel-2 .card-metric { color: var(--pastel-blue-text); opacity: 0.7; }
+@keyframes rip { to { transform: scale(2.5); opacity: 0; } }
 
 /* ============================================================
-   TRAINER FLUID WORKSPACE ARCHITECTURE
-   ============================================================ */
-.workspace {
+     TRAINER GROUND MODULE (FLUID TWO-COLUMN WORKSPACE)
+     ============================================================ */
+.trainer-wrap {
   display: flex;
   flex-direction: column;
-  max-width: 1040px;
+  max-width: 1000px;
   margin: 0 auto;
-  gap: 32px;
+  padding: 14px 0 20px;
+  gap: 20px;
 }
 
 @media (min-width: 768px) {
-  .workspace {
+  .trainer-wrap {
     flex-direction: row;
     align-items: flex-start;
   }
 }
 
-.board-column {
+.board-col {
   flex: 1.2;
   min-width: 0;
 }
 
-.board-container {
+.board-shell {
   max-width: 520px;
   margin: 0 auto;
   position: relative;
+  touch-action: manipulation;
 }
 
 #board {
   width: 100%;
   aspect-ratio: 1 / 1;
-  border-radius: var(--radius-lg);
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06);
-  border: 1px solid var(--panel-border);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
 }
 
-/* Eliminate native image selection highlights on the board architecture */
 #board, #board * {
-  user-select: none !important;
-  -webkit-user-select: none !important;
-  -webkit-user-drag: none !important;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-user-drag: none;
+  user-drag: none;
 }
+
+#board img { pointer-events: auto; }
+#board [data-square] { touch-action: manipulation; }
 
 .board-arrows {
   position: absolute;
@@ -460,175 +449,249 @@ body.theme-light .pill.active { color: var(--bg-light) !important; }
   z-index: 6;
 }
 
-.workspace-controls {
+.board-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 4px 12px;
+  padding: 12px 2px 10px;
+  max-width: 520px;
+  margin: 0 auto;
 }
 
-.status-text {
-  font-family: var(--serif);
-  font-size: 18px;
-  font-style: italic;
-  color: var(--text-dim);
-  text-align: center;
+.status-bar {
   flex: 1;
-  padding: 0 12px;
+  text-align: center;
+  min-height: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  padding: 0 10px;
 }
-.status-text.correct { color: var(--gold-deep); }
-body.theme-light .status-text.correct { color: var(--gold); }
-.status-text.wrong { color: #c05c56; }
 
-.control-row {
+.status-bar.correct { color: var(--green); }
+.status-bar.wrong { color: var(--red); }
+.status-bar.info { color: var(--gold-soft); }
+
+.nav-row, .action-row {
   display: flex;
   gap: 8px;
+  max-width: 520px;
+  margin: 10px auto 0;
   justify-content: center;
-  margin-top: 8px;
   width: 100%;
 }
 
-.control-row .btn { flex: 1; }
+.action-row .btn {
+  flex: 1;
+}
 
-.meta-column {
+/* Chess Engine Board Overlay States */
+.sq-correct { box-shadow: inset 0 0 0 9999px rgba(95,191,110,0.45) !important; }
+.sq-wrong { animation: shake 0.4s; }
+.sq-hint { box-shadow: inset 0 0 0 9999px rgba(212,175,55,0.5) !important; }
+.sq-selected { box-shadow: inset 0 0 0 9999px rgba(212,175,55,0.32) !important; }
+.sq-legal, .sq-legal-capture { position: relative; }
+.sq-legal::after { content: ''; position: absolute; top: 50%; left: 50%; width: 26%; height: 26%; border-radius: 50%; background: rgba(20,18,14,0.32); transform: translate(-50%,-50%); pointer-events: none; }
+.sq-legal-capture::after { content: ''; position: absolute; inset: 6%; border-radius: 50%; border: 4px solid rgba(20,18,14,0.38); background: transparent; pointer-events: none; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* ============================================================
+     CONTROL UTILITIES PANEL
+     ============================================================ */
+.side-panel {
   flex: 1;
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
-.premium-card {
-  padding: 24px;
+.info-card {
+  padding: 16px;
 }
 
-.premium-card h3 {
+.info-card h3 {
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
   text-transform: uppercase;
+  letter-spacing: 1px;
   color: var(--text-dim);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
-.data-row {
+.info-row {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--panel-border);
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
-.data-row:last-child { border-bottom: none; }
-.data-row .val { color: var(--gold); font-weight: 500; }
-body.theme-light .data-row .val { color: var(--text-light); font-weight: 600; }
 
-/* Custom Overrides for chessboardjs Highlights to fit Ivy Vibe */
-.sq-correct { box-shadow: inset 0 0 0 9999px rgba(197, 160, 89, 0.25) !important; }
-.sq-hint { box-shadow: inset 0 0 0 9999px rgba(197, 160, 89, 0.4) !important; }
-.sq-selected { box-shadow: inset 0 0 0 9999px rgba(197, 160, 89, 0.15) !important; }
-.sq-legal::after { content: ''; position: absolute; top: 50%; left: 50%; width: 20%; height: 20%; border-radius: 50%; background: var(--gold); opacity: 0.4; transform: translate(-50%,-50%); }
+.info-row:last-child { border-bottom: none; }
+.info-row .v { color: var(--gold-soft); font-weight: 600; text-align: right; max-width: 60%; }
+
+/* Adaptive Engine Box Layout */
+.engine-compact-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 12px;
+  color: var(--text-dim);
+  padding-bottom: 12px;
+}
+
+.engine-compact-row strong { color: var(--gold-soft); font-weight: 700; }
+#engineLiveDot.searching { color: var(--gold-soft); animation: enginePulse 1s ease-in-out infinite; }
+
+@keyframes enginePulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+.engine-toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.engine-toggle-row .lbl { font-size: 13px; }
+.engine-toggle-row .sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+.mini-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.mini-actions .btn {
+  flex: 1;
+  padding: 8px 6px;
+  font-size: 12px;
+  min-height: 34px;
+}
+
+.move-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 0;
+  font-size: 13px;
+  max-height: 120px;
+  overflow-y: auto;
+  line-height: 1.9;
+  padding: 4px 0;
+}
+
+.move-list .mv { padding: 2px 7px; border-radius: 7px; cursor: pointer; color: var(--text-dim); }
+.move-list .mv:hover { background: rgba(255, 255, 255, 0.06); }
+.move-list .mv.current { background: rgba(212, 175, 55, 0.18); color: var(--gold-soft); font-weight: 700; }
+.move-list .mnum { color: var(--text-dim); font-size: 11px; padding-right: 2px; }
 
 /* ============================================================
-   STATS GRID ARCHITECTURE
-   ============================================================ */
-.analytics-grid {
+     ANALYTICS & HISTORICAL INSIGHTS MODULE
+     ============================================================ */
+.stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 16px;
-  max-width: 1040px;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  max-width: 760px;
   margin: 0 auto;
 }
 
-.analytics-card {
-  padding: 24px;
+.stat-card {
+  padding: 16px;
   text-align: center;
 }
 
-.analytics-card .num {
-  font-family: var(--serif);
-  font-size: 36px;
-  color: var(--gold);
-  line-height: 1;
-}
-
-.analytics-card .label {
-  font-size: 11px;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 8px;
-}
+.stat-card .big { font-family: var(--serif); font-size: 26px; color: var(--gold-soft); }
+.stat-card .lbl { font-size: 11px; color: var(--text-dim); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.6px; }
 
 /* ============================================================
-   GLOBAL LUXURY NAVIGATION SYSTEM
-   ============================================================ */
-.dock-container {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100;
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 6px;
-  border-radius: 999px;
+     PREFERENCES, UTILITIES & FOOTER SETTINGS
+     ============================================================ */
+.simple-screen {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.settings-row {
   display: flex;
-  gap: 4px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  margin-bottom: 10px;
 }
 
-body.theme-light .dock-container {
-  background: rgba(13, 14, 18, 0.04);
-  border-color: rgba(13, 14, 18, 0.06);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+.settings-row .lbl { font-size: 14px; }
+.settings-row .sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+.select-pill {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+  outline: none;
 }
 
-.dock-item {
+.color-row { display: flex; gap: 8px; }
+.color-dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; }
+
+.about-card {
+  padding: 22px;
+  line-height: 1.6;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.about-card h3 { color: var(--text); margin-bottom: 8px; }
+.about-card p { margin: 0 0 12px; }
+.about-card p:last-child { margin-bottom: 0; }
+
+/* ============================================================
+     GLOBAL NAVIGATION DOCK
+     ============================================================ */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
+  background: rgba(11, 14, 20, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--panel-border);
+}
+
+.nav-btn {
   background: none;
   border: none;
   color: var(--text-dim);
   font-family: var(--sans);
-  font-size: 12px;
-  font-weight: 500;
-  padding: 10px 20px;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 14px;
   cursor: pointer;
-  border-radius: 999px;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 10px;
+  transition: color .15s;
 }
 
-.dock-item.active {
-  background: var(--bg);
-  color: var(--gold);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.toast {
-  position: fixed;
-  bottom: 96px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--bg);
-  border: 1px solid var(--panel-border);
-  padding: 12px 24px;
-  border-radius: 999px;
-  font-size: 13px;
-  z-index: 200;
-  opacity: 0;
-  pointer-events: none;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(-4px);
-}
-
-.hidden { display: none !important; }
+.nav-btn .ic { font-size: 19px; }
+.nav-btn.active { color: var(--gold); }
 </style>
 </head>
 <body>
@@ -645,7 +708,7 @@ body.theme-light .dock-container {
 <section id="screen-home" class="screen active">
   <div class="home-header">
     <h1>Knight Tactical Trainer</h1>
-    <p>It's the piece every player falls for first — awkward, brilliant, and impossible to predict. Train its patterns here and start thinking like a tactician.</p>
+    <p>It's the piece every player falls for first! Brilliant and impossible to predict. Train its patterns here and start thinking like a tactician.</p>
   </div>
 
   <div class="section-label">1. Choose Your Level</div>
@@ -685,6 +748,7 @@ body.theme-light .dock-container {
     <div class="board-col">
       <div class="board-shell">
         <div id="board"></div>
+        <div id="promoOverlay" class="glass hidden" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 70; gap: 12px; background: rgba(11, 14, 20, 0.85); border-radius: 10px;"></div>
         <svg id="boardArrows" class="board-arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
         <div id="loadingOverlay" class="loading hidden">
           <div class="spinner"></div>
@@ -845,8 +909,8 @@ body.theme-light .dock-container {
 'use strict';
 
 /* ============================================================
-   CONFIGURATION
-   ============================================================ */
+     CONFIGURATION
+     ============================================================ */
 const CONFIG = {
   REPO_BASE: 'https://raw.githubusercontent.com/andrewveda/knight-trainer/main/data',
   CACHE_LIMIT: 30,
@@ -859,8 +923,8 @@ const CONFIG = {
 const IS_TOUCH_DEVICE = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
 
 /* ============================================================
-   STATE
-   ============================================================ */
+     STATE
+     ============================================================ */
 const state = {
   cache: new Map(),
   themesMeta: null,
@@ -890,9 +954,34 @@ const state = {
   analysisMode: false,
 };
 
+function getPromotionPieceUI(color) {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('promoOverlay');
+    overlay.innerHTML = '';
+    overlay.classList.remove('hidden');
+
+    ['q', 'r', 'b', 'n'].forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'icon-btn';
+      btn.style.cssText = 'width: 70px; height: 70px; border-radius: 14px; background: var(--bg2);';
+      
+      const img = document.createElement('img');
+      img.src = pieceThemeUrl(color + p.toUpperCase());
+      img.style.width = '100%';
+      
+      btn.appendChild(img);
+      btn.addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        resolve(p);
+      });
+      overlay.appendChild(btn);
+    });
+  });
+}
+
 /* ============================================================
-   STORAGE HELPERS
-   ============================================================ */
+     STORAGE HELPERS
+     ============================================================ */
 function loadJSON(key, fallback){
   try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
   catch(e){ return fallback; }
@@ -918,8 +1007,8 @@ function loadStats(){
 function saveStats(){ saveJSON('knt_stats', state.stats); }
 
 /* ============================================================
-   NETWORKING & THEME PROCESSING
-   ============================================================ */
+     NETWORKING & THEME PROCESSING
+     ============================================================ */
 async function fetchJSONCached(url){
   if(state.cache.has(url)) return state.cache.get(url);
   const res = await fetch(url);
@@ -951,8 +1040,8 @@ async function getPuzzlePayload(theme, difficulty) {
 }
 
 /* ============================================================
-   UCI MOVE PARSING
-   ============================================================ */
+     UCI MOVE PARSING
+     ============================================================ */
 function parseUCI(uci){
   return {
     from: uci.slice(0,2),
@@ -962,8 +1051,8 @@ function parseUCI(uci){
 }
 
 /* ============================================================
-   AUDIO ARCHITECTURE
-   ============================================================ */
+     AUDIO ARCHITECTURE
+     ============================================================ */
 let audioCtx = null;
 function beep(freq, duration, type='sine'){
   if(!state.settings.sound) return;
@@ -986,8 +1075,8 @@ const sfx = {
 };
 
 /* ============================================================
-   TOAST NOTIFICATION ENGINE
-   ============================================================ */
+     TOAST NOTIFICATION ENGINE
+     ============================================================ */
 let toastTimer = null;
 function toast(msg){
   const el = document.getElementById('toast');
@@ -998,8 +1087,8 @@ function toast(msg){
 }
 
 /* ============================================================
-   SCREEN CONTROL & VIEW SWAPPING
-   ============================================================ */
+     SCREEN CONTROL & VIEW SWAPPING
+     ============================================================ */
 function showScreen(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
@@ -1019,8 +1108,8 @@ document.getElementById('trainerBack').addEventListener('click', ()=>{
 });
 
 /* ============================================================
-   UI COMPONENT RENDERING (HOME SCREEN)
-   ============================================================ */
+     UI COMPONENT RENDERING (HOME SCREEN)
+     ============================================================ */
 function renderThemeGrid(filterText = '') {
   const grid = document.getElementById('themeGrid');
   if (!state.themesMeta) return;
@@ -1038,7 +1127,6 @@ function renderThemeGrid(filterText = '') {
     const card = document.createElement('div');
     card.className = 'theme-card glass' + (state.currentTheme === key ? ' selected' : '');
     
-    // Formatting matching TitleCase conventions
     const formattedName = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
     const specificCount = diffs[state.currentDifficulty] || 0;
 
@@ -1075,7 +1163,6 @@ function ripple(el, evt){
   setTimeout(()=>r.remove(), 650);
 }
 
-// Wire configuration event listeners
 document.querySelectorAll('#difficultyRow .chip').forEach(chip=>{
   chip.addEventListener('click', ()=>{
     document.querySelectorAll('#difficultyRow .chip').forEach(c=>c.classList.remove('active'));
@@ -1109,8 +1196,8 @@ document.getElementById('chipRecent').addEventListener('click', ()=>{
 });
 
 /* ============================================================
-   CHESSBOARD MANAGEMENT ENGINE
-   ============================================================ */
+     CHESSBOARD MANAGEMENT ENGINE
+     ============================================================ */
 function initBoardIfNeeded(){
   if(state.board) return;
   state.board = Chessboard('board', {
@@ -1132,17 +1219,11 @@ function initBoardIfNeeded(){
     if (square) onBoardSquareClick(square);
   });
 
-  // Block the native long-press "save/copy image" context menu on piece
-  // images and the board itself (this is what was popping up an
-  // Android/iOS "Download image" sheet on long-press).
   $boardEl.off('contextmenu.cpt').on('contextmenu.cpt', function(e){
     e.preventDefault();
     return false;
   });
 
-  // Belt-and-braces: also stop the native dragstart on the <img> pieces so
-  // the browser never starts its own image-drag gesture, which is what
-  // triggers the long-press callout on some mobile browsers.
   $boardEl.off('dragstart.cpt').on('dragstart.cpt', 'img', function(e){
     e.preventDefault();
     return false;
@@ -1187,7 +1268,7 @@ function loadPuzzle(themeKey, difficulty, puzzle){
   state.currentTheme = themeKey;
   state.currentDifficulty = difficulty;
   state.currentPuzzle = puzzle;
-  state.chess = new Chess(puzzle.f); // 'f' maps directly to initial FEN state
+  state.chess = new Chess(puzzle.f);
   state.moveCursor = 0;
   state.fenHistory = [puzzle.f];
   state.sanHistory = [];
@@ -1210,10 +1291,9 @@ function loadPuzzle(themeKey, difficulty, puzzle){
   updateNavButtons();
   updateMoveDisplay();
   
-  // Opponent setup instruction execution context
   setTimeout(()=>{
     if(state.currentPuzzle !== puzzle) return;
-    const puzzleMoves = puzzle.m.split(' '); // 'm' splits to standard notation sequence arrays
+    const puzzleMoves = puzzle.m.split(' ');
     applyMoveToBoard(puzzleMoves[0], true);
     state.moveCursor = 1;
     state.solving = true;
@@ -1226,7 +1306,7 @@ function renderPuzzleInfo(themeKey, difficulty, puzzle){
   const formatted = themeKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
   document.getElementById('infoPiece').textContent = formatted;
   document.getElementById('infoDifficulty').textContent = capitalize(difficulty);
-  document.getElementById('infoRating').textContent = puzzle.r ?? '—'; // 'r' maps to standard ELO ranking metrics
+  document.getElementById('infoRating').textContent = puzzle.r ?? '—';
   document.getElementById('infoId').textContent = puzzle.id ?? '—';
   document.getElementById('infoSession').textContent = state.sessionSolved;
 }
@@ -1288,8 +1368,8 @@ function setDragEnabled(enabled){
 }
 
 /* ============================================================
-   TARGET SELECTION & INTERACTION VALIDATION
-   ============================================================ */
+     TARGET SELECTION & INTERACTION VALIDATION
+     ============================================================ */
 function squareEl(square) {
   return document.querySelector(`#board [data-square="${square}"]`);
 }
@@ -1330,7 +1410,8 @@ function canSelect(square){
   if(!piece) return false;
   return (vc.turn() === 'w') === (piece.color === 'w');
 }
-function onBoardSquareClick(square){
+
+async function onBoardSquareClick(square){
   if(!state.fenHistory.length || !state.dragEnabled) return;
 
   if(!state.analysisMode){
@@ -1349,13 +1430,13 @@ function onBoardSquareClick(square){
       return;
     }
 
-    const outcome = state.analysisMode
-      ? attemptFreeMove(state.selectedSquare, square)
-      : attemptSolvingMove(state.selectedSquare, square);
-
+    const fromSquare = state.selectedSquare;
     clearHighlights();
-    if(outcome === 'accepted'){
-      state.board.position(state.chess.fen());
+    
+    if(state.analysisMode) {
+      await attemptFreeMove(fromSquare, square);
+    } else {
+      await attemptSolvingMove(fromSquare, square);
     }
     return;
   }
@@ -1365,7 +1446,31 @@ function onBoardSquareClick(square){
   }
 }
 
-function attemptSolvingMove(source, target){
+function onDrop(source, target){
+  clearHighlights();
+  
+  const currentPiece = state.chess.get(source);
+  const isPromo = currentPiece && currentPiece.type === 'p' && (target[1] === '8' || target[1] === '1');
+  
+  if (isPromo) {
+    setTimeout(async () => {
+      if(state.analysisMode) {
+        await attemptFreeMove(source, target);
+      } else {
+        await attemptSolvingMove(source, target);
+      }
+    }, 50);
+    return undefined; 
+  }
+
+  if(state.analysisMode) {
+    attemptFreeMove(source, target).then(res => { if(res === 'rejected') state.board.position(state.chess.fen()); });
+  } else {
+    attemptSolvingMove(source, target).then(res => { if(res === 'rejected') state.board.position(state.chess.fen()); });
+  }
+}
+
+async function attemptSolvingMove(source, target){
   if(!state.dragEnabled || !state.solving) return 'rejected';
   const puzzleMoves = state.currentPuzzle.m.split(' ');
   if(!state.currentPuzzle || state.moveCursor >= puzzleMoves.length) return 'rejected';
@@ -1385,9 +1490,17 @@ function attemptSolvingMove(source, target){
 
   const isPromotion = (state.chess.get(source)||{}).type === 'p' && (target[1] === '8' || target[1] === '1');
   let promotionPiece = expected.promotion || 'q';
-  if(isPromotion && expected.promotion === 'q'){
-    const choice = window.prompt('Promote to — Queen(q), Rook(r), Bishop(b), or Knight(n)?', 'q');
-    if(choice && /^[qrbn]$/i.test(choice.trim())) promotionPiece = choice.trim().toLowerCase();
+  
+  if(isPromotion) {
+    const turnColor = state.chess.turn();
+    promotionPiece = await getPromotionPieceUI(turnColor);
+    if(promotionPiece !== expected.promotion) {
+      registerAttempt(false);
+      sfx.wrong();
+      toast('Wrong promotion piece option chosen.');
+      state.board.position(state.chess.fen());
+      return 'rejected';
+    }
   }
 
   const moveObj = { from: source, to: target, promotion: promotionPiece };
@@ -1415,10 +1528,11 @@ function attemptSolvingMove(source, target){
   }else{
     setTimeout(playNextAutoMove, CONFIG.AUTO_MOVE_DELAY);
   }
+  state.board.position(state.chess.fen());
   return 'accepted';
 }
 
-function attemptFreeMove(source, target){
+async function attemptFreeMove(source, target){
   const vc = viewChess();
   if(vc.game_over()) return 'rejected';
   const legalMoves = vc.moves({verbose:true});
@@ -1427,9 +1541,9 @@ function attemptFreeMove(source, target){
 
   const isPromotion = (vc.get(source)||{}).type === 'p' && (target[1] === '8' || target[1] === '1');
   let promotionPiece = 'q';
+  
   if(isPromotion){
-    const choice = window.prompt('Promote to — Queen(q), Rook(r), Bishop(b), or Knight(n)?', 'q');
-    if(choice && /^[qrbn]$/i.test(choice.trim())) promotionPiece = choice.trim().toLowerCase();
+    promotionPiece = await getPromotionPieceUI(vc.turn());
   }
 
   const result = vc.move({ from: source, to: target, promotion: promotionPiece });
@@ -1449,6 +1563,7 @@ function attemptFreeMove(source, target){
   updateMoveCounter();
   updateNavButtons();
   updateMoveDisplay();
+  state.board.position(state.chess.fen());
   return 'accepted';
 }
 
@@ -1458,11 +1573,6 @@ function onDragStart(source, piece){
   return true;
 }
 
-function onDrop(source, target){
-  clearHighlights();
-  const outcome = state.analysisMode ? attemptFreeMove(source, target) : attemptSolvingMove(source, target);
-  return outcome === 'accepted' ? undefined : 'snapback';
-}
 function onSnapEnd(){
   const fen = state.fenHistory[state.viewIndex] || (state.chess && state.chess.fen());
   if(fen) state.board.position(fen, false);
@@ -1509,8 +1619,8 @@ function finishPuzzle(){
 }
 
 /* ============================================================
-   STATS STORAGE & RETRIEVAL ENGINE
-   ============================================================ */
+     STATS STORAGE & RETRIEVAL ENGINE
+     ============================================================ */
 function registerAttempt(correct){
   state.stats.totalAttempts++;
   if(correct) state.stats.correctFirstTry++;
@@ -1540,8 +1650,8 @@ function addToRecents(theme, difficulty, puzzle){
 }
 
 /* ============================================================
-   HISTORICAL CONFIGURATION REVIEW
-   ============================================================ */
+     HISTORICAL CONFIGURATION REVIEW
+     ============================================================ */
 function renderMoveList(){
   const el = document.getElementById('moveList');
   const history = state.sanHistory || [];
@@ -1597,8 +1707,8 @@ document.getElementById('btnReset').addEventListener('click', ()=>{
 });
 
 /* ============================================================
-   INTERFACE COMMAND BINDINGS
-   ============================================================ */
+     INTERFACE COMMAND BINDINGS
+     ============================================================ */
 document.getElementById('btnHint').addEventListener('click', ()=>{
   if(!state.solving || !state.currentPuzzle) return toast('Pick a puzzle first — then I\'ll show you the way.');
   if(state.viewIndex !== state.fenHistory.length - 1){ toast('Jump back to the current position first.'); return; }
@@ -1668,8 +1778,8 @@ function updateFavoriteButton(){
 }
 
 /* ============================================================
-   STOCKFISH PROCESSING AND ARROW DATA VECTOR MATH
-   ============================================================ */
+     STOCKFISH PROCESSING AND ARROW DATA VECTOR MATH
+     ============================================================ */
 function squareCenterPct(square){
   const file = square.charCodeAt(0) - 97;
   const rank = parseInt(square[1], 10);
@@ -1888,8 +1998,8 @@ document.addEventListener('keydown', (e)=>{
 });
 
 /* ============================================================
-   STATISTICS RE-CALCULATION
-   ============================================================ */
+     STATISTICS RE-CALCULATION
+     ============================================================ */
 function renderStats(){
   const s = state.stats;
   document.getElementById('stTotal').textContent = s.totalSolved;
@@ -1912,8 +2022,8 @@ document.getElementById('btnResetStats').addEventListener('click', ()=>{
 });
 
 /* ============================================================
-   CONFIGURATION UTILITIES
-   ============================================================ */
+     CONFIGURATION UTILITIES
+     ============================================================ */
 function wireToggle(id, key, onChange){
   const el = document.getElementById(id);
   el.classList.toggle('on', !!state.settings[key]);
@@ -1968,8 +2078,8 @@ function refreshBoardPosition(animate){
 }
 
 /* ============================================================
-   INITIALIZATION
-   ============================================================ */
+     INITIALIZATION
+     ============================================================ */
 function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
 
 async function init(){
