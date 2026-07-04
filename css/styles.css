@@ -897,36 +897,7 @@ h1, h2, h3 {
   #screen-trainer.active .side-panel .info-card:nth-of-type(2) { grid-area: stockfish; }
   #screen-trainer.active .side-panel .info-card:nth-of-type(3) { grid-area: movelist; overflow-y: auto; min-height: 0; }
 }
-/* --- Home / directory screen: fill space, minimize dead area --- */
-  #screen-home.screen {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: 100%;
-    max-width: 1200px;
-    margin: 0 auto 0 220px;   /* was margin-left only — now truly centered in remaining space */
-    padding: 20px 40px 60px;
-  }
 
-  #screen-home .home-header { padding: 10px 20px 8px; }
-  #screen-home .section-label { padding: 16px 0 8px; }
-  #screen-home .quick-row { padding-bottom: 14px; }
-
-  #screen-home .theme-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 18px;
-    max-width: none;
-    width: 100%;      /* THE FIX: was shrink-wrapping via margin:0 auto inherited
-                         from base rule, which made the flex item shrink to
-                         content size instead of stretching — that's what
-                         caused the 2-column layout with dead space on both sides */
-    margin: 0;         /* cancel the inherited auto centering margins */
-  }
-
-  #screen-home .theme-card {
-    min-height: 130px;
-    padding: 22px 20px;
-  }
 
   #screen-home .theme-card .tname { font-size: 17px; }
   #screen-home .theme-card .tcount { font-size: 12px; }
