@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -555,17 +555,6 @@ h1, h2, h3 {
 
 @keyframes enginePulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
 
-.engine-toggle-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-  border-top: 1px solid rgba(139, 101, 44, 0.14);
-}
-
-.engine-toggle-row .lbl { font-size: 13px; }
-.engine-toggle-row .sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-
 .mini-actions {
   display: flex;
   gap: 8px;
@@ -994,21 +983,20 @@ h1, h2, h3 {
         <button class="icon-btn" id="btnLast" title="Jump to the end">⏭</button>
       </div>
       <div class="action-row">
-        <button class="btn" id="btnHint">💡 Give Me a Clue</button>
-        <button class="btn" id="btnSolution">📖 Show the Line</button>
-        <button class="btn primary" id="btnNext">Next Drill →</button>
+        <button class="btn" id="btnHint">💡 Hint</button>
+        <button class="btn" id="btnSolution">📖 Solution</button>
+        <button class="btn primary" id="btnNext">Next →</button>
       </div>
 
       <div class="info-card glass">
-        <h3>Stockfish Engine <span id="engineLiveDot" style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0;">○ idle</span></h3>
+        <h3>
+          <span>Stockfish Engine <span id="engineLiveDot" style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0;">○ idle</span></span>
+          <div class="switch small" id="toggleAnalysis"><div class="knob"></div></div>
+        </h3>
         <div class="engine-compact-row">
           <span>Eval <strong id="engineEval">—</strong></span>
           <span>Depth <strong id="engineDepth">—</strong></span>
           <span>Best <strong id="engineBest">—</strong></span>
-        </div>
-        <div class="engine-toggle-row">
-          <div><div class="lbl">Free Play Mode</div><div class="sub">Try any move — there's no wrong answer here</div></div>
-          <div class="switch small" id="toggleAnalysis"><div class="knob"></div></div>
         </div>
         <div class="mini-actions">
           <button class="btn" id="btnStockfishGo">▶ Let the Engine Continue</button>
