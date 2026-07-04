@@ -769,3 +769,96 @@ h1, h2, h3 {
     padding-bottom: 40px;
   }
 }
+/* ============================================================
+     DESKTOP LAYOUT OVERRIDES (≥900px)
+     ============================================================ */
+@media (min-width: 900px) {
+
+  /* --- Nav becomes a left sidebar --- */
+  .bottom-nav {
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: auto;
+    width: 220px;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: 6px;
+    padding: 40px 14px;
+    border-top: none;
+    border-bottom: none;
+    border-right: 1px solid var(--panel-border);
+    box-shadow: 2px 0 14px rgba(138, 100, 35, 0.06);
+  }
+
+  .nav-btn {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
+  .nav-btn .ic { font-size: 18px; }
+
+  .nav-btn.active {
+    background: rgba(165, 121, 46, 0.08);
+    box-shadow: inset 3px 0 0 var(--gold);
+  }
+
+  /* All screens shift right to clear the sidebar */
+  .screen {
+    margin-left: 220px;
+    padding: 40px 32px 40px;
+  }
+
+  /* --- Trainer screen: right-column reorder --- */
+  .trainer-wrap {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    grid-template-areas:
+      "board stockfish"
+      "board movelist"
+      "board toolbar"
+      "board navrow"
+      "board actionrow"
+      "board intel";
+    gap: 16px 28px;
+    align-items: start;
+    max-width: 1100px;
+  }
+
+  /* Un-nest board-col and side-panel so their children
+     become direct grid items and can be placed by area */
+  .board-col,
+  .side-panel {
+    display: contents;
+  }
+
+  .board-shell {
+    grid-area: board;
+    width: 100%;
+    max-width: 560px;
+    justify-self: center;
+    align-self: start;
+  }
+
+  /* Order in side-panel DOM: 1) puzzleInfoCard 2) engine card 3) move-list card */
+  .side-panel .info-card:nth-of-type(2) { grid-area: stockfish; }
+  .side-panel .info-card:nth-of-type(3) { grid-area: movelist; }
+  #puzzleInfoCard { grid-area: intel; }
+
+  .board-toolbar,
+  .nav-row,
+  .action-row {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+  }
+
+  .board-toolbar { grid-area: toolbar; }
+  .nav-row { grid-area: navrow; }
+  .action-row { grid-area: actionrow; }
+}
