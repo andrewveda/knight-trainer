@@ -398,8 +398,8 @@ h1, h2, h3 {
   flex-direction: column;
   max-width: 1000px;
   margin: 0 auto;
-  padding: 14px 0 20px;
-  gap: 20px;
+  padding: 8px 0 12px;
+  gap: 10px;
 }
 
 @media (min-width: 768px) {
@@ -454,7 +454,7 @@ h1, h2, h3 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 2px 10px;
+  padding: 6px 2px 4px;
   max-width: 520px;
   margin: 0 auto;
 }
@@ -477,7 +477,7 @@ h1, h2, h3 {
   display: flex;
   gap: 8px;
   max-width: 520px;
-  margin: 10px auto 0;
+  margin: 6px auto 0;
   justify-content: center;
   width: 100%;
 }
@@ -511,11 +511,11 @@ h1, h2, h3 {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .info-card {
-  padding: 16px;
+  padding: 12px;
 }
 
 .info-card h3 {
@@ -523,7 +523,7 @@ h1, h2, h3 {
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--text-dim);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -533,7 +533,7 @@ h1, h2, h3 {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
-  padding: 8px 0;
+  padding: 6px 0;
   border-bottom: 1px solid rgba(139, 101, 44, 0.14);
 }
 
@@ -547,7 +547,7 @@ h1, h2, h3 {
   gap: 6px 16px;
   font-size: 12px;
   color: var(--text-dim);
-  padding-bottom: 12px;
+  padding-bottom: 8px;
 }
 
 .engine-compact-row strong { color: var(--gold-soft); font-weight: 700; }
@@ -555,21 +555,10 @@ h1, h2, h3 {
 
 @keyframes enginePulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
 
-.engine-toggle-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-  border-top: 1px solid rgba(139, 101, 44, 0.14);
-}
-
-.engine-toggle-row .lbl { font-size: 13px; }
-.engine-toggle-row .sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-
 .mini-actions {
   display: flex;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .mini-actions .btn {
@@ -642,9 +631,6 @@ h1, h2, h3 {
   font-size: 13px;
   outline: none;
 }
-
-.color-row { display: flex; gap: 8px; }
-.color-dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(139,101,44,0.3); cursor: pointer; }
 
 .about-card {
   padding: 22px;
@@ -739,6 +725,10 @@ h1, h2, h3 {
     line-height: 1.55;
     color: var(--text-dim);
     margin: 8px 0 22px;
+  }
+
+  .sidebar-bottom {
+    margin-top: auto;
   }
 
   .sidebar-divider {
@@ -893,15 +883,6 @@ h1, h2, h3 {
   <div class="sidebar-brand">♞ Knight Trainer</div>
   <p class="sidebar-tagline">It's the piece every player falls for first. Train its patterns here and start thinking like a tactician.</p>
 
-  <nav class="sidebar-nav">
-    <button class="sidebar-btn active" data-screen="home"><span class="ic">♞</span>Home</button>
-    <button class="sidebar-btn" data-screen="stats"><span class="ic">📊</span>Stats</button>
-    <button class="sidebar-btn" data-screen="settings"><span class="ic">⚙️</span>Settings</button>
-    <button class="sidebar-btn" data-screen="about"><span class="ic">ℹ️</span>About</button>
-  </nav>
-
-  <div class="sidebar-divider"></div>
-
   <div class="sidebar-section" id="sidebarHomeControls">
     <div class="sidebar-search">
       <input type="text" id="dskThemeSearch" placeholder="Search patterns…">
@@ -920,6 +901,16 @@ h1, h2, h3 {
       <div class="sidebar-chip act-fav">⭐ My Favorites</div>
       <div class="sidebar-chip act-recent">🕘 Continue Recent</div>
     </div>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="sidebar-divider"></div>
+    <nav class="sidebar-nav">
+      <button class="sidebar-btn active" data-screen="home"><span class="ic">♞</span>Home</button>
+      <button class="sidebar-btn" data-screen="stats"><span class="ic">📊</span>Stats</button>
+      <button class="sidebar-btn" data-screen="settings"><span class="ic">⚙️</span>Settings</button>
+      <button class="sidebar-btn" data-screen="about"><span class="ic">ℹ️</span>About</button>
+    </nav>
   </div>
 </aside>
 
@@ -992,21 +983,20 @@ h1, h2, h3 {
         <button class="icon-btn" id="btnLast" title="Jump to the end">⏭</button>
       </div>
       <div class="action-row">
-        <button class="btn" id="btnHint">💡 Give Me a Clue</button>
-        <button class="btn" id="btnSolution">📖 Show the Line</button>
-        <button class="btn primary" id="btnNext">Next Drill →</button>
+        <button class="btn" id="btnHint">💡 Hint</button>
+        <button class="btn" id="btnSolution">📖 Solution</button>
+        <button class="btn primary" id="btnNext">Next →</button>
       </div>
 
       <div class="info-card glass">
-        <h3>Stockfish Engine <span id="engineLiveDot" style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0;">○ idle</span></h3>
+        <h3>
+          <span>Stockfish Engine <span id="engineLiveDot" style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0;">○ idle</span></span>
+          <div class="switch small" id="toggleAnalysis"><div class="knob"></div></div>
+        </h3>
         <div class="engine-compact-row">
           <span>Eval <strong id="engineEval">—</strong></span>
           <span>Depth <strong id="engineDepth">—</strong></span>
           <span>Best <strong id="engineBest">—</strong></span>
-        </div>
-        <div class="engine-toggle-row">
-          <div><div class="lbl">Free Play Mode</div><div class="sub">Try any move — there's no wrong answer here</div></div>
-          <div class="switch small" id="toggleAnalysis"><div class="knob"></div></div>
         </div>
         <div class="mini-actions">
           <button class="btn" id="btnStockfishGo">▶ Let the Engine Continue</button>
@@ -1084,17 +1074,7 @@ h1, h2, h3 {
       <select class="select-pill" id="selPieceStyle">
         <option value="wikipedia">Classic</option>
         <option value="alpha">Alpha</option>
-        <option value="merida">Merida</option>
       </select>
-    </div>
-    <div class="settings-row glass">
-      <div><div class="lbl">Board Color</div></div>
-      <div class="color-row" id="boardColorRow">
-        <div class="color-dot" data-c="brown" style="background:#a97c3f;"></div>
-        <div class="color-dot" data-c="green" style="background:#779556;"></div>
-        <div class="color-dot" data-c="blue" style="background:#4b6f9e;"></div>
-        <div class="color-dot" data-c="gray" style="background:#6e6e6e;"></div>
-      </div>
     </div>
   </div>
 </section>
@@ -2277,13 +2257,6 @@ document.getElementById('selPieceStyle').addEventListener('change', e=>{
   rebuildBoard();
 });
 
-document.querySelectorAll('#boardColorRow .color-dot').forEach(dot=>{
-  dot.addEventListener('click', ()=>{
-    state.settings.boardColor = dot.dataset.c;
-    saveSettings();
-    applyBoardColor();
-  });
-});
 function applyBoardColor(){
   const map = {
     brown:{light:'#ecdcb8',dark:'#a97c3f'},
