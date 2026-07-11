@@ -619,12 +619,24 @@ h1, h2, h3 {
   padding: 12px 16px;
 }
 
+.theme-stat-row .tsr-name-col {
+  flex: 0 0 170px;
+  min-width: 0;
+}
+
 .theme-stat-row .tsr-name {
-  flex: 0 0 150px;
   font-size: 13px;
   font-weight: 600;
   color: var(--text);
 }
+
+.theme-stat-row .tsr-breakdown {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 3px;
+}
+
+.theme-stat-row .tsr-breakdown span { color: var(--gold-soft); font-weight: 600; }
 
 .theme-stat-row .tsr-bar-track {
   flex: 1;
@@ -1200,7 +1212,7 @@ const state = {
   favorites: loadJSON('knt_favorites', []),
   recents: loadJSON('knt_recents', []),
   seenPuzzles: loadJSON('knt_seen', {}),
-  themeSolvedCounts: loadJSON('knt_theme_solved', {}),
+  themeSolvedCounts: migrateThemeSolvedCounts(loadJSON('knt_theme_solved', {})),
   selectedSquare: null,
   legalTargets: [],
   sf: null,
@@ -1251,6 +1263,24 @@ function loadSettings(){
   });
 }
 function saveSettings(){ saveJSON('knt_settings', state.settings); }
+
+function migrateThemeSolvedCounts(raw){
+  // Older versions stored a single flat number per theme (no difficulty split).
+  // Fold any legacy numeric values into 'easy' so history isn't lost, then re-save.
+  let changed = false;
+  const out = {};
+  Object.keys(raw || {}).forEach(theme => {
+    const v = raw[theme];
+    if(typeof v === 'number'){
+      out[theme] = { easy: v, medium: 0, hard: 0 };
+      changed = true;
+    }else{
+      out[theme] = { easy: v.easy || 0, medium: v.medium || 0, hard: v.hard || 0 };
+    }
+  });
+  if(changed) saveJSON('knt_theme_solved', out);
+  return out;
+}
 
 function loadStats(){
   return loadJSON('knt_stats', {
@@ -1410,12 +1440,12 @@ function renderThemeGrid(filterText = '') {
     
     const formattedName = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
     const specificCount = diffs[state.currentDifficulty] || 0;
-    const solvedCount = state.themeSolvedCounts[key] || 0;
+    const solvedCount = (state.themeSolvedCounts[key] && state.themeSolvedCounts[key][state.currentDifficulty]) || 0;
 
     card.innerHTML = `
       <div class="tname">${formattedName}</div>
       <div class="tcount">${specificCount.toLocaleString()} Puzzles (${state.currentDifficulty})</div>
-      <div class="tsolved">${solvedCount.toLocaleString()} solved</div>
+      <div class="tsolved">${solvedCount.toLocaleString()} solved (${state.currentDifficulty})</div>
     `;
     
     card.addEventListener('click', (e) => { 
@@ -1898,7 +1928,7 @@ function finishPuzzle(){
   setDragEnabled(false);
   clearHighlights();
   const elapsed = Date.now() - state.puzzleStartTime;
-  recordSolve(state.currentTheme, state.currentPuzzle.r, elapsed);
+  recordSolve(state.currentTheme, state.currentDifficulty, state.currentPuzzle.r, elapsed);
   addToRecents(state.currentTheme, state.currentDifficulty, state.currentPuzzle);
   state.sessionSolved++;
   document.getElementById('infoSession').textContent = state.sessionSolved;
@@ -1915,7 +1945,7 @@ function registerAttempt(correct){
   if(correct) state.stats.correctFirstTry++;
   saveStats();
 }
-function recordSolve(theme, rating, elapsedMs){
+function recordSolve(theme, difficulty, rating, elapsedMs){
   const s = state.stats;
   s.totalSolved++;
   s.currentStreak++;
@@ -1927,7 +1957,11 @@ function recordSolve(theme, rating, elapsedMs){
   s.dailyCount++;
   saveStats();
 
-  state.themeSolvedCounts[theme] = (state.themeSolvedCounts[theme] || 0) + 1;
+  if(!state.themeSolvedCounts[theme]){
+    state.themeSolvedCounts[theme] = { easy: 0, medium: 0, hard: 0 };
+  }
+  const bucket = state.themeSolvedCounts[theme];
+  bucket[difficulty] = (bucket[difficulty] || 0) + 1;
   saveJSON('knt_theme_solved', state.themeSolvedCounts);
 }
 function breakStreak(){
@@ -2311,26 +2345,33 @@ function renderThemeStatsList(){
   const el = document.getElementById('themeStatsList');
   const counts = state.themeSolvedCounts || {};
   const entries = Object.keys(counts)
-    .map(theme => ({ theme, count: counts[theme] || 0 }))
-    .filter(e => e.count > 0)
-    .sort((a, b) => b.count - a.count);
+    .map(theme => {
+      const b = counts[theme] || {};
+      const easy = b.easy || 0, medium = b.medium || 0, hard = b.hard || 0;
+      return { theme, easy, medium, hard, total: easy + medium + hard };
+    })
+    .filter(e => e.total > 0)
+    .sort((a, b) => b.total - a.total);
 
   if(!entries.length){
     el.innerHTML = `<div class="status-bar info">Solve a few puzzles to see your breakdown here.</div>`;
     return;
   }
 
-  const maxCount = entries[0].count;
+  const maxTotal = entries[0].total;
   el.innerHTML = '';
-  entries.forEach(({ theme, count }) => {
+  entries.forEach(({ theme, easy, medium, hard, total }) => {
     const formatted = theme.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-    const pct = maxCount ? Math.max(4, Math.round((count / maxCount) * 100)) : 0;
+    const pct = maxTotal ? Math.max(4, Math.round((total / maxTotal) * 100)) : 0;
     const row = document.createElement('div');
     row.className = 'theme-stat-row glass';
     row.innerHTML = `
-      <div class="tsr-name">${formatted}</div>
+      <div class="tsr-name-col">
+        <div class="tsr-name">${formatted}</div>
+        <div class="tsr-breakdown">Easy <span>${easy}</span> · Medium <span>${medium}</span> · Hard <span>${hard}</span></div>
+      </div>
       <div class="tsr-bar-track"><div class="tsr-bar-fill" style="width:${pct}%"></div></div>
-      <div class="tsr-count">${count.toLocaleString()}</div>
+      <div class="tsr-count">${total.toLocaleString()}</div>
     `;
     el.appendChild(row);
   });
