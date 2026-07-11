@@ -386,6 +386,7 @@ h1, h2, h3 {
 .theme-card.selected { border-color: var(--gold); background: rgba(168, 121, 42, 0.1); }
 .theme-card .tname { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--text); word-break: break-word; }
 .theme-card .tcount { margin-top: 8px; font-size: 11px; color: var(--gold-soft); letter-spacing: 0.4px; }
+.theme-card .tsolved { margin-top: 2px; font-size: 11px; color: var(--green); letter-spacing: 0.2px; font-weight: 600; }
 .theme-card .ripple { position: absolute; border-radius: 50%; background: rgba(168, 121, 42, 0.3); transform: scale(0); animation: rip 0.6s ease-out; pointer-events: none; }
 
 @keyframes rip { to { transform: scale(2.5); opacity: 0; } }
@@ -398,8 +399,8 @@ h1, h2, h3 {
   flex-direction: column;
   max-width: 1000px;
   margin: 0 auto;
-  padding: 8px 0 12px;
-  gap: 10px;
+  padding: 14px 0 20px;
+  gap: 20px;
 }
 
 @media (min-width: 768px) {
@@ -454,7 +455,7 @@ h1, h2, h3 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 2px 4px;
+  padding: 12px 2px 10px;
   max-width: 520px;
   margin: 0 auto;
 }
@@ -477,7 +478,7 @@ h1, h2, h3 {
   display: flex;
   gap: 8px;
   max-width: 520px;
-  margin: 6px auto 0;
+  margin: 10px auto 0;
   justify-content: center;
   width: 100%;
 }
@@ -511,11 +512,11 @@ h1, h2, h3 {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .info-card {
-  padding: 12px;
+  padding: 16px;
 }
 
 .info-card h3 {
@@ -523,7 +524,7 @@ h1, h2, h3 {
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--text-dim);
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -533,7 +534,7 @@ h1, h2, h3 {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
-  padding: 6px 0;
+  padding: 8px 0;
   border-bottom: 1px solid rgba(139, 101, 44, 0.14);
 }
 
@@ -547,7 +548,7 @@ h1, h2, h3 {
   gap: 6px 16px;
   font-size: 12px;
   color: var(--text-dim);
-  padding-bottom: 8px;
+  padding-bottom: 12px;
 }
 
 .engine-compact-row strong { color: var(--gold-soft); font-weight: 700; }
@@ -558,7 +559,7 @@ h1, h2, h3 {
 .mini-actions {
   display: flex;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .mini-actions .btn {
@@ -602,6 +603,50 @@ h1, h2, h3 {
 
 .stat-card .big { font-family: var(--serif); font-size: 26px; color: var(--gold-soft); }
 .stat-card .lbl { font-size: 11px; color: var(--text-dim); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.6px; }
+
+.theme-stats-list {
+  max-width: 760px;
+  margin: 20px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.theme-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+}
+
+.theme-stat-row .tsr-name {
+  flex: 0 0 150px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.theme-stat-row .tsr-bar-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(139, 101, 44, 0.14);
+  overflow: hidden;
+}
+
+.theme-stat-row .tsr-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--gold-soft), var(--gold));
+}
+
+.theme-stat-row .tsr-count {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--text-dim);
+  min-width: 46px;
+  text-align: right;
+}
 
 /* ============================================================
      PREFERENCES, UTILITIES & FOOTER SETTINGS
@@ -866,241 +911,6 @@ h1, h2, h3 {
     max-width: none;
   }
 }
-/* ============================================================
-     FAVORITES PDF / PRINT SHEET
-     (built only when the user requests it; invisible on screen)
-     ============================================================ */
-#printSheet { display: none; }
-
-@media print {
-  body * { visibility: hidden; }
-  #printSheet, #printSheet * { visibility: visible; }
-  #printSheet {
-    display: block;
-    position: absolute;
-    inset: 0;
-    background: #fff;
-    color: #111;
-  }
-  @page { size: A4 portrait; margin: 12mm; }
-
-  .print-page {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: repeat(3, 1fr);
-    gap: 10mm 8mm;
-    page-break-after: always;
-    height: 100%;
-  }
-  .print-page:last-child { page-break-after: auto; }
-
-  .print-cell {
-    border: 1px solid #999;
-    border-radius: 4px;
-    padding: 6mm 6mm 4mm;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    break-inside: avoid;
-  }
-
-  .print-theme {
-    font-family: Georgia, serif;
-    font-size: 13pt;
-    font-weight: 700;
-    color: #111;
-    margin-bottom: 4mm;
-    text-align: center;
-  }
-
-  .print-board {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-rows: repeat(8, 1fr);
-    width: 100%;
-    max-width: 62mm;
-    aspect-ratio: 1 / 1;
-    border: 1.5px solid #111;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-    color-adjust: exact;
-  }
-  .print-sq {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 0.15mm solid #bbb;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-    color-adjust: exact;
-  }
-  .print-sq.light { background: #ffffff; }
-  .print-sq.dark { background: #d9d9d9; }
-  .print-sq img {
-    width: 82%;
-    height: 82%;
-    object-fit: contain;
-  }
-
-  .print-side {
-    margin-top: 4mm;
-    font-size: 10pt;
-    font-weight: 600;
-    color: #111;
-    text-align: center;
-  }
-}
-
-/* ============================================================
-     LATEX EXPORT MODAL
-     ============================================================ */
-.latex-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(59, 44, 26, 0.6);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
-}
-
-.latex-modal-overlay.show {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.latex-modal {
-  background: var(--bg);
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius);
-  width: min(90vw, 600px);
-  max-height: 85vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.35);
-  transform: translateY(12px);
-  transition: transform 0.25s ease;
-}
-
-.latex-modal-overlay.show .latex-modal {
-  transform: translateY(0);
-}
-
-.latex-modal-header {
-  padding: 18px 20px 14px;
-  border-bottom: 1px solid var(--panel-border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.latex-modal-header h3 {
-  font-family: var(--serif);
-  font-size: 18px;
-  color: var(--text);
-}
-
-.latex-modal-close {
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  font-size: 20px;
-  cursor: pointer;
-  padding: 4px;
-  line-height: 1;
-}
-
-.latex-modal-body {
-  padding: 16px 20px;
-  overflow-y: auto;
-  flex: 1;
-}
-
-.latex-modal-body p {
-  font-size: 13px;
-  color: var(--text-dim);
-  line-height: 1.6;
-  margin: 0 0 12px;
-}
-
-.latex-modal-body code {
-  background: rgba(139, 101, 44, 0.08);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: 'SF Mono', Monaco, monospace;
-  font-size: 12px;
-  color: var(--accent);
-}
-
-.latex-preview {
-  background: rgba(139, 101, 44, 0.04);
-  border: 1px solid var(--panel-border);
-  border-radius: 10px;
-  padding: 12px;
-  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
-  font-size: 11px;
-  line-height: 1.5;
-  color: var(--text);
-  max-height: 200px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-break: break-all;
-  margin: 10px 0;
-}
-
-.latex-modal-footer {
-  padding: 14px 20px 18px;
-  border-top: 1px solid var(--panel-border);
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-.latex-modal-footer .btn {
-  min-height: 38px;
-  padding: 9px 16px;
-}
-
-.latex-count {
-  font-size: 12px;
-  color: var(--gold-soft);
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.latex-instructions {
-  background: var(--panel);
-  border-radius: 10px;
-  padding: 12px 14px;
-  margin: 10px 0;
-}
-
-.latex-instructions h4 {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: var(--text-dim);
-  margin: 0 0 8px;
-}
-
-.latex-instructions ol {
-  margin: 0;
-  padding-left: 18px;
-  font-size: 12px;
-  color: var(--text-dim);
-  line-height: 1.7;
-}
-
-.latex-instructions li {
-  margin-bottom: 4px;
-}
-
 </style>
 </head>
 <body>
@@ -1135,7 +945,6 @@ h1, h2, h3 {
       <div class="sidebar-chip act-random">🎲 Surprise Me</div>
       <div class="sidebar-chip act-fav">⭐ My Favorites</div>
       <div class="sidebar-chip act-recent">🕘 Continue Recent</div>
-      <div class="sidebar-chip act-latex">⬇ Download LaTeX</div>
     </div>
   </div>
 
@@ -1171,12 +980,11 @@ h1, h2, h3 {
     <div class="chip glass act-random" id="chipRandom">🎲 Surprise Me</div>
     <div class="chip glass act-fav" id="chipFav">⭐ My Favorites</div>
     <div class="chip glass act-recent" id="chipRecent">🕘 Pick Up Where I Left Off</div>
-    <div class="chip glass act-latex" id="chipLatex">⬇ LaTeX</div>
   </div>
 
   <div class="section-label">2. Choose Your Pattern</div>
   <div class="theme-search-box">
-    <input type="text" id="themeSearch" placeholder="Search knight patterns — try "fork," "mate," or "sacrifice"…">
+    <input type="text" id="themeSearch" placeholder="Search knight patterns — try “fork,” “mate,” or “sacrifice”…">
   </div>
   
   <div class="theme-grid" id="themeGrid">
@@ -1221,7 +1029,7 @@ h1, h2, h3 {
       </div>
       <div class="action-row">
         <button class="btn" id="btnHint">💡 Hint</button>
-        <button class="btn" id="btnSolution">📖 Solution</button>
+        <button class="btn" id="btnSolution">Solution</button>
         <button class="btn primary" id="btnNext">Next →</button>
       </div>
 
@@ -1245,7 +1053,6 @@ h1, h2, h3 {
         <div class="mini-actions">
           <button class="btn" id="btnCopyFen">Copy FEN</button>
           <button class="btn" id="btnCopyPgn">Copy PGN</button>
-          <button class="btn" id="btnLatex" title="Download LaTeX of starred puzzles">⬇ LaTeX</button>
         </div>
       </div>
       <div class="info-card glass" id="puzzleInfoCard">
@@ -1276,6 +1083,12 @@ h1, h2, h3 {
     <div class="stat-card glass"><div class="big" id="stTime">0m</div><div class="lbl">Training Time</div></div>
     <div class="stat-card glass"><div class="big" id="stAttempts">0</div><div class="lbl">Total Attempts</div></div>
   </div>
+
+  <div class="section-label">Solved By Theme</div>
+  <div class="theme-stats-list" id="themeStatsList">
+    <div class="status-bar info">Solve a few puzzles to see your breakdown here.</div>
+  </div>
+
   <div style="text-align:center; margin-top:24px; padding-bottom:20px;">
     <button class="btn danger" id="btnResetStats">Reset Statistics</button>
   </div>
@@ -1343,38 +1156,7 @@ h1, h2, h3 {
   <button class="nav-btn" data-screen="about"><span class="ic">ℹ️</span>About</button>
 </nav>
 
-<!-- =========================================================
-     LATEX EXPORT MODAL
-     ========================================================= -->
-<div class="latex-modal-overlay" id="latexModal">
-  <div class="latex-modal">
-    <div class="latex-modal-header">
-      <h3>⬇ Download LaTeX Book</h3>
-      <button class="latex-modal-close" id="latexModalClose">✕</button>
-    </div>
-    <div class="latex-modal-body" id="latexModalBody">
-      <p>Generate a professional LaTeX book from your starred puzzles. Compile with <code>pdflatex</code> for print-ready output.</p>
-      <div class="latex-count" id="latexCount">Loading favorites…</div>
-      <div class="latex-preview" id="latexPreview">Generating preview…</div>
-      <div class="latex-instructions">
-        <h4>How to compile</h4>
-        <ol>
-          <li>Save the downloaded <code>.tex</code> file</li>
-          <li>Install TeX Live or MiKTeX</li>
-          <li>Run: <code>pdflatex -shell-escape knight-trainer-starred.tex</code></li>
-          <li>Required packages: <code>chessboard</code>, <code>xskak</code>, <code>skaknew</code></li>
-        </ol>
-      </div>
-    </div>
-    <div class="latex-modal-footer">
-      <button class="btn" id="latexCopyBtn">Copy to Clipboard</button>
-      <button class="btn primary" id="latexDownloadBtn">Download .tex</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
-<div id="printSheet"></div>
 
 <script>
 'use strict';
@@ -1417,6 +1199,8 @@ const state = {
   stats: loadStats(),
   favorites: loadJSON('knt_favorites', []),
   recents: loadJSON('knt_recents', []),
+  seenPuzzles: loadJSON('knt_seen', {}),
+  themeSolvedCounts: loadJSON('knt_theme_solved', {}),
   selectedSquare: null,
   legalTargets: [],
   sf: null,
@@ -1502,12 +1286,36 @@ async function loadMasterThemes() {
   }
 }
 
-async function getPuzzlePayload(theme, difficulty) {
+/* ---- no-repeat-until-exhausted puzzle picker ---- */
+function seenKey(theme, difficulty){ return theme + '::' + difficulty; }
+
+function pickPuzzleNoRepeat(theme, difficulty, pool){
+  const key = seenKey(theme, difficulty);
+  const allIds = pool.map(p => p.id);
+  let seen = state.seenPuzzles[key] || [];
+  // Drop any seen ids that no longer exist in the pool (data changed upstream)
+  seen = seen.filter(id => allIds.includes(id));
+
+  let unseen = pool.filter(p => !seen.includes(p.id));
+  if(unseen.length === 0){
+    // Exhausted the set — reshuffle by clearing seen history for this bucket
+    seen = [];
+    unseen = pool;
+  }
+
+  const puzzle = unseen[Math.floor(Math.random() * unseen.length)];
+  seen.push(puzzle.id);
+  state.seenPuzzles[key] = seen;
+  saveJSON('knt_seen', state.seenPuzzles);
+  return puzzle;
+}
+
+async function getPuzzlePayload(theme, difficulty){
   const url = `${CONFIG.REPO_BASE}/${theme}/${difficulty}.json`;
   const puzzles = await fetchJSONCached(url);
   const arr = Array.isArray(puzzles) ? puzzles : [];
   if (!arr.length) throw new Error('No puzzles found in ' + theme + '/' + difficulty);
-  return arr[Math.floor(Math.random() * arr.length)];
+  return pickPuzzleNoRepeat(theme, difficulty, arr);
 }
 
 /* ============================================================
@@ -1602,10 +1410,12 @@ function renderThemeGrid(filterText = '') {
     
     const formattedName = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
     const specificCount = diffs[state.currentDifficulty] || 0;
+    const solvedCount = state.themeSolvedCounts[key] || 0;
 
     card.innerHTML = `
       <div class="tname">${formattedName}</div>
       <div class="tcount">${specificCount.toLocaleString()} Puzzles (${state.currentDifficulty})</div>
+      <div class="tsolved">${solvedCount.toLocaleString()} solved</div>
     `;
     
     card.addEventListener('click', (e) => { 
@@ -1673,312 +1483,6 @@ function handleRecentPuzzle(){
 document.querySelectorAll('.act-random').forEach(el=>el.addEventListener('click', handleRandomPuzzle));
 document.querySelectorAll('.act-fav').forEach(el=>el.addEventListener('click', handleFavPuzzle));
 document.querySelectorAll('.act-recent').forEach(el=>el.addEventListener('click', handleRecentPuzzle));
-
-/* ============================================================
-     LATEX EXPORT ENGINE
-     ============================================================ */
-const LATEX_PREAMBLE = `\\\\documentclass[11pt, a4paper, twoside]{book}
-\\\\usepackage[utf8]{inputenc}
-\\\\usepackage[T1]{fontenc}
-\\\\usepackage{lmodern}
-\\\\usepackage[english]{babel}
-\\\\usepackage{geometry, graphicx, xcolor, tikz, enumitem, fancyhdr, titlesec, tocloft, hyperref, bookmark, microtype, setspace, parskip}
-\\\\usepackage{chessboard}
-\\\\usepackage{xskak}
-\\\\geometry{
-    paperwidth=6in, paperheight=9in,
-    inner=0.75in, outer=0.625in,
-    top=0.75in, bottom=0.75in,
-    headheight=14pt, headsep=0.25in, footskip=0.35in
-}
-\\\\definecolor{knightgold}{RGB}{168, 121, 42}
-\\\\definecolor{knightdark}{RGB}{59, 44, 26}
-\\\\definecolor{knightdim}{RGB}{122, 106, 82}
-\\\\definecolor{knightaccent}{RGB}{124, 45, 58}
-\\\\definecolor{boardlight}{RGB}{236, 220, 184}
-\\\\definecolor{boarddark}{RGB}{169, 124, 63}
-\\\\setchessboard{
-    showmover=true, moverstyle=circle, moversize=1.2ex,
-    boardfontencoding=LSBC4, boardfontfamily=skaknew,
-    labelbottomformat=\\\\arabic{filelabel},
-    labelfont=\\\\sffamily\\\\footnotesize\\\\color{knightdim},
-    fieldmaskcolor=boardlight, fieldcolor=boarddark,
-    setfontcolors, pgfstyle=straightmove,
-    color=knightgold, markstyle=circle,
-    color=knightaccent, linewidth=0.8pt, padding=0.2ex
-}
-\\\\pagestyle{fancy}
-\\\\fancyhf{}
-\\\\fancyhead[LE]{\\\\small\\\\textsc{\\\\leftmark}}
-\\\\fancyhead[RO]{\\\\small\\\\textsc{\\\\rightmark}}
-\\\\fancyfoot[LE,RO]{\\\\thepage}
-\\\\renewcommand{\\\\headrulewidth}{0.4pt}
-\\\\renewcommand{\\\\headrule}{\\\\hbox to\\\\headwidth{\\\\color{knightgold}\\\\leaders\\\\hrule height \\\\headrulewidth\\\\hfill}}
-\\\\titleformat{\\\\chapter}[display]
-    {\\\\normalfont\\\\huge\\\\bfseries\\\\color{knightdark}}
-    {\\\\chaptertitlename\\\\ \\\\thechapter}{20pt}{\\\\Huge}
-\\\\titleformat{\\\\section}
-    {\\\\normalfont\\\\Large\\\\bfseries\\\\color{knightdark}}
-    {\\\\thesection}{1em}{}
-\\\\newenvironment{puzzlebox}[1][]{\\\\begin{center}\\\\begin{tikzpicture}\\\\node[draw=knightgold, line width=0.8pt, rounded corners=8pt, inner sep=12pt, fill=white, text width=0.85\\\\textwidth] \\\\bgroup}{\\\\egroup;\\\\end{tikzpicture}\\\\end{center}}
-\\\\newcommand{\\\\puzzletitle}[1]{\\\\noindent{\\\\Large\\\\bfseries\\\\color{knightdark} #1}\\\\par\\\\vspace{4pt}}
-\\\\newcommand{\\\\puzzlemeta}[2]{\\\\noindent{\\\\small\\\\sffamily\\\\color{knightdim}\\\\textbf{Theme:} #1 \\\\quad|\\\\quad \\\\textbf{Difficulty:} #2}\\\\par\\\\vspace{8pt}}
-\\\\newcommand{\\\\puzzlerating}[1]{\\\\noindent{\\\\small\\\\sffamily\\\\color{knightdim}\\\\textbf{Rating:} #1}\\\\par\\\\vspace{6pt}}
-\\\\newcommand{\\\\solutionline}[1]{\\\\vspace{8pt}\\\\noindent{\\\\small\\\\sffamily\\\\color{knightaccent}\\\\textbf{Solution:} #1}}
-\\\\begin{document}
-\\\\begin{titlepage}\\\\begin{center}\\\\vspace*{2cm}{\\\\fontsize{60}{72}\\\\selectfont\\\\color{knightgold} ♞}\\\\vspace{1.5cm}{\\\\Huge\\\\bfseries\\\\color{knightdark} Knight Trainer}\\\\vspace{0.5cm}{\\\\LARGE\\\\color{knightdim} Starred Puzzles Collection}\\\\vspace{1cm}{\\\\large\\\\itshape ``It's the piece every player falls for first.''}\\\\vspace{2cm}{\\\\large A curated selection of knight tactics, forks, outposts, and mating nets for the serious student.}\\\\vfill{\\\\small\\\\color{knightdim} Compiled from Knight Trainer --- \\\\today}\\\\end{center}\\\\end{titlepage}
-\\\\thispagestyle{empty}\\\\vspace*{\\\\fill}\\\\begin{center}{\\\\small\\\\color{knightdim}\\\\textit{Knight Trainer: Starred Puzzles}\\\\\\\\[4pt]Copyright \\\\copyright\\\\ \\\\the\\\\year\\\\\\\\[8pt]All rights reserved.}\\\\end{center}\\\\vspace*{\\\\fill}\\\\clearpage
-\\\\tableofcontents\\\\clearpage
-\\\\chapter*{Introduction}\\\\addcontentsline{toc}{chapter}{Introduction}
-Ask any player which piece they fell in love with first, and most will say the \\\\textbf{knight}. It jumps where nothing else can, threatens two pieces at once, and turns ``impossible'' positions into forced wins.
-This collection gathers the puzzles you have personally starred in Knight Trainer --- the ones that made you pause, think, and finally see the board differently. Each diagram is presented at full print resolution, with the solution concealed on the following page so you can test yourself again, or share the position with a student.
-\\\\textbf{How to use this book:}\\\\begin{itemize}[leftmargin=2em]\\\\item Set up the position on a physical board, or study the diagram directly.\\\\item Cover the solution page with a bookmark or sheet of paper.\\\\item Take your time. The knight rewards patience.\\\\item After solving, compare your reasoning with the given solution.\\\\end{itemize}\\\\vspace{1cm}\\\\begin{center}\\\\textit{Train a little every day and you won't just get better at chess ---\\\\you'll start seeing the whole board differently.}\\\\end{center}\\\\clearpage
-`;
-
-const LATEX_POSTAMBLE = `
-\\\\appendix
-\\\\chapter*{Notation Key}\\\\addcontentsline{toc}{chapter}{Notation Key}
-\\\\begin{center}\\\\begin{tabular}{cl}\\\\textbf{Symbol} & \\\\textbf{Meaning} \\\\\\\\\\hline K & King \\\\\\\\ Q & Queen \\\\\\\\ R & Rook \\\\\\\\ B & Bishop \\\\\\\\ N & Knight \\\\\\\\ x & Capture \\\\\\\\ + & Check \\\\\\\\ \\\\# & Checkmate \\\\\\\\ 0-0 & Kingside castle \\\\\\\\ 0-0-0 & Queenside castle \\\\\\\\ =\\\\textit{Q} & Promotion to Queen \\\\\\\\ \\\\end{tabular}\\\\end{center}\\\\vspace{1cm}\\\\noindent Moves are written in Standard Algebraic Notation (SAN).\\\\clearpage
-\\\\chapter*{About Knight Trainer}\\\\addcontentsline{toc}{chapter}{About Knight Trainer}
-Knight Trainer is a browser-based tactical training application focused on knight patterns --- forks, outposts, and mating nets. It draws from the Lichess puzzle database and organizes positions by theme and difficulty.\\\\vspace{1cm}\\\\begin{center}\\\\textit{Train a little every day. Welcome to your knight era.}\\\\end{center}
-\\\\end{document}
-`;
-
-function formatThemeName(themeKey) {
-  return themeKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-}
-
-function uciToSan(fen, uciMoves) {
-  try {
-    const board = new Chess(fen);
-    const moves = uciMoves.split(' ').filter(m => m.length >= 4);
-    const sanList = [];
-    for (const mv of moves) {
-      const moveObj = parseUCI(mv);
-      const result = board.move(moveObj);
-      if (result) sanList.push(result.san);
-    }
-    return sanList.join(' ');
-  } catch (e) {
-    return uciMoves;
-  }
-}
-
-function generatePuzzleLatex(puzzleData, puzzleNum) {
-  const theme = formatThemeName(puzzleData.theme || 'Unknown');
-  const difficulty = (puzzleData.difficulty || 'Unknown').charAt(0).toUpperCase() + (puzzleData.difficulty || 'unknown').slice(1);
-  const puzzle = puzzleData.puzzle || {};
-  const fen = puzzle.f || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-  const movesUci = puzzle.m || '';
-  const rating = puzzle.r || '—';
-  const puzzleId = puzzle.id || 'unknown';
-  const side = fen.includes(' w ') ? 'White' : 'Black';
-  
-  const moveList = movesUci.split(' ').filter(m => m.length >= 4);
-  const arrowMoves = moveList.slice(0, 2).map(mv => `${mv.slice(0,2)}-${mv.slice(2,4)}`).join(',');
-  const solutionSan = uciToSan(fen, movesUci);
-  
-  return `
-\\\\section*{${theme}}
-\\\\addcontentsline{toc}{section}{${theme}}
-\\\\begin{puzzlebox}
-\\\\puzzletitle{${theme} --- Puzzle ${puzzleNum}}
-\\\\puzzlemeta{${theme}}{${difficulty}}
-\\\\puzzlerating{${rating}}
-\\\\begin{center}
-\\\\chessboard[setfen=${fen},showmover]
-\\\\end{center}
-\\\\vspace{6pt}
-\\\\noindent{\\\\small\\\\sffamily\\\\color{knightdim}\\\\textbf{Puzzle ID:} ${puzzleId}}
-\\\\end{puzzlebox}
-\\\\vspace{1cm}
-\\\\noindent{\\\\large\\\\bfseries\\\\color{knightdark} Your Task}
-${side} to play. Find the best continuation.
-\\\\clearpage
-\\\\noindent{\\\\large\\\\bfseries\\\\color{knightdark} Solution}
-\\\\begin{puzzlebox}
-\\\\puzzletitle{${theme} --- Puzzle ${puzzleNum} (Solution)}
-\\\\begin{center}
-\\\\chessboard[setfen=${fen},showmover,pgfstyle=straightmove,markmoves={${arrowMoves}},color=knightaccent,linewidth=1.2pt]
-\\\\end{center}
-\\\\solutionline{${solutionSan}}
-\\\\end{puzzlebox}
-\\\\clearpage
-`;
-}
-
-function generateLatexBook() {
-  const favorites = loadJSON('knt_favorites', []);
-  if (!favorites.length) return null;
-  
-  let latex = LATEX_PREAMBLE;
-  favorites.forEach((fav, i) => {
-    latex += generatePuzzleLatex(fav, i + 1);
-  });
-  latex += LATEX_POSTAMBLE;
-  return latex;
-}
-
-function openLatexModal() {
-  const favorites = loadJSON('knt_favorites', []);
-  const countEl = document.getElementById('latexCount');
-  const previewEl = document.getElementById('latexPreview');
-  const modal = document.getElementById('latexModal');
-  
-  if (!favorites.length) {
-    countEl.textContent = 'No favorites saved yet.';
-    previewEl.textContent = 'Star some puzzles first by tapping the ☆ button on puzzles you love.';
-    document.getElementById('latexDownloadBtn').disabled = true;
-    document.getElementById('latexCopyBtn').disabled = true;
-  } else {
-    countEl.textContent = `${favorites.length} puzzle${favorites.length !== 1 ? 's' : ''} ready for export`;
-    const latex = generateLatexBook();
-    previewEl.textContent = latex.substring(0, 1200) + '\n\n... [' + (latex.length - 1200) + ' more characters] ...';
-    document.getElementById('latexDownloadBtn').disabled = false;
-    document.getElementById('latexCopyBtn').disabled = false;
-    modal.dataset.latexContent = latex;
-  }
-  
-  modal.classList.add('show');
-}
-
-function closeLatexModal() {
-  document.getElementById('latexModal').classList.remove('show');
-}
-
-function downloadLatex() {
-  const modal = document.getElementById('latexModal');
-  const latex = modal.dataset.latexContent;
-  if (!latex) return;
-  
-  const blob = new Blob([latex], { type: 'text/x-tex' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'knight-trainer-starred.tex';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  toast('LaTeX book downloaded!');
-}
-
-async function copyLatexToClipboard() {
-  const modal = document.getElementById('latexModal');
-  const latex = modal.dataset.latexContent;
-  if (!latex) return;
-  
-  try {
-    await navigator.clipboard.writeText(latex);
-    toast('LaTeX copied to clipboard');
-  } catch (e) {
-    toast('Could not copy — try downloading instead');
-  }
-}
-
-// Wire up LaTeX buttons
-document.querySelectorAll('.act-latex').forEach(el => el.addEventListener('click', openLatexModal));
-document.getElementById('btnLatex').addEventListener('click', openLatexModal);
-document.getElementById('latexModalClose').addEventListener('click', closeLatexModal);
-document.getElementById('latexDownloadBtn').addEventListener('click', downloadLatex);
-document.getElementById('latexCopyBtn').addEventListener('click', copyLatexToClipboard);
-document.getElementById('latexModal').addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) closeLatexModal();
-});
-
-/* ============================================================
-     FAVORITES PDF / PRINT SHEET
-     (built only when the user requests it; invisible on screen)
-     ============================================================ */
-const PRINT_DIFF_ORDER = { easy: 0, medium: 1, hard: 2 };
-
-function buildPrintBoard(chessObj, orientation){
-  const boardEl = document.createElement('div');
-  boardEl.className = 'print-board';
-  const rows = chessObj.board();
-  const rowOrder = orientation === 'Black' ? [7,6,5,4,3,2,1,0] : [0,1,2,3,4,5,6,7];
-  const colOrder = orientation === 'Black' ? [7,6,5,4,3,2,1,0] : [0,1,2,3,4,5,6,7];
-  rowOrder.forEach(r=>{
-    colOrder.forEach(cIdx=>{
-      const sq = rows[r][cIdx];
-      const file = cIdx, rank = 8 - r;
-      const isLight = (file + rank) % 2 === 0;
-      const sqEl = document.createElement('div');
-      sqEl.className = 'print-sq ' + (isLight ? 'light' : 'dark');
-      if(sq){
-        const img = document.createElement('img');
-        img.src = pieceThemeUrl(sq.color + sq.type.toUpperCase());
-        img.alt = sq.color + sq.type;
-        sqEl.appendChild(img);
-      }
-      boardEl.appendChild(sqEl);
-    });
-  });
-  return boardEl;
-}
-
-function buildPrintCell(fav){
-  const cell = document.createElement('div');
-  cell.className = 'print-cell';
-
-  const themeEl = document.createElement('div');
-  themeEl.className = 'print-theme';
-  themeEl.textContent = fav.theme.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
-  cell.appendChild(themeEl);
-
-  let c;
-  try{ c = new Chess(fav.puzzle.f); }catch(e){ c = new Chess(); }
-  const moves = (fav.puzzle.m || '').split(' ');
-  if(moves[0]){
-    try{ c.move(parseUCI(moves[0])); }catch(e){}
-  }
-  const sideToMove = c.turn() === 'w' ? 'White' : 'Black';
-
-  cell.appendChild(buildPrintBoard(c, sideToMove));
-
-  const sideEl = document.createElement('div');
-  sideEl.className = 'print-side';
-  sideEl.textContent = sideToMove + ' to play';
-  cell.appendChild(sideEl);
-
-  return cell;
-}
-
-function buildAndPrintFavorites(){
-  if(!state.favorites.length){ toast('No favorites saved yet — tap the star on a puzzle you love.'); return; }
-
-  const sorted = [...state.favorites].sort((a, b)=>{
-    const ta = a.theme.toLowerCase(), tb = b.theme.toLowerCase();
-    if(ta !== tb) return ta < tb ? -1 : 1;
-    return (PRINT_DIFF_ORDER[a.difficulty] ?? 9) - (PRINT_DIFF_ORDER[b.difficulty] ?? 9);
-  });
-
-  const sheet = document.getElementById('printSheet');
-  sheet.innerHTML = '';
-  let pageDiv = null;
-  sorted.forEach((fav, i)=>{
-    if(i % 6 === 0){
-      pageDiv = document.createElement('div');
-      pageDiv.className = 'print-page';
-      sheet.appendChild(pageDiv);
-    }
-    pageDiv.appendChild(buildPrintCell(fav));
-  });
-
-  toast('Preparing your PDF…');
-  const imgs = Array.from(sheet.querySelectorAll('img'));
-  const waits = imgs.map(img => img.complete ? Promise.resolve() : new Promise(resolve=>{
-    img.addEventListener('load', resolve, { once: true });
-    img.addEventListener('error', resolve, { once: true });
-  }));
-  Promise.all(waits).then(()=> window.print());
-}
-document.querySelectorAll('.act-pdf').forEach(el=>el.addEventListener('click', buildAndPrintFavorites));
-window.addEventListener('afterprint', ()=>{
-  const sheet = document.getElementById('printSheet');
-  if(sheet) sheet.innerHTML = '';
-});
-
 
 /* ============================================================
      CHESSBOARD MANAGEMENT ENGINE
@@ -2422,6 +1926,9 @@ function recordSolve(theme, rating, elapsedMs){
   if(s.dailyDate !== today){ s.dailyDate = today; s.dailyCount = 0; }
   s.dailyCount++;
   saveStats();
+
+  state.themeSolvedCounts[theme] = (state.themeSolvedCounts[theme] || 0) + 1;
+  saveJSON('knt_theme_solved', state.themeSolvedCounts);
 }
 function breakStreak(){
   state.stats.currentStreak = 0;
@@ -2797,11 +2304,44 @@ function renderStats(){
   document.getElementById('stDaily').textContent = (s.dailyDate === today) ? s.dailyCount : 0;
   document.getElementById('stTime').textContent = Math.round(s.totalTimeMs / 60000) + 'm';
   document.getElementById('stAttempts').textContent = s.totalAttempts;
+  renderThemeStatsList();
 }
+
+function renderThemeStatsList(){
+  const el = document.getElementById('themeStatsList');
+  const counts = state.themeSolvedCounts || {};
+  const entries = Object.keys(counts)
+    .map(theme => ({ theme, count: counts[theme] || 0 }))
+    .filter(e => e.count > 0)
+    .sort((a, b) => b.count - a.count);
+
+  if(!entries.length){
+    el.innerHTML = `<div class="status-bar info">Solve a few puzzles to see your breakdown here.</div>`;
+    return;
+  }
+
+  const maxCount = entries[0].count;
+  el.innerHTML = '';
+  entries.forEach(({ theme, count }) => {
+    const formatted = theme.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+    const pct = maxCount ? Math.max(4, Math.round((count / maxCount) * 100)) : 0;
+    const row = document.createElement('div');
+    row.className = 'theme-stat-row glass';
+    row.innerHTML = `
+      <div class="tsr-name">${formatted}</div>
+      <div class="tsr-bar-track"><div class="tsr-bar-fill" style="width:${pct}%"></div></div>
+      <div class="tsr-count">${count.toLocaleString()}</div>
+    `;
+    el.appendChild(row);
+  });
+}
+
 document.getElementById('btnResetStats').addEventListener('click', ()=>{
   if(!confirm('Reset all your stats? This can\'t be undone.')) return;
   state.stats = loadStats();
   localStorage.removeItem('knt_stats');
+  state.themeSolvedCounts = {};
+  localStorage.removeItem('knt_theme_solved');
   renderStats();
   toast('Stats cleared — fresh start.');
 });
