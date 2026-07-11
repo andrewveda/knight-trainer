@@ -386,6 +386,7 @@ h1, h2, h3 {
 .theme-card.selected { border-color: var(--gold); background: rgba(168, 121, 42, 0.1); }
 .theme-card .tname { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--text); word-break: break-word; }
 .theme-card .tcount { margin-top: 8px; font-size: 11px; color: var(--gold-soft); letter-spacing: 0.4px; }
+.theme-card .tsolved { margin-top: 2px; font-size: 11px; color: var(--green); letter-spacing: 0.2px; font-weight: 600; }
 .theme-card .ripple { position: absolute; border-radius: 50%; background: rgba(168, 121, 42, 0.3); transform: scale(0); animation: rip 0.6s ease-out; pointer-events: none; }
 
 @keyframes rip { to { transform: scale(2.5); opacity: 0; } }
@@ -602,6 +603,50 @@ h1, h2, h3 {
 
 .stat-card .big { font-family: var(--serif); font-size: 26px; color: var(--gold-soft); }
 .stat-card .lbl { font-size: 11px; color: var(--text-dim); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.6px; }
+
+.theme-stats-list {
+  max-width: 760px;
+  margin: 20px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.theme-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+}
+
+.theme-stat-row .tsr-name {
+  flex: 0 0 150px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.theme-stat-row .tsr-bar-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(139, 101, 44, 0.14);
+  overflow: hidden;
+}
+
+.theme-stat-row .tsr-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--gold-soft), var(--gold));
+}
+
+.theme-stat-row .tsr-count {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--text-dim);
+  min-width: 46px;
+  text-align: right;
+}
 
 /* ============================================================
      PREFERENCES, UTILITIES & FOOTER SETTINGS
@@ -1038,6 +1083,12 @@ h1, h2, h3 {
     <div class="stat-card glass"><div class="big" id="stTime">0m</div><div class="lbl">Training Time</div></div>
     <div class="stat-card glass"><div class="big" id="stAttempts">0</div><div class="lbl">Total Attempts</div></div>
   </div>
+
+  <div class="section-label">Solved By Theme</div>
+  <div class="theme-stats-list" id="themeStatsList">
+    <div class="status-bar info">Solve a few puzzles to see your breakdown here.</div>
+  </div>
+
   <div style="text-align:center; margin-top:24px; padding-bottom:20px;">
     <button class="btn danger" id="btnResetStats">Reset Statistics</button>
   </div>
@@ -1148,6 +1199,8 @@ const state = {
   stats: loadStats(),
   favorites: loadJSON('knt_favorites', []),
   recents: loadJSON('knt_recents', []),
+  seenPuzzles: loadJSON('knt_seen', {}),
+  themeSolvedCounts: loadJSON('knt_theme_solved', {}),
   selectedSquare: null,
   legalTargets: [],
   sf: null,
@@ -1233,12 +1286,36 @@ async function loadMasterThemes() {
   }
 }
 
-async function getPuzzlePayload(theme, difficulty) {
+/* ---- no-repeat-until-exhausted puzzle picker ---- */
+function seenKey(theme, difficulty){ return theme + '::' + difficulty; }
+
+function pickPuzzleNoRepeat(theme, difficulty, pool){
+  const key = seenKey(theme, difficulty);
+  const allIds = pool.map(p => p.id);
+  let seen = state.seenPuzzles[key] || [];
+  // Drop any seen ids that no longer exist in the pool (data changed upstream)
+  seen = seen.filter(id => allIds.includes(id));
+
+  let unseen = pool.filter(p => !seen.includes(p.id));
+  if(unseen.length === 0){
+    // Exhausted the set — reshuffle by clearing seen history for this bucket
+    seen = [];
+    unseen = pool;
+  }
+
+  const puzzle = unseen[Math.floor(Math.random() * unseen.length)];
+  seen.push(puzzle.id);
+  state.seenPuzzles[key] = seen;
+  saveJSON('knt_seen', state.seenPuzzles);
+  return puzzle;
+}
+
+async function getPuzzlePayload(theme, difficulty){
   const url = `${CONFIG.REPO_BASE}/${theme}/${difficulty}.json`;
   const puzzles = await fetchJSONCached(url);
   const arr = Array.isArray(puzzles) ? puzzles : [];
   if (!arr.length) throw new Error('No puzzles found in ' + theme + '/' + difficulty);
-  return arr[Math.floor(Math.random() * arr.length)];
+  return pickPuzzleNoRepeat(theme, difficulty, arr);
 }
 
 /* ============================================================
@@ -1333,10 +1410,12 @@ function renderThemeGrid(filterText = '') {
     
     const formattedName = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
     const specificCount = diffs[state.currentDifficulty] || 0;
+    const solvedCount = state.themeSolvedCounts[key] || 0;
 
     card.innerHTML = `
       <div class="tname">${formattedName}</div>
       <div class="tcount">${specificCount.toLocaleString()} Puzzles (${state.currentDifficulty})</div>
+      <div class="tsolved">${solvedCount.toLocaleString()} solved</div>
     `;
     
     card.addEventListener('click', (e) => { 
@@ -1847,6 +1926,9 @@ function recordSolve(theme, rating, elapsedMs){
   if(s.dailyDate !== today){ s.dailyDate = today; s.dailyCount = 0; }
   s.dailyCount++;
   saveStats();
+
+  state.themeSolvedCounts[theme] = (state.themeSolvedCounts[theme] || 0) + 1;
+  saveJSON('knt_theme_solved', state.themeSolvedCounts);
 }
 function breakStreak(){
   state.stats.currentStreak = 0;
@@ -2222,11 +2304,44 @@ function renderStats(){
   document.getElementById('stDaily').textContent = (s.dailyDate === today) ? s.dailyCount : 0;
   document.getElementById('stTime').textContent = Math.round(s.totalTimeMs / 60000) + 'm';
   document.getElementById('stAttempts').textContent = s.totalAttempts;
+  renderThemeStatsList();
 }
+
+function renderThemeStatsList(){
+  const el = document.getElementById('themeStatsList');
+  const counts = state.themeSolvedCounts || {};
+  const entries = Object.keys(counts)
+    .map(theme => ({ theme, count: counts[theme] || 0 }))
+    .filter(e => e.count > 0)
+    .sort((a, b) => b.count - a.count);
+
+  if(!entries.length){
+    el.innerHTML = `<div class="status-bar info">Solve a few puzzles to see your breakdown here.</div>`;
+    return;
+  }
+
+  const maxCount = entries[0].count;
+  el.innerHTML = '';
+  entries.forEach(({ theme, count }) => {
+    const formatted = theme.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+    const pct = maxCount ? Math.max(4, Math.round((count / maxCount) * 100)) : 0;
+    const row = document.createElement('div');
+    row.className = 'theme-stat-row glass';
+    row.innerHTML = `
+      <div class="tsr-name">${formatted}</div>
+      <div class="tsr-bar-track"><div class="tsr-bar-fill" style="width:${pct}%"></div></div>
+      <div class="tsr-count">${count.toLocaleString()}</div>
+    `;
+    el.appendChild(row);
+  });
+}
+
 document.getElementById('btnResetStats').addEventListener('click', ()=>{
   if(!confirm('Reset all your stats? This can\'t be undone.')) return;
   state.stats = loadStats();
   localStorage.removeItem('knt_stats');
+  state.themeSolvedCounts = {};
+  localStorage.removeItem('knt_theme_solved');
   renderStats();
   toast('Stats cleared — fresh start.');
 });
