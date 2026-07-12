@@ -1652,7 +1652,6 @@ function loadPuzzle(themeKey, difficulty, puzzle){
     state.moveCursor = 1;
     state.solving = true;
     setDragEnabled(true);
-    toast('Your move, Knight Trainer — find the winning shot.');
   }, 600);
 }
 
@@ -1871,7 +1870,6 @@ async function attemptSolvingMove(source, target){
   state.moveCursor++;
   state.solving = false;
   setDragEnabled(false);
-  toast('That\'s the move! 🐴');
   updateMoveDisplay('correct');
   renderMoveList();
   updateMoveCounter();
@@ -1957,7 +1955,6 @@ function flashSquare(square, cls){
 }
 
 function finishPuzzle(){
-  toast('Combination cracked! 🎉');
   updateMoveDisplay('correct');
   sfx.success();
   setDragEnabled(false);
