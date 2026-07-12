@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://andrewveda.github.io/knight-trainer/sitemap.xml
