@@ -498,6 +498,26 @@ h1, h2, h3 {
   z-index: 6;
 }
 
+.notation-stamp-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 7;
+  overflow: hidden;
+}
+
+.notation-stamp {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: var(--serif);
+  font-weight: 700;
+  color: rgba(124, 45, 58, 0.4);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.notation-stamp.hidden { display: none; }
+
 .board-toolbar {
   display: flex;
   justify-content: space-between;
@@ -1065,6 +1085,9 @@ h1, h2, h3 {
         <div id="board"></div>
         <div id="promoOverlay" class="glass hidden" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 70; gap: 12px; background: rgba(244, 236, 217, 0.92); border-radius: 10px;"></div>
         <svg id="boardArrows" class="board-arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+        <div id="notationStampLayer" class="notation-stamp-layer">
+          <div id="notationStamp" class="notation-stamp hidden"></div>
+        </div>
         <div id="loadingOverlay" class="loading hidden">
           <div class="spinner"></div>
           <div>Setting the board…</div>
@@ -1175,6 +1198,10 @@ h1, h2, h3 {
       <div class="switch" id="toggleAutoFlip"><div class="knob"></div></div>
     </div>
     <div class="settings-row glass">
+      <div><div class="lbl">Notation Stamp</div><div class="sub">Flash each move's notation on its destination square</div></div>
+      <div class="switch on" id="toggleNotationStamp"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
       <div><div class="lbl">Auto-Advance</div><div class="sub">How fast the next puzzle loads after you solve one</div></div>
       <select class="select-pill" id="selAutoAdvance">
         <option value="off">Off — I'll hit Next</option>
@@ -1260,6 +1287,7 @@ const state = {
   moveCursor: 0,
   fenHistory: [],
   sanHistory: [],
+  toSquareHistory: [],
   viewIndex: 0,
   boardOrientation: 'white',
   puzzleStartTime: null,
@@ -1316,8 +1344,10 @@ function saveJSON(key, val){
 function loadSettings(){
   const s = loadJSON('knt_settings', {
     theme:'dark', sound:true, animations:true, coordinates:true,
-    autoFlip:false, autoAdvanceDelay:'off', pieceStyle:'wikipedia', boardColor:'brown'
+    autoFlip:false, autoAdvanceDelay:'off', pieceStyle:'wikipedia', boardColor:'brown',
+    notationStamp:true
   });
+  if(s.notationStamp === undefined) s.notationStamp = true;
   // Migrate legacy boolean autoAdvance flag (pre-dates the delay picker) into the new scheme.
   if(s.autoAdvanceDelay === undefined){
     s.autoAdvanceDelay = s.autoAdvance ? 'normal' : 'off';
@@ -1590,7 +1620,10 @@ function initBoardIfNeeded(){
     onDragStart, onDrop, onSnapEnd
   });
   if(!state.boardResizeWired){
-    window.addEventListener('resize', ()=>state.board && state.board.resize());
+    window.addEventListener('resize', ()=>{
+      if(state.board) state.board.resize();
+      updateNotationStamp();
+    });
     state.boardResizeWired = true;
   }
 
@@ -1654,6 +1687,7 @@ function loadPuzzle(themeKey, difficulty, puzzle){
   state.moveCursor = 0;
   state.fenHistory = [puzzle.f];
   state.sanHistory = [];
+  state.toSquareHistory = [];
   state.viewIndex = 0;
   state.solving = false;
   state.puzzleStartTime = Date.now();
@@ -1706,6 +1740,7 @@ function applyMoveToBoard(uci, showOnBoard){
   if(!result) return null;
   state.fenHistory.push(state.chess.fen());
   state.sanHistory.push(result.san);
+  state.toSquareHistory.push(result.to);
   const wasAtLatest = state.viewIndex === state.fenHistory.length - 2;
   if(wasAtLatest){
     state.viewIndex = state.fenHistory.length - 1;
@@ -1719,8 +1754,43 @@ function applyMoveToBoard(uci, showOnBoard){
   return result;
 }
 
+function getBoardPixelSize(){
+  const boardEl = document.getElementById('board');
+  return boardEl ? boardEl.offsetWidth : 0;
+}
+
+function positionNotationStamp(square){
+  const stamp = document.getElementById('notationStamp');
+  if(!stamp) return;
+  const pos = squareCenterPct(square);
+  stamp.style.left = pos.x + '%';
+  stamp.style.top = pos.y + '%';
+  const boardSize = getBoardPixelSize();
+  stamp.style.fontSize = Math.max(20, Math.round(boardSize * 0.34)) + 'px';
+}
+
+function updateNotationStamp(){
+  const stamp = document.getElementById('notationStamp');
+  if(!stamp) return;
+  if(!state.settings.notationStamp){
+    stamp.classList.add('hidden');
+    return;
+  }
+  const idx = state.viewIndex;
+  const san = state.sanHistory[idx - 1];
+  const sq = state.toSquareHistory[idx - 1];
+  if(idx <= 0 || !san || !sq){
+    stamp.classList.add('hidden');
+    return;
+  }
+  stamp.textContent = san;
+  positionNotationStamp(sq);
+  stamp.classList.remove('hidden');
+}
+
 function updateMoveDisplay(flashClass){
   clearBoardArrows();
+  updateNotationStamp();
   const el = document.getElementById('statusBar');
   if(!state.chess || !state.fenHistory.length){
     el.textContent = 'Choose a puzzle to start training';
@@ -1891,6 +1961,7 @@ async function attemptSolvingMove(source, target){
 
   state.fenHistory.push(state.chess.fen());
   state.sanHistory.push(result.san);
+  state.toSquareHistory.push(result.to);
   state.viewIndex = state.fenHistory.length - 1;
 
   flashSquare(target, 'sq-correct');
@@ -1932,8 +2003,10 @@ async function attemptFreeMove(source, target){
 
   state.fenHistory = state.fenHistory.slice(0, state.viewIndex + 1);
   state.sanHistory = state.sanHistory.slice(0, state.viewIndex);
+  state.toSquareHistory = state.toSquareHistory.slice(0, state.viewIndex);
   state.fenHistory.push(vc.fen());
   state.sanHistory.push(result.san);
+  state.toSquareHistory.push(result.to);
   state.viewIndex = state.fenHistory.length - 1;
   state.chess = vc;
   state.solving = false;
@@ -2140,6 +2213,7 @@ document.getElementById('btnFlip').addEventListener('click', ()=>{
   state.board.flip();
   state.boardOrientation = state.boardOrientation === 'white' ? 'black' : 'white';
   renderEnginePanel();
+  updateNotationStamp();
 });
 document.getElementById('toggleAnalysis').addEventListener('click', ()=>{
   const el = document.getElementById('toggleAnalysis');
@@ -2338,6 +2412,7 @@ function playFreeMove(uciStr){
   if(!result) return;
   state.fenHistory.push(state.chess.fen());
   state.sanHistory.push(result.san);
+  state.toSquareHistory.push(result.to);
   state.viewIndex = state.fenHistory.length - 1;
   clearHighlights();
   state.board.position(state.chess.fen());
@@ -2472,6 +2547,7 @@ wireToggle('toggleSound', 'sound');
 wireToggle('toggleAnim', 'animations');
 wireToggle('toggleCoords', 'coordinates', v=>{ rebuildBoard(); });
 wireToggle('toggleAutoFlip', 'autoFlip');
+wireToggle('toggleNotationStamp', 'notationStamp', ()=>{ updateNotationStamp(); });
 
 document.getElementById('selAutoAdvance').value = state.settings.autoAdvanceDelay;
 document.getElementById('selAutoAdvance').addEventListener('change', e=>{
