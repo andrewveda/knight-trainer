@@ -1759,12 +1759,11 @@ function getBoardPixelSize(){
   return boardEl ? boardEl.offsetWidth : 0;
 }
 
-function positionNotationStamp(square){
+function positionNotationStamp(){
   const stamp = document.getElementById('notationStamp');
   if(!stamp) return;
-  const pos = squareCenterPct(square);
-  stamp.style.left = pos.x + '%';
-  stamp.style.top = pos.y + '%';
+  stamp.style.left = '50%';
+  stamp.style.top = '50%';
   const boardSize = getBoardPixelSize();
   stamp.style.fontSize = Math.max(20, Math.round(boardSize * 0.34)) + 'px';
 }
@@ -1778,13 +1777,12 @@ function updateNotationStamp(){
   }
   const idx = state.viewIndex;
   const san = state.sanHistory[idx - 1];
-  const sq = state.toSquareHistory[idx - 1];
-  if(idx <= 0 || !san || !sq){
+  if(idx <= 0 || !san){
     stamp.classList.add('hidden');
     return;
   }
   stamp.textContent = san;
-  positionNotationStamp(sq);
+  positionNotationStamp();
   stamp.classList.remove('hidden');
 }
 
