@@ -433,7 +433,7 @@ h1, h2, h3 {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 118px;
+  min-height: 130px;
 }
 
 .theme-card:active { transform: scale(0.97); }
@@ -449,11 +449,14 @@ h1, h2, h3 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--text-dim);
   letter-spacing: 0.2px;
 }
 .theme-card .tprog-row .pct { color: var(--gold-soft); font-weight: 700; }
+.theme-card .tprog-row .tprog-nums { display: flex; align-items: center; gap: 6px; }
+.theme-card .tprog-row .frac { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.theme-card .tprog-row.current .frac { color: var(--text); }
 .theme-card .tprog-row.current { color: var(--text); font-weight: 600; }
 .theme-card .tprog-row.current .pct { color: var(--green); }
 .theme-card .ripple { position: absolute; border-radius: 50%; background: rgba(168, 121, 42, 0.3); transform: scale(0); animation: rip 0.6s ease-out; pointer-events: none; }
@@ -1564,7 +1567,9 @@ function renderThemeGrid(filterText = '') {
     const rows = ['easy', 'medium', 'hard'].map(diff => {
       const label = diff.charAt(0).toUpperCase() + diff.slice(1);
       const isCurrent = diff === state.currentDifficulty;
-      return `<div class="tprog-row${isCurrent ? ' current' : ''}"><span>${label}</span><span class="pct">${pctFor(diff)}%</span></div>`;
+      const total = diffs[diff] || 0;
+      const solved = solvedFor[diff] || 0;
+      return `<div class="tprog-row${isCurrent ? ' current' : ''}"><span>${label}</span><span class="tprog-nums"><span class="frac">${solved.toLocaleString()}/${total.toLocaleString()}</span><span class="pct">${pctFor(diff)}%</span></span></div>`;
     }).join('');
 
     card.innerHTML = `
