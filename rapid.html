@@ -415,6 +415,13 @@ h1, h2, h3 {
   padding-bottom: 24px;
 }
 
+@media (max-width: 999px) {
+  .theme-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
 .theme-card {
   position: relative;
   overflow: hidden;
@@ -426,14 +433,29 @@ h1, h2, h3 {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 95px;
+  min-height: 118px;
 }
 
 .theme-card:active { transform: scale(0.97); }
 .theme-card.selected { border-color: var(--gold); background: rgba(168, 121, 42, 0.1); }
 .theme-card .tname { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--text); word-break: break-word; }
-.theme-card .tcount { margin-top: 8px; font-size: 11px; color: var(--gold-soft); letter-spacing: 0.4px; }
-.theme-card .tsolved { margin-top: 2px; font-size: 11px; color: var(--green); letter-spacing: 0.2px; font-weight: 600; }
+.theme-card .tprogress {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.theme-card .tprog-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.2px;
+}
+.theme-card .tprog-row .pct { color: var(--gold-soft); font-weight: 700; }
+.theme-card .tprog-row.current { color: var(--text); font-weight: 600; }
+.theme-card .tprog-row.current .pct { color: var(--green); }
 .theme-card .ripple { position: absolute; border-radius: 50%; background: rgba(168, 121, 42, 0.3); transform: scale(0); animation: rip 0.6s ease-out; pointer-events: none; }
 
 @keyframes rip { to { transform: scale(2.5); opacity: 0; } }
@@ -1532,13 +1554,22 @@ function renderThemeGrid(filterText = '') {
     card.className = 'theme-card glass' + (state.currentTheme === key ? ' selected' : '');
     
     const formattedName = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-    const specificCount = diffs[state.currentDifficulty] || 0;
-    const solvedCount = (state.themeSolvedCounts[key] && state.themeSolvedCounts[key][state.currentDifficulty]) || 0;
+    const solvedFor = state.themeSolvedCounts[key] || { easy: 0, medium: 0, hard: 0 };
+    const pctFor = (diff) => {
+      const total = diffs[diff] || 0;
+      const solved = solvedFor[diff] || 0;
+      return total > 0 ? Math.min(100, Math.round((solved / total) * 100)) : 0;
+    };
+
+    const rows = ['easy', 'medium', 'hard'].map(diff => {
+      const label = diff.charAt(0).toUpperCase() + diff.slice(1);
+      const isCurrent = diff === state.currentDifficulty;
+      return `<div class="tprog-row${isCurrent ? ' current' : ''}"><span>${label}</span><span class="pct">${pctFor(diff)}%</span></div>`;
+    }).join('');
 
     card.innerHTML = `
       <div class="tname">${formattedName}</div>
-      <div class="tcount">${specificCount.toLocaleString()} Puzzles (${state.currentDifficulty})</div>
-      <div class="tsolved">${solvedCount.toLocaleString()} solved (${state.currentDifficulty})</div>
+      <div class="tprogress">${rows}</div>
     `;
     
     card.addEventListener('click', (e) => { 
