@@ -217,9 +217,9 @@ h1, h2, h3 {
 }
 
 .section-label {
-  padding: 18px 0 6px;
-  font-size: 12px;
-  letter-spacing: 1.4px;
+  padding: 14px 0 6px;
+  font-size: 11px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
   color: var(--text-dim);
   text-align: center;
@@ -367,26 +367,31 @@ h1, h2, h3 {
      HOME MODULE
      ============================================================ */
 .home-header {
-  padding: 48px 20px 18px;
+  padding: 28px 20px 10px;
   text-align: center;
 }
 
 .home-header h1 {
-  font-size: clamp(28px, 7vw, 42px);
+  font-size: clamp(26px, 7vw, 42px);
   background: linear-gradient(135deg, var(--gold-soft), var(--gold) 60%, #fff3d0);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-.home-header p {
-  color: var(--text-dim);
-  margin-top: 8px;
-  font-size: 15px;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+.home-sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(244, 236, 217, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  margin: 0 -16px;
+  padding: 8px 16px 4px;
 }
+
+.home-sticky-bar .quick-row { padding: 0 0 10px; }
+.home-sticky-bar .theme-search-box { margin: 0 auto 8px; }
 
 .theme-search-box {
   max-width: 500px;
@@ -418,7 +423,11 @@ h1, h2, h3 {
 @media (max-width: 999px) {
   .theme-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 8px;
+  }
+  .theme-card {
+    padding: 12px 10px;
+    min-height: 116px;
   }
 }
 
@@ -843,7 +852,8 @@ h1, h2, h3 {
   .topbar { display: none; }
   .home-header { display: none; }
   #screen-home .section-label,
-  #screen-home > .quick-row,
+  #screen-home .home-sticky-bar,
+  #screen-home .quick-row,
   #screen-home .theme-search-box { display: none; }
 
   .desktop-sidebar {
@@ -1068,27 +1078,20 @@ h1, h2, h3 {
 <section id="screen-home" class="screen active">
   <div class="home-header">
     <h1>Knight Trainer</h1>
-    <p>It's the piece every player falls for first! Brilliant and impossible to predict. Train its patterns here and start thinking like a tactician.</p>
   </div>
 
-  <div class="section-label">1. Choose Your Level</div>
-  <div class="quick-row" id="difficultyRow">
-    <div class="chip glass active" data-diff="easy">Easy</div>
-    <div class="chip glass" data-diff="medium">Medium</div>
-    <div class="chip glass" data-diff="hard">Hard</div>
+  <div class="home-sticky-bar">
+    <div class="quick-row" id="difficultyRow">
+      <div class="chip glass active" data-diff="easy">Easy</div>
+      <div class="chip glass" data-diff="medium">Medium</div>
+      <div class="chip glass" data-diff="hard">Hard</div>
+    </div>
+    <div class="theme-search-box">
+      <input type="text" id="themeSearch" placeholder="Search knight patterns — try “fork,” “mate,” or “sacrifice”…">
+    </div>
   </div>
 
-  <div class="section-label">Fast Track</div>
-  <div class="quick-row">
-    <div class="chip glass act-random" id="chipRandom">🎲 Surprise Me</div>
-    <div class="chip glass act-fav" id="chipFav">⭐ My Favorites</div>
-    <div class="chip glass act-recent" id="chipRecent">🕘 Pick Up Where I Left Off</div>
-  </div>
-
-  <div class="section-label">2. Choose Your Pattern</div>
-  <div class="theme-search-box">
-    <input type="text" id="themeSearch" placeholder="Search knight patterns — try “fork,” “mate,” or “sacrifice”…">
-  </div>
+  <div class="section-label">Choose Pattern</div>
   
   <div class="theme-grid" id="themeGrid">
     <div class="loading"><div class="spinner"></div>Warming up the knight…</div>
@@ -1206,6 +1209,15 @@ h1, h2, h3 {
 <section id="screen-settings" class="screen">
   <div class="simple-screen">
     <div class="topbar" style="padding:2px 0 4px;"><h2>Settings</h2></div>
+    <p style="text-align:center;color:var(--text-dim);font-size:12px;line-height:1.5;margin:0 0 16px;padding:0 6px;">It's the piece every player falls for first! Brilliant and impossible to predict. Train its patterns here and start thinking like a tactician.</p>
+
+    <div class="section-label" style="padding-top:0;">Quick Start</div>
+    <div class="quick-row">
+      <div class="chip glass act-random" id="chipRandom">🎲 Surprise Me</div>
+      <div class="chip glass act-fav" id="chipFav">⭐ My Favorites</div>
+      <div class="chip glass act-recent" id="chipRecent">🕘 Pick Up Where I Left Off</div>
+    </div>
+
     <div class="settings-row glass">
       <div><div class="lbl">Sound</div><div class="sub">Hear every correct strike and missed shot</div></div>
       <div class="switch on" id="toggleSound"><div class="knob"></div></div>
