@@ -566,13 +566,6 @@ h1, h2, h3 {
   gap: 2px;
 }
 
-.board-substats .substat-lbl {
-  font-size: 10.5px;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: var(--text-dim);
-}
-
 .board-substats .substat-val {
   font-family: var(--serif);
   font-size: 17px;
@@ -954,6 +947,16 @@ h1, h2, h3 {
 
   .sidebar-section.hidden { display: none !important; }
 
+  .sidebar-trainer-stats {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 26px;
+  }
+  .sidebar-trainer-stats .substat-val { font-size: 20px; }
+
   .sidebar-section-label {
     font-size: 11px;
     text-transform: uppercase;
@@ -1053,6 +1056,8 @@ h1, h2, h3 {
   #screen-trainer .action-row {
     max-width: none;
   }
+
+  #screen-trainer .board-shell .board-substats { display: none; }
 }
 </style>
 </head>
@@ -1089,6 +1094,11 @@ h1, h2, h3 {
       <div class="sidebar-chip act-fav">⭐ My Favorites</div>
       <div class="sidebar-chip act-recent">🕘 Continue Recent</div>
     </div>
+  </div>
+
+  <div class="sidebar-section sidebar-trainer-stats hidden" id="sidebarTrainerStats">
+    <div class="substat"><span class="substat-val board-counter-val">0 / 0</span></div>
+    <div class="substat"><span class="substat-val session-clock-val">0:00</span></div>
   </div>
 
   <div class="sidebar-bottom">
@@ -1154,8 +1164,8 @@ h1, h2, h3 {
           <div>Setting the board…</div>
         </div>
         <div class="board-substats" id="boardSubstats">
-          <div class="substat"><span class="substat-lbl">Solved / Total</span><span class="substat-val" id="boardCounter">0 / 0</span></div>
-          <div class="substat"><span class="substat-lbl">Session</span><span class="substat-val" id="sessionClock">0:00</span></div>
+          <div class="substat"><span class="substat-val board-counter-val">0 / 0</span></div>
+          <div class="substat"><span class="substat-val session-clock-val">0:00</span></div>
         </div>
       </div>
     </div>
@@ -1627,7 +1637,7 @@ function setRushUIActive(active){
   document.getElementById('rushHud').classList.toggle('hidden', !active);
   document.getElementById('engineCard').classList.toggle('hidden', active);
   document.getElementById('moveListCard').classList.toggle('hidden', active);
-  document.getElementById('boardSubstats').classList.toggle('hidden', active);
+  setBoardStatsVisible(!active);
   document.getElementById('btnHint').style.display = active ? 'none' : '';
   document.getElementById('btnSolution').style.display = active ? 'none' : '';
   document.getElementById('btnNext').textContent = active ? '🚪 Exit Rush' : 'Next →';
@@ -1777,6 +1787,13 @@ function toast(msg){
 /* ============================================================
      SCREEN CONTROL & VIEW SWAPPING
      ============================================================ */
+function setBoardStatsVisible(visible){
+  const mobileBar = document.getElementById('boardSubstats');
+  if(mobileBar) mobileBar.classList.toggle('hidden', !visible);
+  const sidebarBar = document.getElementById('sidebarTrainerStats');
+  if(sidebarBar) sidebarBar.classList.toggle('hidden', !visible);
+}
+
 function showScreen(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
@@ -1785,6 +1802,7 @@ function showScreen(name){
   });
   const homeControls = document.getElementById('sidebarHomeControls');
   if(homeControls) homeControls.classList.toggle('hidden', name !== 'home');
+  setBoardStatsVisible(name === 'trainer' && !state.rush.active);
   if(name === 'trainer'){ startSessionClock(); } else { pauseSessionClock(); }
   if(name === 'stats') renderStats();
   if(name === 'trainer' && state.board) setTimeout(()=>state.board.resize(), 50);
@@ -2036,16 +2054,18 @@ function updateMoveCounter(){
 
 /* ---- puzzles-solved counter for the current theme + difficulty ---- */
 function updateBoardCounter(){
-  const el = document.getElementById('boardCounter');
-  if(!el) return;
+  const els = document.querySelectorAll('.board-counter-val');
+  if(!els.length) return;
+  let text;
   if(!state.currentTheme || !state.themesMeta || !state.themesMeta[state.currentTheme]){
-    el.textContent = '0 / 0';
-    return;
+    text = '0 / 0';
+  }else{
+    const total = state.themesMeta[state.currentTheme][state.currentDifficulty] || 0;
+    const solvedBucket = state.themeSolvedCounts[state.currentTheme] || {};
+    const solved = solvedBucket[state.currentDifficulty] || 0;
+    text = solved.toLocaleString() + ' / ' + total.toLocaleString();
   }
-  const total = state.themesMeta[state.currentTheme][state.currentDifficulty] || 0;
-  const solvedBucket = state.themeSolvedCounts[state.currentTheme] || {};
-  const solved = solvedBucket[state.currentDifficulty] || 0;
-  el.textContent = solved.toLocaleString() + ' / ' + total.toLocaleString();
+  els.forEach(el => el.textContent = text);
 }
 
 /* ---- session clock: tracks active time spent on the trainer screen ---- */
@@ -2059,10 +2079,11 @@ function formatSessionTime(sec){
   return m + ':' + String(s).padStart(2, '0');
 }
 function updateSessionClockDisplay(){
-  const el = document.getElementById('sessionClock');
-  if(!el) return;
+  const els = document.querySelectorAll('.session-clock-val');
+  if(!els.length) return;
   const liveMs = state.sessionRunning ? (Date.now() - state.sessionTickStart) : 0;
-  el.textContent = formatSessionTime((state.sessionElapsedMs + liveMs) / 1000);
+  const text = formatSessionTime((state.sessionElapsedMs + liveMs) / 1000);
+  els.forEach(el => el.textContent = text);
 }
 function startSessionClock(){
   if(state.sessionRunning) return;
