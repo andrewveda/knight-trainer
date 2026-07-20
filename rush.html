@@ -1,0 +1,2889 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Knight Trainer — Chess Knight Tactics & Fork Puzzles</title>
+<meta name="description" content="Master knight forks, outposts, and mating nets with interactive chess puzzles. Free knight tactics trainer for beginners to advanced players created by Andrew Veda.">
+<meta name="theme-color" content="#f4ecd9">
+     <!-- Canonical URL (tells Google the official address) -->
+<link rel="canonical" href="https://andrewveda.github.io/knight-trainer/">
+
+<!-- Open Graph (for social sharing, which indirectly helps SEO) -->
+<meta property="og:title" content="Knight Trainer — Master Chess Knight Tactics">
+<meta property="og:description" content="Train knight forks, outposts, and mating nets with bite-sized chess puzzles.">
+<meta property="og:url" content="https://andrewveda.github.io/knight-trainer/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://andrewveda.github.io/knight-trainer/og-image.png">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- Keywords (minor factor, but helps context) -->
+<meta name="keywords" content="chess knight tactics, knight fork trainer, chess puzzles, chess training, knight patterns, chess tactics">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23f4ecd9'/%3E%3Ctext x='50' y='68' font-size='60' text-anchor='middle' fill='%23a8792a'%3E%E2%99%9E%3C/text%3E%3C/svg%3E">
+
+<!-- ============================================================
+     EXTERNAL LIBRARIES (the only two allowed)
+     ============================================================ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Knight Trainer",
+  "description": "Interactive chess knight tactics trainer with puzzles for forks, outposts, and mating nets.",
+  "url": "https://andrewveda.github.io/knight-trainer/",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "Andrew Veda"
+  }
+}
+</script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+
+<style>
+/* ============================================================
+     DESIGN TOKENS & SYSTEM DEFAULTS
+     ============================================================ */
+:root {
+  --bg: #f4ecd9;
+  --bg2: #ece0c2;
+  --panel: rgba(139, 101, 44, 0.055);
+  --panel-border: rgba(139, 101, 44, 0.28);
+  --gold: #a8792a;
+  --gold-soft: #8a5a20;
+  --bronze: #8a5a2b;
+  --teal: #cdbb8e;
+  --text: #3b2c1a;
+  --text-dim: #7a6a52;
+  --green: #55772f;
+  --red: #a13d2f;
+  --accent: #7c2d3a;
+  --accent-soft: #9c4152;
+  --board-light: #ecdcb8;
+  --board-dark: #a97c3f;
+  --radius: 18px;
+  --sidebar-w: 240px;
+  --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  overflow-x: hidden;
+}
+
+body {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3 {
+  font-family: var(--serif);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  margin: 0;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--panel-border);
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+     AMBIENT VISUAL EFFECTS
+     ============================================================ */
+.bg-glow {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(45deg, rgba(139,101,44,0.05) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(139,101,44,0.05) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(139,101,44,0.05) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(139,101,44,0.05) 75%);
+  background-size: 56px 56px;
+  background-position: 0 0, 0 28px, 28px -28px, -28px 0px;
+}
+
+.bg-glow span { display: none; }
+
+.bg-pieces {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.035;
+  font-size: 120px;
+  pointer-events: none;
+  overflow: hidden;
+  color: var(--bronze);
+}
+
+.bg-pieces span {
+  position: absolute;
+  animation: drift 30s linear infinite;
+}
+
+@keyframes drift {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(-40px) rotate(8deg); }
+}
+
+.glass {
+  background: var(--panel);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+}
+
+/* ============================================================
+     SCREEN ARCHITECTURE & APPLICATION BASE
+     ============================================================ */
+.screen {
+  display: none;
+  animation: fadeIn 0.35s ease;
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px 100px;
+}
+
+.screen.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 0 4px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.topbar h2 {
+  font-size: 22px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.section-label {
+  padding: 14px 0 6px;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 14px;
+  color: var(--text-dim);
+}
+
+.spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid var(--panel-border);
+  border-top-color: var(--gold);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(59, 44, 26, 0.94);
+  color: #f4ecd9;
+  border: 1px solid var(--panel-border);
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 13px;
+  z-index: 80;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s, transform .25s;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-6px);
+}
+
+.hidden { display: none !important; }
+
+/* ============================================================
+     INTERACTIVE REUSABLE COMPONENTS
+     ============================================================ */
+.btn {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 11px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--panel-border);
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn:active { transform: scale(0.96); }
+.btn:disabled { opacity: 0.35; cursor: default; transform: none; }
+.btn.primary { background: linear-gradient(135deg, var(--accent-soft), var(--accent)); color: #f6ead2; border: none; }
+.btn.danger { border-color: rgba(225, 86, 78, 0.4); color: var(--red); }
+
+.btn.primary.solved {
+  background: linear-gradient(135deg, #6f9a4c, var(--green));
+  color: #f4ecd9;
+  border: none;
+  animation: solvedPulse 1.3s ease-in-out infinite;
+}
+
+@keyframes solvedPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(85, 119, 47, 0.55); }
+  50% { box-shadow: 0 0 0 9px rgba(85, 119, 47, 0); }
+}
+
+.icon-btn {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.icon-btn:active { transform: scale(0.92); }
+.icon-btn:disabled { opacity: 0.35; cursor: default; }
+
+.chip {
+  flex: 0 0 auto;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.chip:active { transform: scale(0.96); }
+.chip.active { border-color: var(--gold); color: var(--gold-soft); background: rgba(168, 121, 42, 0.14); }
+
+.quick-row {
+  display: flex;
+  gap: 10px;
+  padding: 0 0 20px;
+  overflow-x: auto;
+  justify-content: center;
+}
+
+.switch {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(139, 101, 44, 0.18);
+  cursor: pointer;
+}
+
+.switch.on { background: var(--gold); }
+.switch .knob { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: left .18s; }
+.switch.on .knob { left: 23px; }
+
+.switch.small { width: 38px; height: 22px; }
+.switch.small .knob { width: 16px; height: 16px; top: 3px; left: 3px; }
+.switch.small.on .knob { left: 19px; }
+
+/* ============================================================
+     HOME MODULE
+     ============================================================ */
+.home-header {
+  padding: 28px 20px 10px;
+  text-align: center;
+}
+
+.home-header h1 {
+  font-size: clamp(26px, 7vw, 42px);
+  background: linear-gradient(135deg, var(--gold-soft), var(--gold) 60%, #fff3d0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.home-sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(244, 236, 217, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  margin: 0 -16px;
+  padding: 8px 16px 4px;
+}
+
+.home-sticky-bar .quick-row { padding: 0 0 10px; }
+.home-sticky-bar .theme-search-box { margin: 0 auto 8px; }
+
+.theme-search-box {
+  max-width: 500px;
+  margin: 0 auto 16px;
+}
+
+.theme-search-box input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+}
+
+.theme-search-box input:focus { border-color: var(--gold); }
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  max-width: 840px;
+  margin: 0 auto;
+  padding-bottom: 24px;
+}
+
+@media (max-width: 999px) {
+  .theme-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .theme-card {
+    padding: 12px 10px;
+    min-height: 116px;
+  }
+}
+
+.theme-card {
+  position: relative;
+  overflow: hidden;
+  padding: 16px 14px;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 130px;
+}
+
+.theme-card:active { transform: scale(0.97); }
+.theme-card.selected { border-color: var(--gold); background: rgba(168, 121, 42, 0.1); }
+.theme-card .tname { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--text); word-break: break-word; }
+.theme-card .tprogress {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.theme-card .tprog-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--text-dim);
+  letter-spacing: 0.2px;
+}
+.theme-card .tprog-row .pct { color: var(--gold-soft); font-weight: 700; }
+.theme-card .tprog-row .tprog-nums { display: flex; align-items: center; gap: 6px; }
+.theme-card .tprog-row .frac { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.theme-card .tprog-row.current .frac { color: var(--text); }
+.theme-card .tprog-row.current { color: var(--text); font-weight: 600; }
+.theme-card .tprog-row.current .pct { color: var(--green); }
+.theme-card .ripple { position: absolute; border-radius: 50%; background: rgba(168, 121, 42, 0.3); transform: scale(0); animation: rip 0.6s ease-out; pointer-events: none; }
+
+@keyframes rip { to { transform: scale(2.5); opacity: 0; } }
+
+/* ============================================================
+     TRAINER GROUND MODULE (FLUID TWO-COLUMN WORKSPACE)
+     ============================================================ */
+.trainer-wrap {
+  display: flex;
+  flex-direction: column;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 14px 0 20px;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .trainer-wrap {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.board-col {
+  flex: 1.2;
+  min-width: 0;
+}
+
+.board-shell {
+  max-width: 520px;
+  margin: 0 auto;
+  position: relative;
+  touch-action: manipulation;
+}
+
+#board {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+}
+
+#board, #board * {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+#board img { pointer-events: auto; }
+#board [data-square] { touch-action: manipulation; }
+
+.board-arrows {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.notation-stamp-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 7;
+  overflow: hidden;
+}
+
+.notation-stamp {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: var(--serif);
+  font-weight: 700;
+  color: rgba(124, 45, 58, 0.4);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.notation-stamp.hidden { display: none; }
+
+.board-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 2px 10px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.status-bar {
+  flex: 1;
+  text-align: center;
+  min-height: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  padding: 0 10px;
+}
+
+.status-bar.correct { color: var(--green); }
+.status-bar.wrong { color: var(--red); }
+.status-bar.info { color: var(--gold-soft); }
+
+.nav-row, .action-row {
+  display: flex;
+  gap: 8px;
+  max-width: 520px;
+  margin: 10px auto 0;
+  justify-content: center;
+  width: 100%;
+}
+
+.action-row .btn {
+  flex: 1;
+}
+
+/* Chess Engine Board Overlay States */
+.sq-correct { box-shadow: inset 0 0 0 9999px rgba(95,191,110,0.45) !important; }
+.sq-wrong { animation: shake 0.4s; }
+.sq-hint { box-shadow: inset 0 0 0 9999px rgba(212,175,55,0.5) !important; }
+.sq-selected { box-shadow: inset 0 0 0 9999px rgba(212,175,55,0.32) !important; }
+.sq-legal, .sq-legal-capture { position: relative; }
+.sq-legal::after { content: ''; position: absolute; top: 50%; left: 50%; width: 26%; height: 26%; border-radius: 50%; background: rgba(20,18,14,0.32); transform: translate(-50%,-50%); pointer-events: none; }
+.sq-legal-capture::after { content: ''; position: absolute; inset: 6%; border-radius: 50%; border: 4px solid rgba(20,18,14,0.38); background: transparent; pointer-events: none; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* ============================================================
+     CONTROL UTILITIES PANEL
+     ============================================================ */
+.control-col {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-card {
+  padding: 16px;
+}
+
+.info-card h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(139, 101, 44, 0.14);
+}
+
+.info-row:last-child { border-bottom: none; }
+.info-row .v { color: var(--gold-soft); font-weight: 600; text-align: right; max-width: 60%; }
+
+/* Adaptive Engine Box Layout */
+.engine-compact-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 12px;
+  color: var(--text-dim);
+  padding-bottom: 12px;
+}
+
+.engine-compact-row strong { color: var(--gold-soft); font-weight: 700; }
+#engineLiveDot.searching { color: var(--gold-soft); animation: enginePulse 1s ease-in-out infinite; }
+
+@keyframes enginePulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+.mini-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.mini-actions .btn {
+  flex: 1;
+  padding: 8px 6px;
+  font-size: 12px;
+  min-height: 34px;
+}
+
+.move-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 0;
+  font-size: 13px;
+  max-height: 120px;
+  overflow-y: auto;
+  line-height: 1.9;
+  padding: 4px 0;
+}
+
+.move-list .mv { padding: 2px 7px; border-radius: 7px; cursor: pointer; color: var(--text-dim); }
+.move-list .mv:hover { background: rgba(139, 101, 44, 0.1); }
+.move-list .mv.current { background: rgba(168, 121, 42, 0.22); color: var(--gold-soft); font-weight: 700; }
+.move-list .mnum { color: var(--text-dim); font-size: 11px; padding-right: 2px; }
+
+/* ============================================================
+     ANALYTICS & HISTORICAL INSIGHTS MODULE
+     ============================================================ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.stat-card {
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-card .big { font-family: var(--serif); font-size: 26px; color: var(--gold-soft); }
+.stat-card .lbl { font-size: 11px; color: var(--text-dim); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.6px; }
+
+.theme-stats-list {
+  max-width: 760px;
+  margin: 20px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.theme-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+}
+
+.theme-stat-row .tsr-name-col {
+  flex: 0 0 170px;
+  min-width: 0;
+}
+
+.theme-stat-row .tsr-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.theme-stat-row .tsr-breakdown {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 3px;
+}
+
+.theme-stat-row .tsr-breakdown span { color: var(--gold-soft); font-weight: 600; }
+
+.theme-stat-row .tsr-bar-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(139, 101, 44, 0.14);
+  overflow: hidden;
+}
+
+.theme-stat-row .tsr-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--gold-soft), var(--gold));
+}
+
+.theme-stat-row .tsr-count {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--text-dim);
+  min-width: 46px;
+  text-align: right;
+}
+
+/* ============================================================
+     PREFERENCES, UTILITIES & FOOTER SETTINGS
+     ============================================================ */
+.simple-screen {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  margin-bottom: 10px;
+}
+
+.settings-row .lbl { font-size: 14px; }
+.settings-row .sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+.select-pill {
+  background: rgba(139, 101, 44, 0.08);
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+  outline: none;
+}
+
+.about-card {
+  padding: 22px;
+  line-height: 1.6;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.about-card h3 { color: var(--text); margin-bottom: 8px; }
+.about-card p { margin: 0 0 12px; }
+.about-card p:last-child { margin-bottom: 0; }
+
+/* ============================================================
+     GLOBAL NAVIGATION DOCK
+     ============================================================ */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
+  background: rgba(244, 236, 217, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--panel-border);
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-family: var(--sans);
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 14px;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: color .15s;
+}
+
+.nav-btn .ic { font-size: 19px; }
+.nav-btn.active { color: var(--gold); }
+
+/* ============================================================
+     DESKTOP SIDEBAR (hidden by default, shown at desktop breakpoint)
+     ============================================================ */
+.desktop-sidebar { display: none; }
+
+/* ============================================================
+     DESKTOP LAYOUT (>= 1000px)
+     ============================================================ */
+@media (min-width: 1000px) {
+
+  .bottom-nav { display: none; }
+  .topbar { display: none; }
+  .home-header { display: none; }
+  #screen-home .section-label,
+  #screen-home .home-sticky-bar,
+  #screen-home .quick-row,
+  #screen-home .theme-search-box { display: none; }
+
+  .desktop-sidebar {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: var(--sidebar-w);
+    padding: 30px 20px 24px;
+    background: var(--bg2);
+    border-right: 1px solid var(--panel-border);
+    overflow-y: auto;
+    z-index: 60;
+  }
+
+  .sidebar-brand {
+    font-family: var(--serif);
+    font-size: 21px;
+    font-weight: 700;
+    color: var(--gold-soft);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sidebar-tagline {
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--text-dim);
+    margin: 8px 0 22px;
+  }
+
+  .sidebar-bottom {
+    margin-top: auto;
+  }
+
+  .sidebar-divider {
+    height: 1px;
+    background: var(--panel-border);
+    margin: 16px 0;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .sidebar-btn {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: background .15s, color .15s;
+  }
+
+  .sidebar-btn .ic { font-size: 16px; width: 20px; text-align: center; }
+  .sidebar-btn:hover { background: rgba(139, 101, 44, 0.08); }
+  .sidebar-btn.active { background: rgba(168, 121, 42, 0.14); color: var(--gold-soft); }
+
+  .sidebar-section.hidden { display: none !important; }
+
+  .sidebar-section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-dim);
+    margin: 4px 0 8px;
+  }
+
+  .sidebar-search input {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    margin-bottom: 18px;
+  }
+  .sidebar-search input:focus { border-color: var(--gold); }
+
+  .sidebar-chip-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .sidebar-chip {
+    padding: 9px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .sidebar-chip:hover { background: rgba(139, 101, 44, 0.08); }
+  .sidebar-chip.active { border-color: var(--gold); color: var(--gold-soft); background: rgba(168, 121, 42, 0.14); }
+
+  /* ---- shared screen shell ---- */
+  .screen {
+    padding: 30px 34px 34px calc(var(--sidebar-w) + 34px);
+  }
+
+  .simple-screen, .stats-grid, .about-card { max-width: 720px; }
+
+  /* ---- home grid gets the freed-up space ---- */
+  .theme-grid {
+    max-width: none;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 14px;
+  }
+
+  /* ---- trainer: full-height, no topbar, board uncapped, controls on the right ---- */
+  #screen-trainer.screen {
+    padding: 0 0 0 var(--sidebar-w);
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  #screen-trainer .trainer-wrap {
+    flex-direction: row;
+    align-items: stretch;
+    max-width: none;
+    height: 100vh;
+    margin: 0;
+    padding: 0 30px;
+    gap: 28px;
+  }
+
+  #screen-trainer .board-col {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #screen-trainer .board-shell {
+    max-width: none;
+    width: min(88vh, 100%);
+    margin: 0;
+  }
+
+  #screen-trainer .control-col {
+    flex: 0 0 380px;
+    width: 380px;
+    height: 100%;
+    overflow-y: auto;
+    padding: 30px 4px 30px 0;
+    justify-content: flex-start;
+  }
+
+  #screen-trainer .board-toolbar,
+  #screen-trainer .nav-row,
+  #screen-trainer .action-row {
+    max-width: none;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+<div class="bg-pieces" aria-hidden="true">
+  <span style="left:8%;top:10%;">♞</span><span style="left:70%;top:6%;animation-delay:-6s;">♞</span>
+  <span style="left:30%;top:60%;animation-delay:-12s;">♞</span><span style="left:85%;top:55%;animation-delay:-4s;">♞</span>
+</div>
+
+<!-- =========================================================
+     DESKTOP SIDEBAR (persistent across both pages, desktop only)
+     ========================================================= -->
+<aside class="desktop-sidebar" id="desktopSidebar">
+  <div class="sidebar-brand">♞ Knight Trainer</div>
+  <p class="sidebar-tagline">It's the piece every player falls for first. Train its patterns here and start thinking like a tactician.</p>
+     <div class="sidebar-section" id="sidebarHomeControls">
+    <div class="sidebar-search">
+      <input type="text" id="dskThemeSearch" placeholder="Search patterns…">
+    </div>
+
+    <div class="sidebar-section-label">Level</div>
+    <div class="sidebar-chip-row" id="dskDifficultyRow">
+      <div class="sidebar-chip active" data-diff="easy">Easy</div>
+      <div class="sidebar-chip" data-diff="medium">Medium</div>
+      <div class="sidebar-chip" data-diff="hard">Hard</div>
+    </div>
+
+    <div class="sidebar-section-label">Fast Track</div>
+    <div class="sidebar-chip-row">
+      <div class="sidebar-chip act-rush">⚡ Puzzle Rush</div>
+      <div class="sidebar-chip act-random">🎲 Surprise Me</div>
+      <div class="sidebar-chip act-fav">⭐ My Favorites</div>
+      <div class="sidebar-chip act-recent">🕘 Continue Recent</div>
+    </div>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="sidebar-divider"></div>
+    <nav class="sidebar-nav">
+      <button class="sidebar-btn active" data-screen="home"><span class="ic">♞</span>Home</button>
+      <button class="sidebar-btn" data-screen="stats"><span class="ic">📊</span>Stats</button>
+      <button class="sidebar-btn" data-screen="settings"><span class="ic">⚙️</span>Settings</button>
+      <button class="sidebar-btn" data-screen="about"><span class="ic">ℹ️</span>About</button>
+    </nav>
+  </div>
+</aside>
+
+<!-- =========================================================
+     HOME SCREEN
+     ========================================================= -->
+<section id="screen-home" class="screen active">
+  <div class="home-header">
+    <h1>Knight Trainer</h1>
+  </div>
+
+  <div class="home-sticky-bar">
+    <div class="quick-row" id="difficultyRow">
+      <div class="chip glass active" data-diff="easy">Easy</div>
+      <div class="chip glass" data-diff="medium">Medium</div>
+      <div class="chip glass" data-diff="hard">Hard</div>
+    </div>
+    <div class="theme-search-box">
+      <input type="text" id="themeSearch" placeholder="Search knight patterns — try “fork,” “mate,” or “sacrifice”…">
+    </div>
+    <div class="quick-row" style="padding-top:0;">
+      <div class="chip glass act-rush" id="chipHomeRush">⚡ Puzzle Rush</div>
+    </div>
+  </div>
+
+  <div class="section-label">Choose Pattern</div>
+  
+  <div class="theme-grid" id="themeGrid">
+    <div class="loading"><div class="spinner"></div>Warming up the knight…</div>
+  </div>
+</section>
+
+<!-- =========================================================
+     TRAINER SCREEN
+     ========================================================= -->
+<section id="screen-trainer" class="screen">
+  <div class="topbar">
+    <button class="back-btn" id="trainerBack">←</button>
+    <h2 id="trainerTitle">Knight Training Ground</h2>
+  </div>
+
+  <div class="trainer-wrap">
+    <div class="board-col">
+      <div class="board-shell">
+        <div id="board"></div>
+        <div id="promoOverlay" class="glass hidden" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 70; gap: 12px; background: rgba(244, 236, 217, 0.92); border-radius: 10px;"></div>
+        <svg id="boardArrows" class="board-arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+        <div id="notationStampLayer" class="notation-stamp-layer">
+          <div id="notationStamp" class="notation-stamp hidden"></div>
+        </div>
+        <div id="loadingOverlay" class="loading hidden">
+          <div class="spinner"></div>
+          <div>Setting the board…</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-col">
+      <div class="board-toolbar">
+        <button class="icon-btn" id="btnFlip" title="Flip the board">⇅</button>
+        <div class="status-bar info" id="statusBar">Pick a pattern to begin your training</div>
+        <button class="icon-btn" id="btnFavorite" title="Save this puzzle">☆</button>
+      </div>
+      <div class="nav-row">
+        <button class="icon-btn" id="btnFirst" title="Back to the beginning">⏮</button>
+        <button class="icon-btn" id="btnPrev" title="Step back one move">◀</button>
+        <button class="icon-btn" id="btnReset" title="Run it back">⟲</button>
+        <button class="icon-btn" id="btnNextMove" title="Step forward one move">▶</button>
+        <button class="icon-btn" id="btnLast" title="Jump to the end">⏭</button>
+      </div>
+      <div class="action-row">
+        <button class="btn" id="btnHint">💡 Hint</button>
+        <button class="btn" id="btnSolution">Solution</button>
+        <button class="btn primary" id="btnNext">Next →</button>
+      </div>
+
+      <div class="info-card glass hidden" id="rushHud">
+        <h3>⚡ Puzzle Rush</h3>
+        <div class="engine-compact-row">
+          <span>Score <strong id="rushScore">0</strong></span>
+          <span id="rushTimeWrap">Time <strong id="rushTime">—</strong></span>
+          <span id="rushLivesWrap" class="hidden">Lives <strong id="rushLives">—</strong></span>
+          <span>Best <strong id="rushBest">0</strong></span>
+        </div>
+      </div>
+      <div class="info-card glass" id="engineCard">
+        <h3>
+          <span>Stockfish Engine <span id="engineLiveDot" style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0;">○ idle</span></span>
+          <div class="switch small" id="toggleAnalysis"><div class="knob"></div></div>
+        </h3>
+        <div class="engine-compact-row">
+          <span>Eval <strong id="engineEval">—</strong></span>
+          <span>Depth <strong id="engineDepth">—</strong></span>
+          <span>Best <strong id="engineBest">—</strong></span>
+        </div>
+        <div class="mini-actions">
+          <button class="btn" id="btnStockfishGo">▶ Let the Engine Continue</button>
+        </div>
+      </div>
+      <div class="info-card glass" id="moveListCard">
+        <h3>Move List</h3>
+        <div class="move-list" id="moveList">—</div>
+        <div class="mini-actions">
+          <button class="btn" id="btnCopyFen">Copy FEN</button>
+          <button class="btn" id="btnCopyPgn">Copy PGN</button>
+        </div>
+      </div>
+      <div class="info-card glass" id="puzzleInfoCard">
+        <h3>Puzzle Intel</h3>
+        <div class="info-row"><span>Pattern</span><span class="v" id="infoPiece">—</span></div>
+        <div class="info-row"><span>Level</span><span class="v" id="infoDifficulty">—</span></div>
+        <div class="info-row"><span>Rating</span><span class="v" id="infoRating">—</span></div>
+        <div class="info-row"><span>Puzzle ID</span><span class="v" id="infoId">—</span></div>
+        <div class="info-row"><span>Move</span><span class="v" id="infoMoveCount">—</span></div>
+        <div class="info-row"><span>Solved This Session</span><span class="v" id="infoSession">0</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     STATISTICS SCREEN
+     ========================================================= -->
+<section id="screen-stats" class="screen">
+  <div class="topbar"><h2>Statistics</h2></div>
+  <div class="stats-grid">
+    <div class="stat-card glass"><div class="big" id="stTotal">0</div><div class="lbl">Puzzles Solved</div></div>
+    <div class="stat-card glass"><div class="big" id="stAccuracy">0%</div><div class="lbl">Accuracy</div></div>
+    <div class="stat-card glass"><div class="big" id="stStreak">0</div><div class="lbl">Current Streak</div></div>
+    <div class="stat-card glass"><div class="big" id="stBest">0</div><div class="lbl">Best Streak</div></div>
+    <div class="stat-card glass"><div class="big" id="stAvgRating">—</div><div class="lbl">Avg Rating</div></div>
+    <div class="stat-card glass"><div class="big" id="stDaily">0</div><div class="lbl">Solved Today</div></div>
+    <div class="stat-card glass"><div class="big" id="stTime">0m</div><div class="lbl">Training Time</div></div>
+    <div class="stat-card glass"><div class="big" id="stAttempts">0</div><div class="lbl">Total Attempts</div></div>
+  </div>
+
+  <div class="section-label">Solved By Theme</div>
+  <div class="theme-stats-list" id="themeStatsList">
+    <div class="status-bar info">Solve a few puzzles to see your breakdown here.</div>
+  </div>
+
+  <div style="text-align:center; margin-top:24px; padding-bottom:20px;">
+    <button class="btn danger" id="btnResetStats">Reset Statistics</button>
+  </div>
+</section>
+
+<!-- =========================================================
+     SETTINGS SCREEN
+     ========================================================= -->
+<section id="screen-settings" class="screen">
+  <div class="simple-screen">
+    <div class="topbar" style="padding:2px 0 4px;"><h2>Settings</h2></div>
+    <p style="text-align:center;color:var(--text-dim);font-size:12px;line-height:1.5;margin:0 0 16px;padding:0 6px;">It's the piece every player falls for first! Brilliant and impossible to predict. Train its patterns here and start thinking like a tactician.</p>
+
+    <div class="section-label" style="padding-top:0;">Quick Start</div>
+    <div class="quick-row">
+      <div class="chip glass act-rush">⚡ Puzzle Rush</div>
+      <div class="chip glass act-random" id="chipRandom">🎲 Surprise Me</div>
+      <div class="chip glass act-fav" id="chipFav">⭐ My Favorites</div>
+      <div class="chip glass act-recent" id="chipRecent">🕘 Pick Up Where I Left Off</div>
+    </div>
+
+    <div class="settings-row glass">
+      <div><div class="lbl">Sound</div><div class="sub">Hear every correct strike and missed shot</div></div>
+      <div class="switch on" id="toggleSound"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Animations</div><div class="sub">Visual shake and transition effects</div></div>
+      <div class="switch on" id="toggleAnim"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Coordinates</div><div class="sub">Show board file and rank labels</div></div>
+      <div class="switch on" id="toggleCoords"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Flip Board Automatically</div><div class="sub">Always face the side you're training</div></div>
+      <div class="switch" id="toggleAutoFlip"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Notation Stamp</div><div class="sub">Flash each move's notation on its destination square</div></div>
+      <div class="switch on" id="toggleNotationStamp"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Auto-Advance</div><div class="sub">How fast the next puzzle loads after you solve one</div></div>
+      <select class="select-pill" id="selAutoAdvance">
+        <option value="off">Off — I'll hit Next</option>
+        <option value="fast">Fast (0.7s)</option>
+        <option value="normal">Normal (1.4s)</option>
+        <option value="slow">Slow (3s)</option>
+        <option value="chill">Chill (5s) — time to analyze</option>
+      </select>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Piece Style</div></div>
+      <select class="select-pill" id="selPieceStyle">
+        <option value="wikipedia">Classic</option>
+        <option value="alpha">Alpha</option>
+      </select>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     ABOUT SCREEN
+     ========================================================= -->
+<section id="screen-about" class="screen">
+  <div class="simple-screen">
+    <div class="topbar" style="padding:2px 0 4px;"><h2>About</h2></div>
+    <div class="about-card glass">
+      <h3>Knight Trainer</h3>
+      <p>The knight is responsible for some of the most devastating tactics in chess, which is also why it's the piece that many players struggle to visualize accurately under pressure. Knight Trainer helps you change that. Develop the pattern recognition of stronger players by instinctively learning to see the underlying tactic that is ushered in by the knight's first move in the puzzle. The underlying idea is more important than the first move in solving a tactic. Knight Trainer transforms a difficult skill into an addictive workout. Drill the patterns. Rewire your vision. And get ready to unleash the full power of your knight!      </p>
+
+      <p>Live long and Prosper! </p>
+ <p> Andrew Veda </p>
+
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     BOTTOM NAVIGATION
+     ========================================================= -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-screen="home"><span class="ic">♞</span>Home</button>
+  <button class="nav-btn" data-screen="stats"><span class="ic">📊</span>Stats</button>
+  <button class="nav-btn" data-screen="settings"><span class="ic">⚙️</span>Settings</button>
+  <button class="nav-btn" data-screen="about"><span class="ic">ℹ️</span>About</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<div id="rushSelectOverlay" class="hidden" style="position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;background:rgba(59,44,26,0.55);padding:20px;">
+  <div class="glass" style="max-width:360px;width:100%;padding:26px;text-align:center;">
+    <h3 style="font-size:20px;margin-bottom:6px;">⚡ Puzzle Rush</h3>
+    <p style="font-size:13px;color:var(--text-dim);margin:0 0 20px;line-height:1.5;">Solve as many knight puzzles as you can. A miss ends that puzzle immediately — difficulty ramps up as your score climbs.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn primary" id="rushPickTimed">⏱ 3-Minute Rush</button>
+      <button class="btn" id="rushPickSurvival">❤️ Survival — 3 Lives</button>
+      <button class="btn" id="rushPickCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="rushEndOverlay" class="hidden" style="position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;background:rgba(59,44,26,0.55);padding:20px;">
+  <div class="glass" style="max-width:360px;width:100%;padding:26px;text-align:center;">
+    <h3 style="font-size:20px;margin-bottom:6px;" id="rushEndTitle">Rush Over!</h3>
+    <div style="font-family:var(--serif);font-size:42px;color:var(--gold-soft);margin:10px 0;" id="rushEndScore">0</div>
+    <p style="font-size:13px;color:var(--text-dim);margin:0 0 20px;" id="rushEndBest">Best: 0</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn primary" id="rushPlayAgain">Play Again</button>
+      <button class="btn" id="rushEndExit">Back to Home</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ============================================================
+     CONFIGURATION
+     ============================================================ */
+const CONFIG = {
+  REPO_BASE: 'https://raw.githubusercontent.com/andrewveda/knight-trainer/main/data',
+  CACHE_LIMIT: 30,
+  AUTO_MOVE_DELAY: 480,
+  STOCKFISH_URL: 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js',
+  ENGINE_DEPTH: 14,
+};
+
+/* Auto-advance timing options — how long to wait after a solve before
+   automatically loading the next puzzle. 'off' means never auto-advance;
+   the player must tap Next (which glows green once ready). */
+const AUTO_ADVANCE_DELAYS = { off: null, fast: 700, normal: 1400, slow: 3000, chill: 5000 };
+
+const IS_TOUCH_DEVICE = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
+
+/* ============================================================
+     STATE
+     ============================================================ */
+const state = {
+  cache: new Map(),
+  themesMeta: null,
+  currentTheme: null,
+  currentDifficulty: 'easy',
+  currentPuzzle: null,
+  chess: null,
+  board: null,
+  boardResizeWired: false,
+  solving: false,
+  moveCursor: 0,
+  fenHistory: [],
+  sanHistory: [],
+  toSquareHistory: [],
+  viewIndex: 0,
+  boardOrientation: 'white',
+  puzzleStartTime: null,
+  sessionSolved: 0,
+  settings: loadSettings(),
+  stats: loadStats(),
+  favorites: loadJSON('knt_favorites', []),
+  recents: loadJSON('knt_recents', []),
+  seenPuzzles: loadJSON('knt_seen', {}),
+  themeSolvedCounts: migrateThemeSolvedCounts(loadJSON('knt_theme_solved', {})),
+  selectedSquare: null,
+  legalTargets: [],
+  sf: null,
+  sfMode: null,
+  sfBestLine: {},
+  analysisMode: false,
+  rush: {
+    active: false,
+    mode: null,          // 'timed' | 'survival'
+    score: 0,
+    lives: 3,
+    timeLeft: 180,
+    timerId: null,
+    usedIds: new Set(),
+    best: loadJSON('knt_rush_best', { timed: 0, survival: 0 })
+  },
+};
+
+function getPromotionPieceUI(color) {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('promoOverlay');
+    overlay.innerHTML = '';
+    overlay.classList.remove('hidden');
+
+    ['q', 'r', 'b', 'n'].forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'icon-btn';
+      btn.style.cssText = 'width: 70px; height: 70px; border-radius: 14px; background: var(--bg2);';
+      
+      const img = document.createElement('img');
+      img.src = pieceThemeUrl(color + p.toUpperCase());
+      img.style.width = '100%';
+      
+      btn.appendChild(img);
+      btn.addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        resolve(p);
+      });
+      overlay.appendChild(btn);
+    });
+  });
+}
+
+/* ============================================================
+     STORAGE HELPERS
+     ============================================================ */
+function loadJSON(key, fallback){
+  try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch(e){ return fallback; }
+}
+function saveJSON(key, val){
+  try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+}
+function loadSettings(){
+  const s = loadJSON('knt_settings', {
+    theme:'dark', sound:true, animations:true, coordinates:true,
+    autoFlip:false, autoAdvanceDelay:'off', pieceStyle:'wikipedia', boardColor:'brown',
+    notationStamp:true
+  });
+  if(s.notationStamp === undefined) s.notationStamp = true;
+  // Migrate legacy boolean autoAdvance flag (pre-dates the delay picker) into the new scheme.
+  if(s.autoAdvanceDelay === undefined){
+    s.autoAdvanceDelay = s.autoAdvance ? 'normal' : 'off';
+  }
+  delete s.autoAdvance;
+  return s;
+}
+function saveSettings(){ saveJSON('knt_settings', state.settings); }
+
+function migrateThemeSolvedCounts(raw){
+  // Older versions stored a single flat number per theme (no difficulty split).
+  // Fold any legacy numeric values into 'easy' so history isn't lost, then re-save.
+  let changed = false;
+  const out = {};
+  Object.keys(raw || {}).forEach(theme => {
+    const v = raw[theme];
+    if(typeof v === 'number'){
+      out[theme] = { easy: v, medium: 0, hard: 0 };
+      changed = true;
+    }else{
+      out[theme] = { easy: v.easy || 0, medium: v.medium || 0, hard: v.hard || 0 };
+    }
+  });
+  if(changed) saveJSON('knt_theme_solved', out);
+  return out;
+}
+
+function loadStats(){
+  return loadJSON('knt_stats', {
+    totalSolved:0, totalAttempts:0, correctFirstTry:0,
+    currentStreak:0, bestStreak:0, ratingSum:0, ratingCount:0,
+    totalTimeMs:0, dailyDate:null, dailyCount:0
+  });
+}
+function saveStats(){ saveJSON('knt_stats', state.stats); }
+
+/* ============================================================
+     NETWORKING & THEME PROCESSING
+     ============================================================ */
+async function fetchJSONCached(url){
+  if(state.cache.has(url)) return state.cache.get(url);
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('Failed to fetch ' + url + ' (' + res.status + ')');
+  const data = await res.json();
+  if(state.cache.size >= CONFIG.CACHE_LIMIT){
+    const oldestKey = state.cache.keys().next().value;
+    state.cache.delete(oldestKey);
+  }
+  state.cache.set(url, data);
+  return data;
+}
+
+async function loadMasterThemes() {
+  try {
+    state.themesMeta = await fetchJSONCached(`${CONFIG.REPO_BASE}/index.json`);
+    renderThemeGrid();
+  } catch (e) {
+    document.getElementById('themeGrid').innerHTML = `<div class="status-bar wrong">Failed to sync tactical indices.</div>`;
+  }
+}
+
+/* ---- no-repeat-until-exhausted puzzle picker ---- */
+function seenKey(theme, difficulty){ return theme + '::' + difficulty; }
+
+function pickPuzzleNoRepeat(theme, difficulty, pool){
+  const key = seenKey(theme, difficulty);
+  const allIds = pool.map(p => p.id);
+  let seen = state.seenPuzzles[key] || [];
+  // Drop any seen ids that no longer exist in the pool (data changed upstream)
+  seen = seen.filter(id => allIds.includes(id));
+
+  let unseen = pool.filter(p => !seen.includes(p.id));
+  if(unseen.length === 0){
+    // Exhausted the set — reshuffle by clearing seen history for this bucket
+    seen = [];
+    unseen = pool;
+  }
+
+  const puzzle = unseen[Math.floor(Math.random() * unseen.length)];
+  seen.push(puzzle.id);
+  state.seenPuzzles[key] = seen;
+  saveJSON('knt_seen', state.seenPuzzles);
+  return puzzle;
+}
+
+async function getPuzzlePayload(theme, difficulty){
+  const url = `${CONFIG.REPO_BASE}/${theme}/${difficulty}.json`;
+  const puzzles = await fetchJSONCached(url);
+  const arr = Array.isArray(puzzles) ? puzzles : [];
+  if (!arr.length) throw new Error('No puzzles found in ' + theme + '/' + difficulty);
+  return pickPuzzleNoRepeat(theme, difficulty, arr);
+}
+
+/* ============================================================
+     PUZZLE RUSH MODE
+     ============================================================ */
+function getRushTier(score){
+  if(score < 5) return 'easy';
+  if(score < 12) return 'medium';
+  return 'hard';
+}
+
+async function getRushPuzzle(){
+  if(!state.themesMeta) throw new Error('Themes not loaded yet');
+  const tier = getRushTier(state.rush.score);
+  const keys = Object.keys(state.themesMeta).filter(k => (state.themesMeta[k][tier] || 0) > 0);
+  if(!keys.length) throw new Error('No puzzles available for tier ' + tier);
+
+  const shuffled = keys.slice().sort(()=>Math.random() - 0.5);
+  for(const theme of shuffled){
+    let puzzles;
+    try{ puzzles = await fetchJSONCached(`${CONFIG.REPO_BASE}/${theme}/${tier}.json`); }
+    catch(e){ continue; }
+    const arr = Array.isArray(puzzles) ? puzzles : [];
+    const unused = arr.filter(p => !state.rush.usedIds.has(p.id));
+    if(unused.length){
+      const puzzle = unused[Math.floor(Math.random() * unused.length)];
+      state.rush.usedIds.add(puzzle.id);
+      return { theme, difficulty: tier, puzzle };
+    }
+  }
+
+  // Every theme at this tier has been used this run — reshuffle and try once more.
+  state.rush.usedIds.clear();
+  const theme = shuffled[0];
+  const puzzles = await fetchJSONCached(`${CONFIG.REPO_BASE}/${theme}/${tier}.json`);
+  const arr = Array.isArray(puzzles) ? puzzles : [];
+  if(!arr.length) throw new Error('No puzzles available for tier ' + tier);
+  const puzzle = arr[Math.floor(Math.random() * arr.length)];
+  state.rush.usedIds.add(puzzle.id);
+  return { theme, difficulty: tier, puzzle };
+}
+
+function openRushSelect(){
+  if(!state.themesMeta){ toast('Still syncing puzzles — try again in a second.'); return; }
+  document.getElementById('rushSelectOverlay').classList.remove('hidden');
+}
+function closeRushSelect(){
+  document.getElementById('rushSelectOverlay').classList.add('hidden');
+}
+
+function formatRushTime(sec){
+  sec = Math.max(0, sec);
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+function updateRushHud(){
+  document.getElementById('rushScore').textContent = state.rush.score;
+  document.getElementById('rushTime').textContent = formatRushTime(state.rush.timeLeft);
+  document.getElementById('rushLives').textContent = state.rush.lives > 0 ? '❤️'.repeat(state.rush.lives) : '—';
+  document.getElementById('rushBest').textContent = state.rush.best[state.rush.mode] || 0;
+}
+
+function setRushUIActive(active){
+  document.getElementById('rushHud').classList.toggle('hidden', !active);
+  document.getElementById('engineCard').classList.toggle('hidden', active);
+  document.getElementById('moveListCard').classList.toggle('hidden', active);
+  document.getElementById('btnHint').style.display = active ? 'none' : '';
+  document.getElementById('btnSolution').style.display = active ? 'none' : '';
+  document.getElementById('btnNext').textContent = active ? '🚪 Exit Rush' : 'Next →';
+  if(!active) document.getElementById('btnNext').classList.remove('solved');
+}
+
+async function startRush(mode){
+  closeRushSelect();
+  document.getElementById('rushEndOverlay').classList.add('hidden');
+  if(state.sf) state.sf.postMessage('stop');
+  clearTimeout(liveAnalysisTimer);
+  clearInterval(state.rush.timerId);
+
+  state.analysisMode = false;
+  document.getElementById('toggleAnalysis').classList.remove('on');
+
+  state.rush.active = true;
+  state.rush.mode = mode;
+  state.rush.score = 0;
+  state.rush.lives = 3;
+  state.rush.timeLeft = 180;
+  state.rush.usedIds = new Set();
+
+  showScreen('trainer');
+  initBoardIfNeeded();
+  document.getElementById('trainerTitle').textContent = mode === 'timed' ? '⏱ 3-Minute Rush' : '❤️ Survival Rush';
+  document.getElementById('rushTimeWrap').classList.toggle('hidden', mode !== 'timed');
+  document.getElementById('rushLivesWrap').classList.toggle('hidden', mode !== 'survival');
+  setRushUIActive(true);
+  updateRushHud();
+
+  if(mode === 'timed'){
+    state.rush.timerId = setInterval(()=>{
+      state.rush.timeLeft--;
+      updateRushHud();
+      if(state.rush.timeLeft <= 0) endRush();
+    }, 1000);
+  }
+
+  await advanceRushPuzzle();
+}
+
+async function advanceRushPuzzle(){
+  if(!state.rush.active) return;
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+  setDragEnabled(false);
+  try{
+    const { theme, difficulty, puzzle } = await getRushPuzzle();
+    if(!state.rush.active) return;
+    loadPuzzle(theme, difficulty, puzzle);
+  }catch(err){
+    console.error(err);
+    toast('Ran out of fresh puzzles for this round — ending rush.');
+    endRush();
+  }finally{
+    document.getElementById('loadingOverlay').classList.add('hidden');
+  }
+}
+
+function handleRushMiss(){
+  setDragEnabled(false);
+  state.solving = false;
+  if(state.rush.mode === 'survival'){
+    state.rush.lives--;
+    updateRushHud();
+    if(state.rush.lives <= 0){
+      setTimeout(()=>endRush(), 500);
+      return;
+    }
+  }
+  toast('Missed it — next puzzle.');
+  setTimeout(()=>{ if(state.rush.active) advanceRushPuzzle(); }, 700);
+}
+
+function endRush(){
+  clearInterval(state.rush.timerId);
+  state.rush.active = false;
+  const mode = state.rush.mode;
+  const score = state.rush.score;
+  const isNewBest = score > (state.rush.best[mode] || 0);
+  if(isNewBest){
+    state.rush.best[mode] = score;
+    saveJSON('knt_rush_best', state.rush.best);
+  }
+  document.getElementById('rushEndTitle').textContent = mode === 'timed' ? "Time's Up!" : 'Rush Over!';
+  document.getElementById('rushEndScore').textContent = score;
+  document.getElementById('rushEndBest').textContent = isNewBest ? '🎉 New Best!' : ('Best: ' + (state.rush.best[mode] || 0));
+  setRushUIActive(false);
+  document.getElementById('rushEndOverlay').classList.remove('hidden');
+}
+
+function exitRush(){
+  clearInterval(state.rush.timerId);
+  state.rush.active = false;
+  document.getElementById('rushEndOverlay').classList.add('hidden');
+  setRushUIActive(false);
+  showScreen('home');
+}
+
+/* ============================================================
+     UCI MOVE PARSING
+     ============================================================ */
+function parseUCI(uci){
+  return {
+    from: uci.slice(0,2),
+    to: uci.slice(2,4),
+    promotion: uci.length > 4 ? uci.slice(4) : 'q'
+  };
+}
+
+/* ============================================================
+     AUDIO ARCHITECTURE
+     ============================================================ */
+let audioCtx = null;
+function beep(freq, duration, type='sine'){
+  if(!state.settings.sound) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + duration);
+  }catch(e){}
+}
+const sfx = {
+  move: ()=>beep(450,0.08),
+  correct: ()=>beep(680,0.18),
+  wrong: ()=>beep(150,0.25,'square'),
+  success: ()=>{beep(523,0.12);setTimeout(()=>beep(659,0.12),120);setTimeout(()=>beep(784,0.22),240);}
+};
+
+/* ============================================================
+     TOAST NOTIFICATION ENGINE
+     ============================================================ */
+let toastTimer = null;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 1800);
+}
+
+/* ============================================================
+     SCREEN CONTROL & VIEW SWAPPING
+     ============================================================ */
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn, .sidebar-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.screen === name);
+  });
+  const homeControls = document.getElementById('sidebarHomeControls');
+  if(homeControls) homeControls.classList.toggle('hidden', name !== 'home');
+  if(name === 'stats') renderStats();
+  if(name === 'trainer' && state.board) setTimeout(()=>state.board.resize(), 50);
+}
+document.querySelectorAll('.nav-btn, .sidebar-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>showScreen(btn.dataset.screen));
+});
+document.getElementById('trainerBack').addEventListener('click', ()=>{
+  if(state.sf) state.sf.postMessage('stop');
+  clearTimeout(liveAnalysisTimer);
+  if(state.rush.active){ exitRush(); return; }
+  showScreen('home');
+});
+
+/* ============================================================
+     UI COMPONENT RENDERING (HOME SCREEN)
+     ============================================================ */
+function renderThemeGrid(filterText = '') {
+  const grid = document.getElementById('themeGrid');
+  if (!state.themesMeta) return;
+  
+  grid.innerHTML = '';
+  const search = filterText.toLowerCase().trim();
+  
+  Object.keys(state.themesMeta).forEach(key => {
+    if (search && !key.toLowerCase().includes(search)) return;
+    
+    const diffs = state.themesMeta[key];
+    const totalCount = (diffs.easy || 0) + (diffs.medium || 0) + (diffs.hard || 0);
+    if (totalCount === 0) return;
+    
+    const card = document.createElement('div');
+    card.className = 'theme-card glass' + (state.currentTheme === key ? ' selected' : '');
+    
+    const formattedName = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+    const solvedFor = state.themeSolvedCounts[key] || { easy: 0, medium: 0, hard: 0 };
+    const pctFor = (diff) => {
+      const total = diffs[diff] || 0;
+      const solved = solvedFor[diff] || 0;
+      return total > 0 ? Math.min(100, Math.round((solved / total) * 100)) : 0;
+    };
+
+    const rows = ['easy', 'medium', 'hard'].map(diff => {
+      const label = diff.charAt(0).toUpperCase() + diff.slice(1);
+      const isCurrent = diff === state.currentDifficulty;
+      const total = diffs[diff] || 0;
+      const solved = solvedFor[diff] || 0;
+      return `<div class="tprog-row${isCurrent ? ' current' : ''}"><span>${label}</span><span class="tprog-nums"><span class="frac">${solved.toLocaleString()}/${total.toLocaleString()}</span><span class="pct">${pctFor(diff)}%</span></span></div>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="tname">${formattedName}</div>
+      <div class="tprogress">${rows}</div>
+    `;
+    
+    card.addEventListener('click', (e) => { 
+      ripple(card, e); 
+      state.currentTheme = key;
+      document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      startTraining(key, state.currentDifficulty); 
+    });
+    grid.appendChild(card);
+  });
+  
+  if (grid.children.length === 0) {
+    grid.innerHTML = `<div class="status-bar info" style="grid-column: 1/-1;">No matching tactical patterns found.</div>`;
+  }
+}
+
+function ripple(el, evt){
+  if(!state.settings.animations) return;
+  const r = document.createElement('span');
+  r.className = 'ripple';
+  const rect = el.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  r.style.width = r.style.height = size + 'px';
+  r.style.left = (evt.clientX - rect.left - size/2) + 'px';
+  r.style.top = (evt.clientY - rect.top - size/2) + 'px';
+  el.appendChild(r);
+  setTimeout(()=>r.remove(), 650);
+}
+
+document.querySelectorAll('[data-diff]').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('[data-diff]').forEach(c=>{
+      c.classList.toggle('active', c.dataset.diff === chip.dataset.diff);
+    });
+    state.currentDifficulty = chip.dataset.diff;
+    renderThemeGrid(state.searchQuery || '');
+  });
+});
+
+state.searchQuery = '';
+function handleThemeSearchInput(e){
+  state.searchQuery = e.target.value;
+  renderThemeGrid(state.searchQuery);
+}
+document.getElementById('themeSearch').addEventListener('input', handleThemeSearchInput);
+document.getElementById('dskThemeSearch').addEventListener('input', handleThemeSearchInput);
+
+function handleRandomPuzzle(){
+  if(!state.themesMeta) return;
+  const keys = Object.keys(state.themesMeta);
+  const randomKey = keys[Math.floor(Math.random() * keys.length)];
+  startTraining(randomKey, state.currentDifficulty);
+}
+function handleFavPuzzle(){
+  if(!state.favorites.length){ toast('No favorites saved yet — tap the star on a puzzle you love.'); return; }
+  const fav = state.favorites[Math.floor(Math.random()*state.favorites.length)];
+  startTraining(fav.theme, fav.difficulty, fav.puzzle);
+}
+function handleRecentPuzzle(){
+  if(!state.recents.length){ toast('No recent puzzles yet — go solve one!'); return; }
+  const r = state.recents[0];
+  startTraining(r.theme, r.difficulty, r.puzzle);
+}
+document.querySelectorAll('.act-random').forEach(el=>el.addEventListener('click', handleRandomPuzzle));
+document.querySelectorAll('.act-fav').forEach(el=>el.addEventListener('click', handleFavPuzzle));
+document.querySelectorAll('.act-recent').forEach(el=>el.addEventListener('click', handleRecentPuzzle));
+
+/* ============================================================
+     CHESSBOARD MANAGEMENT ENGINE
+     ============================================================ */
+function initBoardIfNeeded(){
+  if(state.board) return;
+  state.board = Chessboard('board', {
+    draggable: !IS_TOUCH_DEVICE,
+    position: 'start',
+    pieceTheme: pieceThemeUrl,
+    showNotation: state.settings.coordinates,
+    onDragStart, onDrop, onSnapEnd
+  });
+  if(!state.boardResizeWired){
+    window.addEventListener('resize', ()=>{
+      if(state.board) state.board.resize();
+      updateNotationStamp();
+    });
+    state.boardResizeWired = true;
+  }
+
+  const $boardEl = $('#board');
+
+  $boardEl.off('click.cpt').on('click.cpt', '[data-square]', function(e) {
+    const square = $(this).attr('data-square');
+    if (square) onBoardSquareClick(square);
+  });
+
+  $boardEl.off('contextmenu.cpt').on('contextmenu.cpt', function(e){
+    e.preventDefault();
+    return false;
+  });
+
+  $boardEl.off('dragstart.cpt').on('dragstart.cpt', 'img', function(e){
+    e.preventDefault();
+    return false;
+  });
+}
+
+function rebuildBoard(){
+  if(state.board && state.board.destroy) state.board.destroy();
+  state.board = null;
+  initBoardIfNeeded();
+  refreshBoardPosition(false);
+}
+
+function pieceThemeUrl(piece){
+  const style = state.settings.pieceStyle || 'wikipedia';
+  return `https://chessboardjs.com/img/chesspieces/${style}/${piece}.png`;
+}
+
+async function startTraining(themeKey, difficulty, presetPuzzle){
+  showScreen('trainer');
+  initBoardIfNeeded();
+  state.currentTheme = themeKey;
+  state.currentDifficulty = difficulty;
+  
+  const titleDisplay = themeKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+  document.getElementById('trainerTitle').textContent = titleDisplay + ' Drill';
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+  setDragEnabled(false);
+  
+  try{
+    const puzzle = presetPuzzle || await getPuzzlePayload(themeKey, difficulty);
+    loadPuzzle(themeKey, difficulty, puzzle);
+  }catch(err){
+    toast('Couldn\'t load that puzzle — check your connection and try again.');
+    console.error(err);
+  }finally{
+    document.getElementById('loadingOverlay').classList.add('hidden');
+  }
+}
+
+function loadPuzzle(themeKey, difficulty, puzzle){
+  state.currentTheme = themeKey;
+  state.currentDifficulty = difficulty;
+  state.currentPuzzle = puzzle;
+  state.chess = new Chess(puzzle.f);
+  state.moveCursor = 0;
+  state.fenHistory = [puzzle.f];
+  state.sanHistory = [];
+  state.toSquareHistory = [];
+  state.viewIndex = 0;
+  state.solving = false;
+  state.puzzleStartTime = Date.now();
+  setDragEnabled(false);
+  clearHighlights();
+  state.sfBestLine = {};
+  renderEnginePanel();
+  document.getElementById('btnNext').classList.remove('solved');
+
+  const sideToSolve = state.chess.turn() === 'w' ? 'black' : 'white';
+  state.boardOrientation = state.settings.autoFlip ? sideToSolve : 'white';
+  state.board.orientation(state.boardOrientation);
+  state.board.position(puzzle.f, false);
+
+  renderPuzzleInfo(themeKey, difficulty, puzzle);
+  renderMoveList();
+  updateFavoriteButton();
+  updateNavButtons();
+  updateMoveDisplay();
+  
+  setTimeout(()=>{
+    if(state.currentPuzzle !== puzzle) return;
+    const puzzleMoves = puzzle.m.split(' ');
+    applyMoveToBoard(puzzleMoves[0], true);
+    state.moveCursor = 1;
+    state.solving = true;
+    setDragEnabled(true);
+  }, 600);
+}
+
+function renderPuzzleInfo(themeKey, difficulty, puzzle){
+  const formatted = themeKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+  document.getElementById('infoPiece').textContent = formatted;
+  document.getElementById('infoDifficulty').textContent = capitalize(difficulty);
+  document.getElementById('infoRating').textContent = puzzle.r ?? '—';
+  document.getElementById('infoId').textContent = puzzle.id ?? '—';
+  document.getElementById('infoSession').textContent = state.sessionSolved;
+}
+
+function updateMoveCounter(){
+  if (!state.currentPuzzle) return;
+  const puzzleMoves = state.currentPuzzle.m.split(' ');
+  const total = puzzleMoves.length;
+  document.getElementById('infoMoveCount').textContent = `${Math.min(state.moveCursor, total)} / ${total}`;
+}
+
+function applyMoveToBoard(uci, showOnBoard){
+  const mv = parseUCI(uci);
+  const result = state.chess.move(mv);
+  if(!result) return null;
+  state.fenHistory.push(state.chess.fen());
+  state.sanHistory.push(result.san);
+  state.toSquareHistory.push(result.to);
+  const wasAtLatest = state.viewIndex === state.fenHistory.length - 2;
+  if(wasAtLatest){
+    state.viewIndex = state.fenHistory.length - 1;
+    if(showOnBoard !== false) state.board.position(state.chess.fen());
+  }
+  sfx.move();
+  renderMoveList();
+  updateMoveCounter();
+  updateNavButtons();
+  updateMoveDisplay();
+  return result;
+}
+
+function getBoardPixelSize(){
+  const boardEl = document.getElementById('board');
+  return boardEl ? boardEl.offsetWidth : 0;
+}
+
+function positionNotationStamp(){
+  const stamp = document.getElementById('notationStamp');
+  if(!stamp) return;
+  stamp.style.left = '50%';
+  stamp.style.top = '50%';
+  const boardSize = getBoardPixelSize();
+  stamp.style.fontSize = Math.max(20, Math.round(boardSize * 0.34)) + 'px';
+}
+
+function updateNotationStamp(){
+  const stamp = document.getElementById('notationStamp');
+  if(!stamp) return;
+  if(!state.settings.notationStamp){
+    stamp.classList.add('hidden');
+    return;
+  }
+  const idx = state.viewIndex;
+  const san = state.sanHistory[idx - 1];
+  if(idx <= 0 || !san){
+    stamp.classList.add('hidden');
+    return;
+  }
+  stamp.textContent = san;
+  positionNotationStamp();
+  stamp.classList.remove('hidden');
+}
+
+function updateMoveDisplay(flashClass){
+  clearBoardArrows();
+  updateNotationStamp();
+  const el = document.getElementById('statusBar');
+  if(!state.chess || !state.fenHistory.length){
+    el.textContent = 'Choose a puzzle to start training';
+    el.className = 'status-bar info';
+    return;
+  }
+  scheduleLiveAnalysis();
+  const idx = state.viewIndex;
+  if(idx <= 0){
+    el.textContent = 'Starting Position';
+    el.className = 'status-bar info';
+    return;
+  }
+  const san = state.sanHistory[idx - 1];
+  if(!san){ el.textContent = 'Starting Position'; el.className = 'status-bar info'; return; }
+  const moveNum = Math.ceil(idx / 2);
+  const isWhiteMove = idx % 2 === 1;
+  el.textContent = moveNum + (isWhiteMove ? '. ' : '… ') + san;
+  el.className = 'status-bar' + (flashClass ? ' ' + flashClass : '');
+  if(flashClass){
+    setTimeout(()=>{ if(el.textContent) el.className = 'status-bar'; }, 900);
+  }
+}
+
+function setDragEnabled(enabled){
+  state.dragEnabled = enabled;
+}
+
+/* ============================================================
+     TARGET SELECTION & INTERACTION VALIDATION
+     ============================================================ */
+function squareEl(square) {
+  return document.querySelector(`#board [data-square="${square}"]`);
+}
+function clearHighlights(){
+  document.querySelectorAll('#board .sq-legal, #board .sq-legal-capture, #board .sq-selected')
+    .forEach(el=>el.classList.remove('sq-legal','sq-legal-capture','sq-selected'));
+  state.selectedSquare = null;
+  state.legalTargets = [];
+}
+function viewChess(){
+  const fen = state.fenHistory[state.viewIndex];
+  return fen ? new Chess(fen) : new Chess();
+}
+function highlightLegalMoves(square){
+  clearHighlights();
+  const moves = viewChess().moves({square, verbose:true});
+  if(!moves.length) return;
+  state.selectedSquare = square;
+  state.legalTargets = moves.map(m=>m.to);
+  const originEl = squareEl(square);
+  if(originEl) originEl.classList.add('sq-selected');
+  moves.forEach(m=>{
+    const el = squareEl(m.to);
+    if(el) el.classList.add(m.captured ? 'sq-legal-capture' : 'sq-legal');
+  });
+}
+function canSelect(square){
+  if(!state.fenHistory.length || !state.dragEnabled) return false;
+  if(state.analysisMode){
+    // Allow variable selection across active analysis configurations
+  }else{
+    if(state.viewIndex !== state.fenHistory.length - 1) return false;
+    if(!(state.solving && state.currentPuzzle)) return false;
+  }
+  const vc = viewChess();
+  if(vc.game_over()) return false;
+  const piece = vc.get(square);
+  if(!piece) return false;
+  return (vc.turn() === 'w') === (piece.color === 'w');
+}
+
+async function onBoardSquareClick(square){
+  if(!state.fenHistory.length || !state.dragEnabled) return;
+
+  if(!state.analysisMode){
+    if(state.viewIndex !== state.fenHistory.length - 1) return;
+    if(!(state.solving && state.currentPuzzle)) return;
+  }
+
+  if (canSelect(square) && square !== state.selectedSquare) {
+    highlightLegalMoves(square);
+    return;
+  }
+
+  if(state.selectedSquare){
+    if(square === state.selectedSquare){
+      clearHighlights();
+      return;
+    }
+
+    const fromSquare = state.selectedSquare;
+    clearHighlights();
+    
+    if(state.analysisMode) {
+      await attemptFreeMove(fromSquare, square);
+    } else {
+      await attemptSolvingMove(fromSquare, square);
+    }
+    return;
+  }
+
+  if(canSelect(square)){
+    highlightLegalMoves(square);
+  }
+}
+
+function onDrop(source, target){
+  clearHighlights();
+  
+  const currentPiece = state.chess.get(source);
+  const isPromo = currentPiece && currentPiece.type === 'p' && (target[1] === '8' || target[1] === '1');
+  
+  if (isPromo) {
+    setTimeout(async () => {
+      if(state.analysisMode) {
+        await attemptFreeMove(source, target);
+      } else {
+        await attemptSolvingMove(source, target);
+      }
+    }, 50);
+    return undefined; 
+  }
+
+  if(state.analysisMode) {
+    attemptFreeMove(source, target).then(res => { if(res === 'rejected') state.board.position(state.chess.fen()); });
+  } else {
+    attemptSolvingMove(source, target).then(res => { if(res === 'rejected') state.board.position(state.chess.fen()); });
+  }
+}
+
+async function attemptSolvingMove(source, target){
+  if(!state.dragEnabled || !state.solving) return 'rejected';
+  const puzzleMoves = state.currentPuzzle.m.split(' ');
+  if(!state.currentPuzzle || state.moveCursor >= puzzleMoves.length) return 'rejected';
+
+  const expected = parseUCI(puzzleMoves[state.moveCursor]);
+  const legalMoves = state.chess.moves({verbose:true});
+  const isLegal = legalMoves.some(m=>m.from===source && m.to===target);
+  if(!isLegal) return 'rejected';
+
+  if(source !== expected.from || target !== expected.to){
+    registerAttempt(false);
+    flashSquare(target, 'sq-wrong');
+    sfx.wrong();
+    if(state.rush.active){
+      handleRushMiss();
+    }else{
+      toast('Good try, but not the sharpest move — look again.');
+    }
+    return 'rejected';
+  }
+
+  const isPromotion = (state.chess.get(source)||{}).type === 'p' && (target[1] === '8' || target[1] === '1');
+  let promotionPiece = expected.promotion || 'q';
+  
+  if(isPromotion) {
+    const turnColor = state.chess.turn();
+    promotionPiece = await getPromotionPieceUI(turnColor);
+    if(promotionPiece !== expected.promotion) {
+      registerAttempt(false);
+      sfx.wrong();
+      toast('Wrong promotion piece option chosen.');
+      state.board.position(state.chess.fen());
+      return 'rejected';
+    }
+  }
+
+  const moveObj = { from: source, to: target, promotion: promotionPiece };
+  const result = state.chess.move(moveObj);
+  if(!result) return 'rejected';
+
+  state.fenHistory.push(state.chess.fen());
+  state.sanHistory.push(result.san);
+  state.toSquareHistory.push(result.to);
+  state.viewIndex = state.fenHistory.length - 1;
+
+  flashSquare(target, 'sq-correct');
+  sfx.correct();
+  registerAttempt(true);
+  state.moveCursor++;
+  state.solving = false;
+  setDragEnabled(false);
+  updateMoveDisplay('correct');
+  renderMoveList();
+  updateMoveCounter();
+  updateNavButtons();
+
+  if(state.moveCursor >= puzzleMoves.length){
+    finishPuzzle();
+  }else{
+    setTimeout(playNextAutoMove, CONFIG.AUTO_MOVE_DELAY);
+  }
+  state.board.position(state.chess.fen());
+  return 'accepted';
+}
+
+async function attemptFreeMove(source, target){
+  const vc = viewChess();
+  if(vc.game_over()) return 'rejected';
+  const legalMoves = vc.moves({verbose:true});
+  const isLegal = legalMoves.some(m=>m.from===source && m.to===target);
+  if(!isLegal) return 'rejected';
+
+  const isPromotion = (vc.get(source)||{}).type === 'p' && (target[1] === '8' || target[1] === '1');
+  let promotionPiece = 'q';
+  
+  if(isPromotion){
+    promotionPiece = await getPromotionPieceUI(vc.turn());
+  }
+
+  const result = vc.move({ from: source, to: target, promotion: promotionPiece });
+  if(!result) return 'rejected';
+
+  state.fenHistory = state.fenHistory.slice(0, state.viewIndex + 1);
+  state.sanHistory = state.sanHistory.slice(0, state.viewIndex);
+  state.toSquareHistory = state.toSquareHistory.slice(0, state.viewIndex);
+  state.fenHistory.push(vc.fen());
+  state.sanHistory.push(result.san);
+  state.toSquareHistory.push(result.to);
+  state.viewIndex = state.fenHistory.length - 1;
+  state.chess = vc;
+  state.solving = false;
+
+  flashSquare(target, 'sq-correct');
+  sfx.move();
+  renderMoveList();
+  updateMoveCounter();
+  updateNavButtons();
+  updateMoveDisplay();
+  state.board.position(state.chess.fen());
+  return 'accepted';
+}
+
+function onDragStart(source, piece){
+  if(!canSelect(source)) return false;
+  highlightLegalMoves(source);
+  return true;
+}
+
+function onSnapEnd(){
+  const fen = state.fenHistory[state.viewIndex] || (state.chess && state.chess.fen());
+  if(fen) state.board.position(fen, false);
+}
+
+function playNextAutoMove(){
+  const puzzleMoves = state.currentPuzzle.m.split(' ');
+  if(!state.currentPuzzle || state.moveCursor >= puzzleMoves.length) return;
+  clearHighlights();
+  applyMoveToBoard(puzzleMoves[state.moveCursor]);
+  state.moveCursor++;
+  updateMoveCounter();
+  if(state.moveCursor >= puzzleMoves.length){
+    finishPuzzle();
+  }else{
+    state.solving = true;
+    setDragEnabled(true);
+    updateMoveDisplay();
+  }
+}
+
+function flashSquare(square, cls){
+  if(!state.settings.animations) return;
+  const sq = document.querySelector(`#board .square-${square}`);
+  if(!sq) return;
+  sq.classList.add(cls);
+  setTimeout(()=>sq.classList.remove(cls), 500);
+}
+
+function finishPuzzle(){
+  updateMoveDisplay('correct');
+  sfx.success();
+  setDragEnabled(false);
+  clearHighlights();
+  const elapsed = Date.now() - state.puzzleStartTime;
+  recordSolve(state.currentTheme, state.currentDifficulty, state.currentPuzzle.r, elapsed);
+  addToRecents(state.currentTheme, state.currentDifficulty, state.currentPuzzle);
+  state.sessionSolved++;
+  document.getElementById('infoSession').textContent = state.sessionSolved;
+
+  if(state.rush.active){
+    state.rush.score++;
+    updateRushHud();
+    setTimeout(()=>{ if(state.rush.active) advanceRushPuzzle(); }, 550);
+    return;
+  }
+
+  // Light up the Next button the instant the puzzle is solved, so it's
+  // obviously ready to tap even if auto-advance is off or slow.
+  document.getElementById('btnNext').classList.add('solved');
+
+  const delayKey = state.settings.autoAdvanceDelay || 'off';
+  const delayMs = AUTO_ADVANCE_DELAYS[delayKey];
+  if(delayMs != null){
+    setTimeout(()=>{ if(state.currentTheme) startTraining(state.currentTheme, state.currentDifficulty); }, delayMs);
+  }
+}
+
+/* ============================================================
+     STATS STORAGE & RETRIEVAL ENGINE
+     ============================================================ */
+function registerAttempt(correct){
+  state.stats.totalAttempts++;
+  if(correct) state.stats.correctFirstTry++;
+  saveStats();
+}
+function recordSolve(theme, difficulty, rating, elapsedMs){
+  const s = state.stats;
+  s.totalSolved++;
+  s.currentStreak++;
+  s.bestStreak = Math.max(s.bestStreak, s.currentStreak);
+  if(typeof rating === 'number'){ s.ratingSum += rating; s.ratingCount++; }
+  s.totalTimeMs += elapsedMs;
+  const today = new Date().toISOString().slice(0,10);
+  if(s.dailyDate !== today){ s.dailyDate = today; s.dailyCount = 0; }
+  s.dailyCount++;
+  saveStats();
+
+  if(!state.themeSolvedCounts[theme]){
+    state.themeSolvedCounts[theme] = { easy: 0, medium: 0, hard: 0 };
+  }
+  const bucket = state.themeSolvedCounts[theme];
+  bucket[difficulty] = (bucket[difficulty] || 0) + 1;
+  saveJSON('knt_theme_solved', state.themeSolvedCounts);
+}
+function breakStreak(){
+  state.stats.currentStreak = 0;
+  saveStats();
+}
+function addToRecents(theme, difficulty, puzzle){
+  state.recents = state.recents.filter(r=>r.puzzle.id !== puzzle.id);
+  state.recents.unshift({ theme, difficulty, puzzle });
+  state.recents = state.recents.slice(0, 20);
+  saveJSON('knt_recents', state.recents);
+}
+
+/* ============================================================
+     HISTORICAL CONFIGURATION REVIEW
+     ============================================================ */
+function renderMoveList(){
+  const el = document.getElementById('moveList');
+  const history = state.sanHistory || [];
+  if(!history.length){ el.textContent = '—'; return; }
+  el.innerHTML = '';
+  history.forEach((san, i)=>{
+    if(i % 2 === 0){
+      const num = document.createElement('span');
+      num.className = 'mnum';
+      num.textContent = (Math.floor(i/2)+1) + '.';
+      el.appendChild(num);
+    }
+    const mv = document.createElement('span');
+    mv.className = 'mv' + (i + 1 === state.viewIndex ? ' current' : '');
+    mv.textContent = san;
+    mv.dataset.idx = i + 1;
+    mv.addEventListener('click', ()=>jumpToFenIndex(i+1));
+    el.appendChild(mv);
+  });
+}
+
+function jumpToFenIndex(idx){
+  if(!state.fenHistory.length) return;
+  idx = Math.max(0, Math.min(idx, state.fenHistory.length - 1));
+  state.viewIndex = idx;
+  clearHighlights();
+  state.board.position(state.fenHistory[idx], false);
+  renderMoveList();
+  updateNavButtons();
+  updateMoveDisplay();
+  setDragEnabled(state.analysisMode || (idx === state.fenHistory.length - 1 && state.solving));
+}
+
+function updateNavButtons(){
+  const atStart = state.viewIndex <= 0;
+  const atLatest = !state.fenHistory.length || state.viewIndex >= state.fenHistory.length - 1;
+  document.getElementById('btnFirst').disabled = atStart;
+  document.getElementById('btnPrev').disabled = atStart;
+  document.getElementById('btnNextMove').disabled = atLatest;
+  document.getElementById('btnLast').disabled = atLatest;
+  document.getElementById('btnReset').disabled = !state.currentPuzzle;
+}
+
+document.getElementById('btnFirst').addEventListener('click', ()=>jumpToFenIndex(0));
+document.getElementById('btnPrev').addEventListener('click', ()=>jumpToFenIndex(state.viewIndex - 1));
+document.getElementById('btnNextMove').addEventListener('click', ()=>jumpToFenIndex(state.viewIndex + 1));
+document.getElementById('btnLast').addEventListener('click', ()=>jumpToFenIndex(state.fenHistory.length - 1));
+
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  if(!state.currentPuzzle) return;
+  toast('Puzzle reset — go again.');
+  loadPuzzle(state.currentTheme, state.currentDifficulty, state.currentPuzzle);
+});
+
+/* ============================================================
+     INTERFACE COMMAND BINDINGS
+     ============================================================ */
+document.getElementById('btnHint').addEventListener('click', ()=>{
+  if(!state.solving || !state.currentPuzzle) return toast('Pick a puzzle first — then I\'ll show you the way.');
+  if(state.viewIndex !== state.fenHistory.length - 1){ toast('Jump back to the current position first.'); return; }
+  const puzzleMoves = state.currentPuzzle.m.split(' ');
+  const expected = parseUCI(puzzleMoves[state.moveCursor]);
+  clearHighlights();
+  flashSquare(expected.from, 'sq-hint');
+});
+
+document.getElementById('btnSolution').addEventListener('click', ()=>{
+  if(!state.currentPuzzle) return;
+  state.solving = false;
+  setDragEnabled(false);
+  clearHighlights();
+  breakStreak();
+  jumpToFenIndex(state.fenHistory.length - 1);
+  playOutSolutionFromCursor();
+});
+
+function playOutSolutionFromCursor(){
+  const puzzleMoves = state.currentPuzzle.m.split(' ');
+  if(!state.currentPuzzle || state.moveCursor >= puzzleMoves.length){
+    return;
+  }
+  applyMoveToBoard(puzzleMoves[state.moveCursor]);
+  state.moveCursor++;
+  updateMoveCounter();
+  setTimeout(playOutSolutionFromCursor, CONFIG.AUTO_MOVE_DELAY);
+}
+
+document.getElementById('btnNext').addEventListener('click', ()=>{
+  if(state.rush.active){ exitRush(); return; }
+  if(state.currentTheme) startTraining(state.currentTheme, state.currentDifficulty);
+});
+
+document.querySelectorAll('.act-rush').forEach(el=>el.addEventListener('click', openRushSelect));
+document.getElementById('rushPickTimed').addEventListener('click', ()=>startRush('timed'));
+document.getElementById('rushPickSurvival').addEventListener('click', ()=>startRush('survival'));
+document.getElementById('rushPickCancel').addEventListener('click', closeRushSelect);
+document.getElementById('rushPlayAgain').addEventListener('click', ()=>{
+  document.getElementById('rushEndOverlay').classList.add('hidden');
+  startRush(state.rush.mode);
+});
+document.getElementById('rushEndExit').addEventListener('click', ()=>{
+  document.getElementById('rushEndOverlay').classList.add('hidden');
+  showScreen('home');
+});
+document.getElementById('btnFlip').addEventListener('click', ()=>{
+  state.board.flip();
+  state.boardOrientation = state.boardOrientation === 'white' ? 'black' : 'white';
+  renderEnginePanel();
+  updateNotationStamp();
+});
+document.getElementById('toggleAnalysis').addEventListener('click', ()=>{
+  const el = document.getElementById('toggleAnalysis');
+  state.analysisMode = !state.analysisMode;
+  el.classList.toggle('on', state.analysisMode);
+  clearHighlights();
+  if(state.analysisMode){
+    setDragEnabled(true);
+    toast('Free Play unlocked — try anything.');
+  }else{
+    setDragEnabled(state.solving);
+    toast('Free Play off — back to training mode.');
+  }
+});
+
+document.getElementById('btnFavorite').addEventListener('click', toggleFavorite);
+function toggleFavorite(){
+  if(!state.currentPuzzle) return;
+  const id = state.currentPuzzle.id;
+  const idx = state.favorites.findIndex(f=>f.puzzle.id === id);
+  if(idx >= 0){ state.favorites.splice(idx,1); toast('Removed from favorites'); }
+  else{ state.favorites.push({theme:state.currentTheme, difficulty:state.currentDifficulty, puzzle:state.currentPuzzle}); toast('Saved to favorites ⭐'); }
+  saveJSON('knt_favorites', state.favorites);
+  updateFavoriteButton();
+}
+function updateFavoriteButton(){
+  const id = state.currentPuzzle && state.currentPuzzle.id;
+  const isFav = state.favorites.some(f=>f.puzzle.id === id);
+  document.getElementById('btnFavorite').textContent = isFav ? '★' : '☆';
+}
+
+/* ============================================================
+     STOCKFISH PROCESSING AND ARROW DATA VECTOR MATH
+     ============================================================ */
+function squareCenterPct(square){
+  const file = square.charCodeAt(0) - 97;
+  const rank = parseInt(square[1], 10);
+  let col = file, row = 8 - rank;
+  if(state.boardOrientation === 'black'){ col = 7 - file; row = rank - 1; }
+  return { x: (col + 0.5) / 8 * 100, y: (row + 0.5) / 8 * 100 };
+}
+function clearBoardArrows(){
+  const svg = document.getElementById('boardArrows');
+  if(svg) svg.innerHTML = '';
+}
+function drawArrow(from, to, color){
+  const svg = document.getElementById('boardArrows');
+  if(!svg || from === to) return;
+  const NS = 'http://www.w3.org/2000/svg';
+  const markerId = 'cptArrow-' + color.replace(/[^a-zA-Z0-9]/g, '');
+  if(!svg.querySelector('#' + markerId)){
+    let defs = svg.querySelector('defs');
+    if(!defs){ defs = document.createElementNS(NS, 'defs'); svg.appendChild(defs); }
+    const marker = document.createElementNS(NS, 'marker');
+    marker.setAttribute('id', markerId);
+    marker.setAttribute('markerWidth', '3');
+    marker.setAttribute('markerHeight', '3');
+    marker.setAttribute('refX', '1.6');
+    marker.setAttribute('refY', '1.5');
+    marker.setAttribute('orient', 'auto');
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('d', 'M0,0 L3,1.5 L0,3 z');
+    path.setAttribute('fill', color);
+    marker.appendChild(path);
+    defs.appendChild(marker);
+  }
+  const p1 = squareCenterPct(from);
+  const p2 = squareCenterPct(to);
+  const dx = p2.x - p1.x, dy = p2.y - p1.y;
+  const len = Math.sqrt(dx*dx + dy*dy) || 1;
+  const shorten = 5.5;
+  const ex = p2.x - (dx/len) * shorten;
+  const ey = p2.y - (dy/len) * shorten;
+  const line = document.createElementNS(NS, 'line');
+  line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
+  line.setAttribute('x2', ex); line.setAttribute('y2', ey);
+  line.setAttribute('stroke', color);
+  line.setAttribute('stroke-width', '2.6');
+  line.setAttribute('stroke-linecap', 'round');
+  line.setAttribute('marker-end', 'url(#' + markerId + ')');
+  svg.appendChild(line);
+}
+
+function initStockfish(){
+  if(state.sf) return state.sf;
+  try{
+    const bootstrap = `importScripts('${CONFIG.STOCKFISH_URL}');`;
+    const blobUrl = URL.createObjectURL(new Blob([bootstrap], {type:'application/javascript'}));
+    const worker = new Worker(blobUrl);
+    worker.onmessage = (e)=> handleEngineLine(typeof e.data === 'string' ? e.data : '');
+    worker.onerror = ()=>{
+      toast('Engine synchronization fault.');
+      state.sf = null;
+    };
+    worker.postMessage('uci');
+    state.sf = worker;
+  }catch(err){
+    state.sf = null;
+  }
+  return state.sf;
+}
+
+function handleEngineLine(line){
+  if(!line) return;
+  if(line.startsWith('info') && line.includes(' pv ')){
+    const cpMatch = line.match(/score cp (-?\d+)/);
+    const mateMatch = line.match(/score mate (-?\d+)/);
+    const depthMatch = line.match(/\bdepth (\d+)/);
+    const pvMatch = line.match(/ pv (.+)$/);
+    state.sfBestLine = {
+      cp: cpMatch ? parseInt(cpMatch[1], 10) : null,
+      mate: mateMatch ? parseInt(mateMatch[1], 10) : null,
+      depth: depthMatch ? parseInt(depthMatch[1], 10) : null,
+      pv: pvMatch ? pvMatch[1].trim().split(' ') : []
+    };
+    renderEnginePanel();
+  }else if(line.startsWith('bestmove')){
+    const best = line.split(' ')[1];
+    const wasContinueMode = state.sfMode === 'continue';
+    state.sfMode = null;
+    setEngineSearching(false);
+    document.getElementById('btnStockfishGo').disabled = false;
+    if(wasContinueMode && best && best !== '(none)') playFreeMove(best);
+    if(wasContinueMode && state.analysisMode) setDragEnabled(true);
+  }
+}
+
+function setEngineSearching(isSearching){
+  const dot = document.getElementById('engineLiveDot');
+  if(!dot) return;
+  dot.classList.toggle('searching', isSearching);
+  if(!state.analysisMode){ dot.textContent = '○ idle'; return; }
+  dot.textContent = isSearching ? '● thinking…' : '● ready';
+}
+
+function renderEnginePanel(){
+  const evalEl = document.getElementById('engineEval');
+  const bestEl = document.getElementById('engineBest');
+  const depthEl = document.getElementById('engineDepth');
+  const line = state.sfBestLine || {};
+  if(line.mate != null){
+    evalEl.textContent = '#' + line.mate;
+  }else if(line.cp != null){
+    const turn = state.chess ? state.chess.turn() : 'w';
+    const whiteCp = turn === 'w' ? line.cp : -line.cp;
+    evalEl.textContent = (whiteCp >= 0 ? '+' : '') + (whiteCp / 100).toFixed(2);
+  }else{
+    evalEl.textContent = '—';
+  }
+  depthEl.textContent = line.depth ?? '—';
+  clearBoardArrows();
+  if(!state.analysisMode){
+    bestEl.textContent = '—';
+    return;
+  }
+  if(line.pv && line.pv.length && state.fenHistory.length){
+    try{
+      const tmp = new Chess(state.fenHistory[state.viewIndex]);
+      const mv = parseUCI(line.pv[0]);
+      const res = tmp.move(mv);
+      bestEl.textContent = res ? res.san : line.pv[0];
+      drawArrow(mv.from, mv.to, '#a8792a');
+      if(line.pv[1]){
+        const mv2 = parseUCI(line.pv[1]);
+        if(tmp.move(mv2)) drawArrow(mv2.from, mv2.to, 'rgba(232,207,118,0.5)');
+      }
+    }catch(e){ bestEl.textContent = line.pv[0]; }
+  }else{
+    bestEl.textContent = '—';
+  }
+}
+
+let liveAnalysisTimer = null;
+function scheduleLiveAnalysis(){
+  if(!state.analysisMode || !state.fenHistory.length || state.sfMode === 'continue') return;
+  clearTimeout(liveAnalysisTimer);
+  liveAnalysisTimer = setTimeout(runLiveAnalysis, 220);
+}
+function runLiveAnalysis(){
+  if(!state.analysisMode || !state.fenHistory.length || state.sfMode === 'continue') return;
+  const w = initStockfish();
+  if(!w) return;
+  state.sfMode = 'analyze';
+  state.sfBestLine = {};
+  renderEnginePanel();
+  setEngineSearching(true);
+  w.postMessage('stop');
+  w.postMessage('position fen ' + state.fenHistory[state.viewIndex]);
+  w.postMessage('go depth ' + CONFIG.ENGINE_DEPTH);
+}
+
+function playFreeMove(uciStr){
+  if(!state.chess) return;
+  const mv = parseUCI(uciStr);
+  const result = state.chess.move(mv);
+  if(!result) return;
+  state.fenHistory.push(state.chess.fen());
+  state.sanHistory.push(result.san);
+  state.toSquareHistory.push(result.to);
+  state.viewIndex = state.fenHistory.length - 1;
+  clearHighlights();
+  state.board.position(state.chess.fen());
+  sfx.move();
+  renderMoveList();
+  updateMoveDisplay();
+  updateNavButtons();
+  toast('Engine plays: ' + result.san);
+}
+
+document.getElementById('btnStockfishGo').addEventListener('click', ()=>{
+  if(!state.chess) return toast('Load a puzzle before calling in the engine.');
+  if(state.viewIndex !== state.fenHistory.length - 1){ toast('Jump to the latest position before asking the engine.'); return; }
+  const w = initStockfish();
+  if(!w) return;
+  state.solving = false;
+  setDragEnabled(false);
+  state.sfMode = 'continue';
+  setEngineSearching(true);
+  document.getElementById('btnStockfishGo').disabled = true;
+  w.postMessage('stop');
+  w.postMessage('position fen ' + state.chess.fen());
+  w.postMessage('go depth ' + CONFIG.ENGINE_DEPTH);
+});
+
+document.getElementById('btnCopyFen').addEventListener('click', async ()=>{
+  if(!state.fenHistory.length) return;
+  const fen = state.fenHistory[state.viewIndex];
+  try{ await navigator.clipboard.writeText(fen); toast('FEN copied to clipboard'); }
+  catch(e){ toast(fen); }
+});
+document.getElementById('btnCopyPgn').addEventListener('click', async ()=>{
+  if(!state.fenHistory.length) return;
+  let pgn = '';
+  try{
+    const g = new Chess(state.fenHistory[0]);
+    state.sanHistory.forEach(san=>g.move(san));
+    pgn = g.pgn();
+  }catch(e){ pgn = ''; }
+  try{ await navigator.clipboard.writeText(pgn); toast('PGN copied to clipboard'); }
+  catch(e){ toast('Couldn\'t copy the PGN — try again.'); }
+});
+
+/* ---- keyboard shortcuts ---- */
+document.addEventListener('keydown', (e)=>{
+  if(!document.getElementById('screen-trainer').classList.contains('active')) return;
+  if(e.target && /input|textarea|select/i.test(e.target.tagName)) return;
+  if(e.key === 'ArrowLeft'){ jumpToFenIndex(state.viewIndex - 1); }
+  else if(e.key === 'ArrowRight'){ jumpToFenIndex(state.viewIndex + 1); }
+  else if(e.key.toLowerCase() === 'h'){ document.getElementById('btnHint').click(); }
+  else if(e.key.toLowerCase() === 'n'){ document.getElementById('btnNext').click(); }
+});
+
+/* ============================================================
+     STATISTICS RE-CALCULATION
+     ============================================================ */
+function renderStats(){
+  const s = state.stats;
+  document.getElementById('stTotal').textContent = s.totalSolved;
+  const acc = s.totalAttempts ? Math.round((s.correctFirstTry / s.totalAttempts) * 100) : 0;
+  document.getElementById('stAccuracy').textContent = acc + '%';
+  document.getElementById('stStreak').textContent = s.currentStreak;
+  document.getElementById('stBest').textContent = s.bestStreak;
+  document.getElementById('stAvgRating').textContent = s.ratingCount ? Math.round(s.ratingSum / s.ratingCount) : '—';
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('stDaily').textContent = (s.dailyDate === today) ? s.dailyCount : 0;
+  document.getElementById('stTime').textContent = Math.round(s.totalTimeMs / 60000) + 'm';
+  document.getElementById('stAttempts').textContent = s.totalAttempts;
+  renderThemeStatsList();
+}
+
+function renderThemeStatsList(){
+  const el = document.getElementById('themeStatsList');
+  const counts = state.themeSolvedCounts || {};
+  const entries = Object.keys(counts)
+    .map(theme => {
+      const b = counts[theme] || {};
+      const easy = b.easy || 0, medium = b.medium || 0, hard = b.hard || 0;
+      return { theme, easy, medium, hard, total: easy + medium + hard };
+    })
+    .filter(e => e.total > 0)
+    .sort((a, b) => b.total - a.total);
+
+  if(!entries.length){
+    el.innerHTML = `<div class="status-bar info">Solve a few puzzles to see your breakdown here.</div>`;
+    return;
+  }
+
+  const maxTotal = entries[0].total;
+  el.innerHTML = '';
+  entries.forEach(({ theme, easy, medium, hard, total }) => {
+    const formatted = theme.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+    const pct = maxTotal ? Math.max(4, Math.round((total / maxTotal) * 100)) : 0;
+    const row = document.createElement('div');
+    row.className = 'theme-stat-row glass';
+    row.innerHTML = `
+      <div class="tsr-name-col">
+        <div class="tsr-name">${formatted}</div>
+        <div class="tsr-breakdown">Easy <span>${easy}</span> · Medium <span>${medium}</span> · Hard <span>${hard}</span></div>
+      </div>
+      <div class="tsr-bar-track"><div class="tsr-bar-fill" style="width:${pct}%"></div></div>
+      <div class="tsr-count">${total.toLocaleString()}</div>
+    `;
+    el.appendChild(row);
+  });
+}
+
+document.getElementById('btnResetStats').addEventListener('click', ()=>{
+  if(!confirm('Reset all your stats? This can\'t be undone.')) return;
+  state.stats = loadStats();
+  localStorage.removeItem('knt_stats');
+  state.themeSolvedCounts = {};
+  localStorage.removeItem('knt_theme_solved');
+  renderStats();
+  toast('Stats cleared — fresh start.');
+});
+
+/* ============================================================
+     CONFIGURATION UTILITIES
+     ============================================================ */
+function wireToggle(id, key, onChange){
+  const el = document.getElementById(id);
+  el.classList.toggle('on', !!state.settings[key]);
+  el.addEventListener('click', ()=>{
+    state.settings[key] = !state.settings[key];
+    el.classList.toggle('on', state.settings[key]);
+    saveSettings();
+    if(onChange) onChange(state.settings[key]);
+  });
+}
+wireToggle('toggleSound', 'sound');
+wireToggle('toggleAnim', 'animations');
+wireToggle('toggleCoords', 'coordinates', v=>{ rebuildBoard(); });
+wireToggle('toggleAutoFlip', 'autoFlip');
+wireToggle('toggleNotationStamp', 'notationStamp', ()=>{ updateNotationStamp(); });
+
+document.getElementById('selAutoAdvance').value = state.settings.autoAdvanceDelay;
+document.getElementById('selAutoAdvance').addEventListener('change', e=>{
+  state.settings.autoAdvanceDelay = e.target.value;
+  saveSettings();
+});
+
+document.getElementById('selPieceStyle').value = state.settings.pieceStyle;
+document.getElementById('selPieceStyle').addEventListener('change', e=>{
+  state.settings.pieceStyle = e.target.value;
+  saveSettings();
+  rebuildBoard();
+});
+
+function applyBoardColor(){
+  const map = {
+    brown:{light:'#ecdcb8',dark:'#a97c3f'},
+    green:{light:'#eeeed2',dark:'#779556'},
+    blue:{light:'#dee3e6',dark:'#4b6f9e'},
+    gray:{light:'#e8e8e8',dark:'#6e6e6e'}
+  };
+  const c = map[state.settings.boardColor] || map.brown;
+  document.documentElement.style.setProperty('--board-light', c.light);
+  document.documentElement.style.setProperty('--board-dark', c.dark);
+  document.querySelectorAll('#board [data-square-color="white"]').forEach(el=>el.style.background = c.light);
+  document.querySelectorAll('#board [data-square-color="black"]').forEach(el=>el.style.background = c.dark);
+}
+
+function refreshBoardPosition(animate){
+  if(!state.board) return;
+  state.board.orientation(state.boardOrientation);
+  if(state.fenHistory.length){
+    state.board.position(state.fenHistory[state.viewIndex], !!animate);
+  }
+  applyBoardColor();
+}
+
+/* ============================================================
+     INITIALIZATION
+     ============================================================ */
+function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+
+async function init(){
+  applyBoardColor();
+  updateNavButtons();
+  await loadMasterThemes();
+
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+}
+init();
+</script>
+</body>
+</html>
