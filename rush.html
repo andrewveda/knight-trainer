@@ -552,6 +552,35 @@ h1, h2, h3 {
 
 .notation-stamp.hidden { display: none; }
 
+.board-substats {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  padding: 14px 4px 0;
+}
+
+.board-substats .substat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.board-substats .substat-lbl {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-dim);
+}
+
+.board-substats .substat-val {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--gold-soft);
+  font-variant-numeric: tabular-nums;
+}
+
 .board-toolbar {
   display: flex;
   justify-content: space-between;
@@ -1124,6 +1153,10 @@ h1, h2, h3 {
           <div class="spinner"></div>
           <div>Setting the board…</div>
         </div>
+        <div class="board-substats" id="boardSubstats">
+          <div class="substat"><span class="substat-lbl">Solved / Total</span><span class="substat-val" id="boardCounter">0 / 0</span></div>
+          <div class="substat"><span class="substat-lbl">Session</span><span class="substat-val" id="sessionClock">0:00</span></div>
+        </div>
       </div>
     </div>
 
@@ -1367,6 +1400,9 @@ const state = {
   boardOrientation: 'white',
   puzzleStartTime: null,
   sessionSolved: 0,
+  sessionElapsedMs: 0,
+  sessionRunning: false,
+  sessionTickStart: null,
   settings: loadSettings(),
   stats: loadStats(),
   favorites: loadJSON('knt_favorites', []),
@@ -1591,6 +1627,7 @@ function setRushUIActive(active){
   document.getElementById('rushHud').classList.toggle('hidden', !active);
   document.getElementById('engineCard').classList.toggle('hidden', active);
   document.getElementById('moveListCard').classList.toggle('hidden', active);
+  document.getElementById('boardSubstats').classList.toggle('hidden', active);
   document.getElementById('btnHint').style.display = active ? 'none' : '';
   document.getElementById('btnSolution').style.display = active ? 'none' : '';
   document.getElementById('btnNext').textContent = active ? '🚪 Exit Rush' : 'Next →';
@@ -1748,6 +1785,7 @@ function showScreen(name){
   });
   const homeControls = document.getElementById('sidebarHomeControls');
   if(homeControls) homeControls.classList.toggle('hidden', name !== 'home');
+  if(name === 'trainer'){ startSessionClock(); } else { pauseSessionClock(); }
   if(name === 'stats') renderStats();
   if(name === 'trainer' && state.board) setTimeout(()=>state.board.resize(), 50);
 }
@@ -1968,6 +2006,7 @@ function loadPuzzle(themeKey, difficulty, puzzle){
   updateFavoriteButton();
   updateNavButtons();
   updateMoveDisplay();
+  updateBoardCounter();
   
   setTimeout(()=>{
     if(state.currentPuzzle !== puzzle) return;
@@ -1993,6 +2032,52 @@ function updateMoveCounter(){
   const puzzleMoves = state.currentPuzzle.m.split(' ');
   const total = puzzleMoves.length;
   document.getElementById('infoMoveCount').textContent = `${Math.min(state.moveCursor, total)} / ${total}`;
+}
+
+/* ---- puzzles-solved counter for the current theme + difficulty ---- */
+function updateBoardCounter(){
+  const el = document.getElementById('boardCounter');
+  if(!el) return;
+  if(!state.currentTheme || !state.themesMeta || !state.themesMeta[state.currentTheme]){
+    el.textContent = '0 / 0';
+    return;
+  }
+  const total = state.themesMeta[state.currentTheme][state.currentDifficulty] || 0;
+  const solvedBucket = state.themeSolvedCounts[state.currentTheme] || {};
+  const solved = solvedBucket[state.currentDifficulty] || 0;
+  el.textContent = solved.toLocaleString() + ' / ' + total.toLocaleString();
+}
+
+/* ---- session clock: tracks active time spent on the trainer screen ---- */
+let sessionClockTimer = null;
+function formatSessionTime(sec){
+  sec = Math.max(0, Math.floor(sec));
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  if(h > 0) return h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  return m + ':' + String(s).padStart(2, '0');
+}
+function updateSessionClockDisplay(){
+  const el = document.getElementById('sessionClock');
+  if(!el) return;
+  const liveMs = state.sessionRunning ? (Date.now() - state.sessionTickStart) : 0;
+  el.textContent = formatSessionTime((state.sessionElapsedMs + liveMs) / 1000);
+}
+function startSessionClock(){
+  if(state.sessionRunning) return;
+  state.sessionRunning = true;
+  state.sessionTickStart = Date.now();
+  updateSessionClockDisplay();
+  clearInterval(sessionClockTimer);
+  sessionClockTimer = setInterval(updateSessionClockDisplay, 1000);
+}
+function pauseSessionClock(){
+  if(!state.sessionRunning) return;
+  state.sessionElapsedMs += Date.now() - state.sessionTickStart;
+  state.sessionRunning = false;
+  clearInterval(sessionClockTimer);
+  sessionClockTimer = null;
 }
 
 function applyMoveToBoard(uci, showOnBoard){
@@ -2327,6 +2412,7 @@ function finishPuzzle(){
   const elapsed = Date.now() - state.puzzleStartTime;
   recordSolve(state.currentTheme, state.currentDifficulty, state.currentPuzzle.r, elapsed);
   addToRecents(state.currentTheme, state.currentDifficulty, state.currentPuzzle);
+  updateBoardCounter();
   state.sessionSolved++;
   document.getElementById('infoSession').textContent = state.sessionSolved;
 
