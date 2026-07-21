@@ -520,7 +520,8 @@ h1, h2, h3 {
   user-drag: none;
 }
 
-#board img { pointer-events: auto; }
+#board img { pointer-events: auto; transition: opacity 0.15s ease; }
+#board.pieces-hidden img { opacity: 0; }
 #board [data-square] { touch-action: manipulation; }
 
 .board-arrows {
@@ -1296,6 +1297,18 @@ h1, h2, h3 {
       <div class="switch on" id="toggleNotationStamp"><div class="knob"></div></div>
     </div>
     <div class="settings-row glass">
+      <div><div class="lbl">Blindfold Mode</div><div class="sub">Pieces vanish after a peek — solve from memory</div></div>
+      <div class="switch" id="toggleBlindfold"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Blindfold Reveal Time</div><div class="sub">How long the pieces stay visible before vanishing</div></div>
+      <select class="select-pill" id="selBlindfoldTime">
+        <option value="500">0.5s</option>
+        <option value="1000">1s</option>
+        <option value="2000">2s</option>
+      </select>
+    </div>
+    <div class="settings-row glass">
       <div><div class="lbl">Auto-Advance</div><div class="sub">How fast the next puzzle loads after you solve one</div></div>
       <select class="select-pill" id="selAutoAdvance">
         <option value="off">Off — I'll hit Next</option>
@@ -1421,6 +1434,7 @@ const state = {
   themeSolvedCounts: migrateThemeSolvedCounts(loadJSON('knt_theme_solved', {})),
   selectedSquare: null,
   legalTargets: [],
+  blindfoldSuspended: false,
   sf: null,
   sfMode: null,
   sfBestLine: {},
@@ -1476,9 +1490,11 @@ function loadSettings(){
   const s = loadJSON('knt_settings', {
     theme:'dark', sound:true, animations:true, coordinates:true,
     autoFlip:false, autoAdvanceDelay:'off', pieceStyle:'wikipedia', boardColor:'brown',
-    notationStamp:true
+    notationStamp:true, blindfold:false, blindfoldTime:1000
   });
   if(s.notationStamp === undefined) s.notationStamp = true;
+  if(s.blindfold === undefined) s.blindfold = false;
+  if(s.blindfoldTime === undefined) s.blindfoldTime = 1000;
   // Migrate legacy boolean autoAdvance flag (pre-dates the delay picker) into the new scheme.
   if(s.autoAdvanceDelay === undefined){
     s.autoAdvanceDelay = s.autoAdvance ? 'normal' : 'off';
@@ -1803,6 +1819,7 @@ function showScreen(name){
   const homeControls = document.getElementById('sidebarHomeControls');
   if(homeControls) homeControls.classList.toggle('hidden', name !== 'home');
   setBoardStatsVisible(name === 'trainer' && !state.rush.active);
+  if(name !== 'trainer') revealPieces();
   if(name === 'trainer'){ startSessionClock(); } else { pauseSessionClock(); }
   if(name === 'stats') renderStats();
   if(name === 'trainer' && state.board) setTimeout(()=>state.board.resize(), 50);
@@ -2008,6 +2025,7 @@ function loadPuzzle(themeKey, difficulty, puzzle){
   state.viewIndex = 0;
   state.solving = false;
   state.puzzleStartTime = Date.now();
+  state.blindfoldSuspended = false;
   setDragEnabled(false);
   clearHighlights();
   state.sfBestLine = {};
@@ -2018,6 +2036,8 @@ function loadPuzzle(themeKey, difficulty, puzzle){
   state.boardOrientation = state.settings.autoFlip ? sideToSolve : 'white';
   state.board.orientation(state.boardOrientation);
   state.board.position(puzzle.f, false);
+  revealPieces();
+  scheduleBlindfoldHide();
 
   renderPuzzleInfo(themeKey, difficulty, puzzle);
   renderMoveList();
@@ -2111,7 +2131,9 @@ function applyMoveToBoard(uci, showOnBoard){
   const wasAtLatest = state.viewIndex === state.fenHistory.length - 2;
   if(wasAtLatest){
     state.viewIndex = state.fenHistory.length - 1;
-    if(showOnBoard !== false) state.board.position(state.chess.fen());
+    if(showOnBoard !== false){
+      state.board.position(state.chess.fen());
+    }
   }
   sfx.move();
   renderMoveList();
@@ -2182,6 +2204,25 @@ function updateMoveDisplay(flashClass){
 
 function setDragEnabled(enabled){
   state.dragEnabled = enabled;
+}
+
+/* ============================================================
+     BLINDFOLD MODE — pieces flash then vanish
+     ============================================================ */
+let blindfoldTimer = null;
+function revealPieces(){
+  clearTimeout(blindfoldTimer);
+  const el = document.getElementById('board');
+  if(el) el.classList.remove('pieces-hidden');
+}
+function scheduleBlindfoldHide(){
+  clearTimeout(blindfoldTimer);
+  if(!state.settings.blindfold || state.blindfoldSuspended) return;
+  const delay = state.settings.blindfoldTime || 1000;
+  blindfoldTimer = setTimeout(()=>{
+    const el = document.getElementById('board');
+    if(el) el.classList.add('pieces-hidden');
+  }, delay);
 }
 
 /* ============================================================
@@ -2387,6 +2428,7 @@ async function attemptFreeMove(source, target){
   updateNavButtons();
   updateMoveDisplay();
   state.board.position(state.chess.fen());
+  revealPieces();
   return 'accepted';
 }
 
@@ -2523,6 +2565,7 @@ function jumpToFenIndex(idx){
   state.viewIndex = idx;
   clearHighlights();
   state.board.position(state.fenHistory[idx], false);
+  revealPieces();
   renderMoveList();
   updateNavButtons();
   updateMoveDisplay();
@@ -2568,6 +2611,8 @@ document.getElementById('btnSolution').addEventListener('click', ()=>{
   setDragEnabled(false);
   clearHighlights();
   breakStreak();
+  state.blindfoldSuspended = true;
+  revealPieces();
   jumpToFenIndex(state.fenHistory.length - 1);
   playOutSolutionFromCursor();
 });
@@ -2807,6 +2852,7 @@ function playFreeMove(uciStr){
   state.viewIndex = state.fenHistory.length - 1;
   clearHighlights();
   state.board.position(state.chess.fen());
+  revealPieces();
   sfx.move();
   renderMoveList();
   updateMoveDisplay();
@@ -2939,6 +2985,16 @@ wireToggle('toggleAnim', 'animations');
 wireToggle('toggleCoords', 'coordinates', v=>{ rebuildBoard(); });
 wireToggle('toggleAutoFlip', 'autoFlip');
 wireToggle('toggleNotationStamp', 'notationStamp', ()=>{ updateNotationStamp(); });
+wireToggle('toggleBlindfold', 'blindfold', v=>{
+  document.getElementById('selBlindfoldTime').disabled = !v;
+  if(v){ scheduleBlindfoldHide(); } else { revealPieces(); }
+});
+document.getElementById('selBlindfoldTime').disabled = !state.settings.blindfold;
+document.getElementById('selBlindfoldTime').value = state.settings.blindfoldTime;
+document.getElementById('selBlindfoldTime').addEventListener('change', e=>{
+  state.settings.blindfoldTime = parseInt(e.target.value, 10);
+  saveSettings();
+});
 
 document.getElementById('selAutoAdvance').value = state.settings.autoAdvanceDelay;
 document.getElementById('selAutoAdvance').addEventListener('change', e=>{
@@ -2972,6 +3028,7 @@ function refreshBoardPosition(animate){
   state.board.orientation(state.boardOrientation);
   if(state.fenHistory.length){
     state.board.position(state.fenHistory[state.viewIndex], !!animate);
+    revealPieces();
   }
   applyBoardColor();
 }
