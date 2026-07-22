@@ -42,16 +42,6 @@ Our brains are wired for linear thinking. The knight's L-shaped leap doesn't fit
 
 ---
 
-## 🚧 Work in Progress
-
-Knight Trainer is actively being built. The interface is functional and fast, but there's plenty more to come.
-
-**Want to help?** This is an open-source project. Fork it (how appropriate!) and send pull requests:
-
-🔗 **[github.com/andrewveda/knight-trainer](https://github.com/andrewveda/knight-trainer)**
-
----
-
 ## Quick Start
 
 ```bash
