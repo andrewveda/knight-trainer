@@ -217,9 +217,9 @@ h1, h2, h3 {
 }
 
 .section-label {
-  padding: 18px 0 6px;
-  font-size: 12px;
-  letter-spacing: 1.4px;
+  padding: 14px 0 6px;
+  font-size: 11px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
   color: var(--text-dim);
   text-align: center;
@@ -296,6 +296,18 @@ h1, h2, h3 {
 .btn.primary { background: linear-gradient(135deg, var(--accent-soft), var(--accent)); color: #f6ead2; border: none; }
 .btn.danger { border-color: rgba(225, 86, 78, 0.4); color: var(--red); }
 
+.btn.primary.solved {
+  background: linear-gradient(135deg, #6f9a4c, var(--green));
+  color: #f4ecd9;
+  border: none;
+  animation: solvedPulse 1.3s ease-in-out infinite;
+}
+
+@keyframes solvedPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(85, 119, 47, 0.55); }
+  50% { box-shadow: 0 0 0 9px rgba(85, 119, 47, 0); }
+}
+
 .icon-btn {
   background: var(--panel);
   border: 1px solid var(--panel-border);
@@ -355,26 +367,31 @@ h1, h2, h3 {
      HOME MODULE
      ============================================================ */
 .home-header {
-  padding: 48px 20px 18px;
+  padding: 28px 20px 10px;
   text-align: center;
 }
 
 .home-header h1 {
-  font-size: clamp(28px, 7vw, 42px);
+  font-size: clamp(26px, 7vw, 42px);
   background: linear-gradient(135deg, var(--gold-soft), var(--gold) 60%, #fff3d0);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-.home-header p {
-  color: var(--text-dim);
-  margin-top: 8px;
-  font-size: 15px;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+.home-sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(244, 236, 217, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  margin: 0 -16px;
+  padding: 8px 16px 4px;
 }
+
+.home-sticky-bar .quick-row { padding: 0 0 10px; }
+.home-sticky-bar .theme-search-box { margin: 0 auto 8px; }
 
 .theme-search-box {
   max-width: 500px;
@@ -403,6 +420,17 @@ h1, h2, h3 {
   padding-bottom: 24px;
 }
 
+@media (max-width: 999px) {
+  .theme-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .theme-card {
+    padding: 12px 10px;
+    min-height: 116px;
+  }
+}
+
 .theme-card {
   position: relative;
   overflow: hidden;
@@ -414,14 +442,32 @@ h1, h2, h3 {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 95px;
+  min-height: 130px;
 }
 
 .theme-card:active { transform: scale(0.97); }
 .theme-card.selected { border-color: var(--gold); background: rgba(168, 121, 42, 0.1); }
 .theme-card .tname { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--text); word-break: break-word; }
-.theme-card .tcount { margin-top: 8px; font-size: 11px; color: var(--gold-soft); letter-spacing: 0.4px; }
-.theme-card .tsolved { margin-top: 2px; font-size: 11px; color: var(--green); letter-spacing: 0.2px; font-weight: 600; }
+.theme-card .tprogress {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.theme-card .tprog-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--text-dim);
+  letter-spacing: 0.2px;
+}
+.theme-card .tprog-row .pct { color: var(--gold-soft); font-weight: 700; }
+.theme-card .tprog-row .tprog-nums { display: flex; align-items: center; gap: 6px; }
+.theme-card .tprog-row .frac { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.theme-card .tprog-row.current .frac { color: var(--text); }
+.theme-card .tprog-row.current { color: var(--text); font-weight: 600; }
+.theme-card .tprog-row.current .pct { color: var(--green); }
 .theme-card .ripple { position: absolute; border-radius: 50%; background: rgba(168, 121, 42, 0.3); transform: scale(0); animation: rip 0.6s ease-out; pointer-events: none; }
 
 @keyframes rip { to { transform: scale(2.5); opacity: 0; } }
@@ -474,7 +520,8 @@ h1, h2, h3 {
   user-drag: none;
 }
 
-#board img { pointer-events: auto; }
+#board img { pointer-events: auto; transition: opacity 0.15s ease; }
+#board.pieces-hidden img { opacity: 0; }
 #board [data-square] { touch-action: manipulation; }
 
 .board-arrows {
@@ -484,6 +531,48 @@ h1, h2, h3 {
   height: 100%;
   pointer-events: none;
   z-index: 6;
+}
+
+.notation-stamp-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 7;
+  overflow: hidden;
+}
+
+.notation-stamp {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: var(--serif);
+  font-weight: 700;
+  color: rgba(124, 45, 58, 0.4);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.notation-stamp.hidden { display: none; }
+
+.board-substats {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  padding: 14px 4px 0;
+}
+
+.board-substats .substat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.board-substats .substat-val {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--gold-soft);
+  font-variant-numeric: tabular-nums;
 }
 
 .board-toolbar {
@@ -786,7 +875,8 @@ h1, h2, h3 {
   .topbar { display: none; }
   .home-header { display: none; }
   #screen-home .section-label,
-  #screen-home > .quick-row,
+  #screen-home .home-sticky-bar,
+  #screen-home .quick-row,
   #screen-home .theme-search-box { display: none; }
 
   .desktop-sidebar {
@@ -857,6 +947,16 @@ h1, h2, h3 {
   .sidebar-btn.active { background: rgba(168, 121, 42, 0.14); color: var(--gold-soft); }
 
   .sidebar-section.hidden { display: none !important; }
+
+  .sidebar-trainer-stats {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 26px;
+  }
+  .sidebar-trainer-stats .substat-val { font-size: 20px; }
 
   .sidebar-section-label {
     font-size: 11px;
@@ -957,6 +1057,8 @@ h1, h2, h3 {
   #screen-trainer .action-row {
     max-width: none;
   }
+
+  #screen-trainer .board-shell .board-substats { display: none; }
 }
 </style>
 </head>
@@ -988,10 +1090,16 @@ h1, h2, h3 {
 
     <div class="sidebar-section-label">Fast Track</div>
     <div class="sidebar-chip-row">
+      <div class="sidebar-chip act-rush">⚡ Puzzle Rush</div>
       <div class="sidebar-chip act-random">🎲 Surprise Me</div>
       <div class="sidebar-chip act-fav">⭐ My Favorites</div>
       <div class="sidebar-chip act-recent">🕘 Continue Recent</div>
     </div>
+  </div>
+
+  <div class="sidebar-section sidebar-trainer-stats hidden" id="sidebarTrainerStats">
+    <div class="substat"><span class="substat-val board-counter-val">0 / 0</span></div>
+    <div class="substat"><span class="substat-val session-clock-val">0:00</span></div>
   </div>
 
   <div class="sidebar-bottom">
@@ -1011,27 +1119,23 @@ h1, h2, h3 {
 <section id="screen-home" class="screen active">
   <div class="home-header">
     <h1>Knight Trainer</h1>
-    <p>It's the piece every player falls for first! Brilliant and impossible to predict. Train its patterns here and start thinking like a tactician.</p>
   </div>
 
-  <div class="section-label">1. Choose Your Level</div>
-  <div class="quick-row" id="difficultyRow">
-    <div class="chip glass active" data-diff="easy">Easy</div>
-    <div class="chip glass" data-diff="medium">Medium</div>
-    <div class="chip glass" data-diff="hard">Hard</div>
+  <div class="home-sticky-bar">
+    <div class="quick-row" id="difficultyRow">
+      <div class="chip glass active" data-diff="easy">Easy</div>
+      <div class="chip glass" data-diff="medium">Medium</div>
+      <div class="chip glass" data-diff="hard">Hard</div>
+    </div>
+    <div class="theme-search-box">
+      <input type="text" id="themeSearch" placeholder="Search knight patterns — try “fork,” “mate,” or “sacrifice”…">
+    </div>
+    <div class="quick-row" style="padding-top:0;">
+      <div class="chip glass act-rush" id="chipHomeRush">⚡ Puzzle Rush</div>
+    </div>
   </div>
 
-  <div class="section-label">Fast Track</div>
-  <div class="quick-row">
-    <div class="chip glass act-random" id="chipRandom">🎲 Surprise Me</div>
-    <div class="chip glass act-fav" id="chipFav">⭐ My Favorites</div>
-    <div class="chip glass act-recent" id="chipRecent">🕘 Pick Up Where I Left Off</div>
-  </div>
-
-  <div class="section-label">2. Choose Your Pattern</div>
-  <div class="theme-search-box">
-    <input type="text" id="themeSearch" placeholder="Search knight patterns — try “fork,” “mate,” or “sacrifice”…">
-  </div>
+  <div class="section-label">Choose Pattern</div>
   
   <div class="theme-grid" id="themeGrid">
     <div class="loading"><div class="spinner"></div>Warming up the knight…</div>
@@ -1053,9 +1157,16 @@ h1, h2, h3 {
         <div id="board"></div>
         <div id="promoOverlay" class="glass hidden" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 70; gap: 12px; background: rgba(244, 236, 217, 0.92); border-radius: 10px;"></div>
         <svg id="boardArrows" class="board-arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+        <div id="notationStampLayer" class="notation-stamp-layer">
+          <div id="notationStamp" class="notation-stamp hidden"></div>
+        </div>
         <div id="loadingOverlay" class="loading hidden">
           <div class="spinner"></div>
           <div>Setting the board…</div>
+        </div>
+        <div class="board-substats" id="boardSubstats">
+          <div class="substat"><span class="substat-val board-counter-val">0 / 0</span></div>
+          <div class="substat"><span class="substat-val session-clock-val">0:00</span></div>
         </div>
       </div>
     </div>
@@ -1079,7 +1190,16 @@ h1, h2, h3 {
         <button class="btn primary" id="btnNext">Next →</button>
       </div>
 
-      <div class="info-card glass">
+      <div class="info-card glass hidden" id="rushHud">
+        <h3>⚡ Puzzle Rush</h3>
+        <div class="engine-compact-row">
+          <span>Score <strong id="rushScore">0</strong></span>
+          <span id="rushTimeWrap">Time <strong id="rushTime">—</strong></span>
+          <span id="rushLivesWrap" class="hidden">Lives <strong id="rushLives">—</strong></span>
+          <span>Best <strong id="rushBest">0</strong></span>
+        </div>
+      </div>
+      <div class="info-card glass" id="engineCard">
         <h3>
           <span>Stockfish Engine <span id="engineLiveDot" style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0;">○ idle</span></span>
           <div class="switch small" id="toggleAnalysis"><div class="knob"></div></div>
@@ -1093,7 +1213,7 @@ h1, h2, h3 {
           <button class="btn" id="btnStockfishGo">▶ Let the Engine Continue</button>
         </div>
       </div>
-      <div class="info-card glass">
+      <div class="info-card glass" id="moveListCard">
         <h3>Move List</h3>
         <div class="move-list" id="moveList">—</div>
         <div class="mini-actions">
@@ -1146,6 +1266,16 @@ h1, h2, h3 {
 <section id="screen-settings" class="screen">
   <div class="simple-screen">
     <div class="topbar" style="padding:2px 0 4px;"><h2>Settings</h2></div>
+    <p style="text-align:center;color:var(--text-dim);font-size:12px;line-height:1.5;margin:0 0 16px;padding:0 6px;">It's the piece every player falls for first! Brilliant and impossible to predict. Train its patterns here and start thinking like a tactician.</p>
+
+    <div class="section-label" style="padding-top:0;">Quick Start</div>
+    <div class="quick-row">
+      <div class="chip glass act-rush">⚡ Puzzle Rush</div>
+      <div class="chip glass act-random" id="chipRandom">🎲 Surprise Me</div>
+      <div class="chip glass act-fav" id="chipFav">⭐ My Favorites</div>
+      <div class="chip glass act-recent" id="chipRecent">🕘 Pick Up Where I Left Off</div>
+    </div>
+
     <div class="settings-row glass">
       <div><div class="lbl">Sound</div><div class="sub">Hear every correct strike and missed shot</div></div>
       <div class="switch on" id="toggleSound"><div class="knob"></div></div>
@@ -1163,8 +1293,30 @@ h1, h2, h3 {
       <div class="switch" id="toggleAutoFlip"><div class="knob"></div></div>
     </div>
     <div class="settings-row glass">
-      <div><div class="lbl">Auto-Advance</div><div class="sub">Keep the reps coming — no tapping required</div></div>
-      <div class="switch" id="toggleAutoAdvance"><div class="knob"></div></div>
+      <div><div class="lbl">Notation Stamp</div><div class="sub">Flash each move's notation on its destination square</div></div>
+      <div class="switch on" id="toggleNotationStamp"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Blindfold Mode</div><div class="sub">Pieces vanish after a peek — solve from memory</div></div>
+      <div class="switch" id="toggleBlindfold"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Blindfold Reveal Time</div><div class="sub">How long the pieces stay visible before vanishing</div></div>
+      <select class="select-pill" id="selBlindfoldTime">
+        <option value="500">0.5s</option>
+        <option value="1000">1s</option>
+        <option value="2000">2s</option>
+      </select>
+    </div>
+    <div class="settings-row glass">
+      <div><div class="lbl">Auto-Advance</div><div class="sub">How fast the next puzzle loads after you solve one</div></div>
+      <select class="select-pill" id="selAutoAdvance">
+        <option value="off">Off — I'll hit Next</option>
+        <option value="fast">Fast (0.7s)</option>
+        <option value="normal">Normal (1.4s)</option>
+        <option value="slow">Slow (3s)</option>
+        <option value="chill">Chill (5s) — time to analyze</option>
+      </select>
     </div>
     <div class="settings-row glass">
       <div><div class="lbl">Piece Style</div></div>
@@ -1205,6 +1357,30 @@ h1, h2, h3 {
 
 <div class="toast" id="toast"></div>
 
+<div id="rushSelectOverlay" class="hidden" style="position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;background:rgba(59,44,26,0.55);padding:20px;">
+  <div class="glass" style="max-width:360px;width:100%;padding:26px;text-align:center;">
+    <h3 style="font-size:20px;margin-bottom:6px;">⚡ Puzzle Rush</h3>
+    <p style="font-size:13px;color:var(--text-dim);margin:0 0 20px;line-height:1.5;">Solve as many knight puzzles as you can. A miss ends that puzzle immediately — difficulty ramps up as your score climbs.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn primary" id="rushPickTimed">⏱ 3-Minute Rush</button>
+      <button class="btn" id="rushPickSurvival">❤️ Survival — 3 Lives</button>
+      <button class="btn" id="rushPickCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="rushEndOverlay" class="hidden" style="position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;background:rgba(59,44,26,0.55);padding:20px;">
+  <div class="glass" style="max-width:360px;width:100%;padding:26px;text-align:center;">
+    <h3 style="font-size:20px;margin-bottom:6px;" id="rushEndTitle">Rush Over!</h3>
+    <div style="font-family:var(--serif);font-size:42px;color:var(--gold-soft);margin:10px 0;" id="rushEndScore">0</div>
+    <p style="font-size:13px;color:var(--text-dim);margin:0 0 20px;" id="rushEndBest">Best: 0</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn primary" id="rushPlayAgain">Play Again</button>
+      <button class="btn" id="rushEndExit">Back to Home</button>
+    </div>
+  </div>
+</div>
+
 <script>
 'use strict';
 
@@ -1215,10 +1391,14 @@ const CONFIG = {
   REPO_BASE: 'https://raw.githubusercontent.com/andrewveda/knight-trainer/main/data',
   CACHE_LIMIT: 30,
   AUTO_MOVE_DELAY: 480,
-  AUTO_ADVANCE_DELAY: 1400,
   STOCKFISH_URL: 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js',
   ENGINE_DEPTH: 14,
 };
+
+/* Auto-advance timing options — how long to wait after a solve before
+   automatically loading the next puzzle. 'off' means never auto-advance;
+   the player must tap Next (which glows green once ready). */
+const AUTO_ADVANCE_DELAYS = { off: null, fast: 700, normal: 1400, slow: 3000, chill: 5000 };
 
 const IS_TOUCH_DEVICE = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
 
@@ -1238,10 +1418,14 @@ const state = {
   moveCursor: 0,
   fenHistory: [],
   sanHistory: [],
+  toSquareHistory: [],
   viewIndex: 0,
   boardOrientation: 'white',
   puzzleStartTime: null,
   sessionSolved: 0,
+  sessionElapsedMs: 0,
+  sessionRunning: false,
+  sessionTickStart: null,
   settings: loadSettings(),
   stats: loadStats(),
   favorites: loadJSON('knt_favorites', []),
@@ -1250,10 +1434,21 @@ const state = {
   themeSolvedCounts: migrateThemeSolvedCounts(loadJSON('knt_theme_solved', {})),
   selectedSquare: null,
   legalTargets: [],
+  blindfoldSuspended: false,
   sf: null,
   sfMode: null,
   sfBestLine: {},
   analysisMode: false,
+  rush: {
+    active: false,
+    mode: null,          // 'timed' | 'survival'
+    score: 0,
+    lives: 3,
+    timeLeft: 180,
+    timerId: null,
+    usedIds: new Set(),
+    best: loadJSON('knt_rush_best', { timed: 0, survival: 0 })
+  },
 };
 
 function getPromotionPieceUI(color) {
@@ -1292,10 +1487,20 @@ function saveJSON(key, val){
   try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
 }
 function loadSettings(){
-  return loadJSON('knt_settings', {
+  const s = loadJSON('knt_settings', {
     theme:'dark', sound:true, animations:true, coordinates:true,
-    autoFlip:false, autoAdvance:false, pieceStyle:'wikipedia', boardColor:'brown'
+    autoFlip:false, autoAdvanceDelay:'off', pieceStyle:'wikipedia', boardColor:'brown',
+    notationStamp:true, blindfold:false, blindfoldTime:1000
   });
+  if(s.notationStamp === undefined) s.notationStamp = true;
+  if(s.blindfold === undefined) s.blindfold = false;
+  if(s.blindfoldTime === undefined) s.blindfoldTime = 1000;
+  // Migrate legacy boolean autoAdvance flag (pre-dates the delay picker) into the new scheme.
+  if(s.autoAdvanceDelay === undefined){
+    s.autoAdvanceDelay = s.autoAdvance ? 'normal' : 'off';
+  }
+  delete s.autoAdvance;
+  return s;
 }
 function saveSettings(){ saveJSON('knt_settings', state.settings); }
 
@@ -1384,6 +1589,171 @@ async function getPuzzlePayload(theme, difficulty){
 }
 
 /* ============================================================
+     PUZZLE RUSH MODE
+     ============================================================ */
+function getRushTier(score){
+  if(score < 5) return 'easy';
+  if(score < 12) return 'medium';
+  return 'hard';
+}
+
+async function getRushPuzzle(){
+  if(!state.themesMeta) throw new Error('Themes not loaded yet');
+  const tier = getRushTier(state.rush.score);
+  const keys = Object.keys(state.themesMeta).filter(k => (state.themesMeta[k][tier] || 0) > 0);
+  if(!keys.length) throw new Error('No puzzles available for tier ' + tier);
+
+  const shuffled = keys.slice().sort(()=>Math.random() - 0.5);
+  for(const theme of shuffled){
+    let puzzles;
+    try{ puzzles = await fetchJSONCached(`${CONFIG.REPO_BASE}/${theme}/${tier}.json`); }
+    catch(e){ continue; }
+    const arr = Array.isArray(puzzles) ? puzzles : [];
+    const unused = arr.filter(p => !state.rush.usedIds.has(p.id));
+    if(unused.length){
+      const puzzle = unused[Math.floor(Math.random() * unused.length)];
+      state.rush.usedIds.add(puzzle.id);
+      return { theme, difficulty: tier, puzzle };
+    }
+  }
+
+  // Every theme at this tier has been used this run — reshuffle and try once more.
+  state.rush.usedIds.clear();
+  const theme = shuffled[0];
+  const puzzles = await fetchJSONCached(`${CONFIG.REPO_BASE}/${theme}/${tier}.json`);
+  const arr = Array.isArray(puzzles) ? puzzles : [];
+  if(!arr.length) throw new Error('No puzzles available for tier ' + tier);
+  const puzzle = arr[Math.floor(Math.random() * arr.length)];
+  state.rush.usedIds.add(puzzle.id);
+  return { theme, difficulty: tier, puzzle };
+}
+
+function openRushSelect(){
+  if(!state.themesMeta){ toast('Still syncing puzzles — try again in a second.'); return; }
+  document.getElementById('rushSelectOverlay').classList.remove('hidden');
+}
+function closeRushSelect(){
+  document.getElementById('rushSelectOverlay').classList.add('hidden');
+}
+
+function formatRushTime(sec){
+  sec = Math.max(0, sec);
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+function updateRushHud(){
+  document.getElementById('rushScore').textContent = state.rush.score;
+  document.getElementById('rushTime').textContent = formatRushTime(state.rush.timeLeft);
+  document.getElementById('rushLives').textContent = state.rush.lives > 0 ? '❤️'.repeat(state.rush.lives) : '—';
+  document.getElementById('rushBest').textContent = state.rush.best[state.rush.mode] || 0;
+}
+
+function setRushUIActive(active){
+  document.getElementById('rushHud').classList.toggle('hidden', !active);
+  document.getElementById('engineCard').classList.toggle('hidden', active);
+  document.getElementById('moveListCard').classList.toggle('hidden', active);
+  setBoardStatsVisible(!active);
+  document.getElementById('btnHint').style.display = active ? 'none' : '';
+  document.getElementById('btnSolution').style.display = active ? 'none' : '';
+  document.getElementById('btnNext').textContent = active ? '🚪 Exit Rush' : 'Next →';
+  if(!active) document.getElementById('btnNext').classList.remove('solved');
+}
+
+async function startRush(mode){
+  closeRushSelect();
+  document.getElementById('rushEndOverlay').classList.add('hidden');
+  if(state.sf) state.sf.postMessage('stop');
+  clearTimeout(liveAnalysisTimer);
+  clearInterval(state.rush.timerId);
+
+  state.analysisMode = false;
+  document.getElementById('toggleAnalysis').classList.remove('on');
+
+  state.rush.active = true;
+  state.rush.mode = mode;
+  state.rush.score = 0;
+  state.rush.lives = 3;
+  state.rush.timeLeft = 180;
+  state.rush.usedIds = new Set();
+
+  showScreen('trainer');
+  initBoardIfNeeded();
+  document.getElementById('trainerTitle').textContent = mode === 'timed' ? '⏱ 3-Minute Rush' : '❤️ Survival Rush';
+  document.getElementById('rushTimeWrap').classList.toggle('hidden', mode !== 'timed');
+  document.getElementById('rushLivesWrap').classList.toggle('hidden', mode !== 'survival');
+  setRushUIActive(true);
+  updateRushHud();
+
+  if(mode === 'timed'){
+    state.rush.timerId = setInterval(()=>{
+      state.rush.timeLeft--;
+      updateRushHud();
+      if(state.rush.timeLeft <= 0) endRush();
+    }, 1000);
+  }
+
+  await advanceRushPuzzle();
+}
+
+async function advanceRushPuzzle(){
+  if(!state.rush.active) return;
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+  setDragEnabled(false);
+  try{
+    const { theme, difficulty, puzzle } = await getRushPuzzle();
+    if(!state.rush.active) return;
+    loadPuzzle(theme, difficulty, puzzle);
+  }catch(err){
+    console.error(err);
+    toast('Ran out of fresh puzzles for this round — ending rush.');
+    endRush();
+  }finally{
+    document.getElementById('loadingOverlay').classList.add('hidden');
+  }
+}
+
+function handleRushMiss(){
+  setDragEnabled(false);
+  state.solving = false;
+  if(state.rush.mode === 'survival'){
+    state.rush.lives--;
+    updateRushHud();
+    if(state.rush.lives <= 0){
+      setTimeout(()=>endRush(), 500);
+      return;
+    }
+  }
+  toast('Missed it — next puzzle.');
+  setTimeout(()=>{ if(state.rush.active) advanceRushPuzzle(); }, 700);
+}
+
+function endRush(){
+  clearInterval(state.rush.timerId);
+  state.rush.active = false;
+  const mode = state.rush.mode;
+  const score = state.rush.score;
+  const isNewBest = score > (state.rush.best[mode] || 0);
+  if(isNewBest){
+    state.rush.best[mode] = score;
+    saveJSON('knt_rush_best', state.rush.best);
+  }
+  document.getElementById('rushEndTitle').textContent = mode === 'timed' ? "Time's Up!" : 'Rush Over!';
+  document.getElementById('rushEndScore').textContent = score;
+  document.getElementById('rushEndBest').textContent = isNewBest ? '🎉 New Best!' : ('Best: ' + (state.rush.best[mode] || 0));
+  setRushUIActive(false);
+  document.getElementById('rushEndOverlay').classList.remove('hidden');
+}
+
+function exitRush(){
+  clearInterval(state.rush.timerId);
+  state.rush.active = false;
+  document.getElementById('rushEndOverlay').classList.add('hidden');
+  setRushUIActive(false);
+  showScreen('home');
+}
+
+/* ============================================================
      UCI MOVE PARSING
      ============================================================ */
 function parseUCI(uci){
@@ -1433,6 +1803,13 @@ function toast(msg){
 /* ============================================================
      SCREEN CONTROL & VIEW SWAPPING
      ============================================================ */
+function setBoardStatsVisible(visible){
+  const mobileBar = document.getElementById('boardSubstats');
+  if(mobileBar) mobileBar.classList.toggle('hidden', !visible);
+  const sidebarBar = document.getElementById('sidebarTrainerStats');
+  if(sidebarBar) sidebarBar.classList.toggle('hidden', !visible);
+}
+
 function showScreen(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
@@ -1441,6 +1818,9 @@ function showScreen(name){
   });
   const homeControls = document.getElementById('sidebarHomeControls');
   if(homeControls) homeControls.classList.toggle('hidden', name !== 'home');
+  setBoardStatsVisible(name === 'trainer' && !state.rush.active);
+  if(name !== 'trainer') revealPieces();
+  if(name === 'trainer'){ startSessionClock(); } else { pauseSessionClock(); }
   if(name === 'stats') renderStats();
   if(name === 'trainer' && state.board) setTimeout(()=>state.board.resize(), 50);
 }
@@ -1450,6 +1830,7 @@ document.querySelectorAll('.nav-btn, .sidebar-btn').forEach(btn=>{
 document.getElementById('trainerBack').addEventListener('click', ()=>{
   if(state.sf) state.sf.postMessage('stop');
   clearTimeout(liveAnalysisTimer);
+  if(state.rush.active){ exitRush(); return; }
   showScreen('home');
 });
 
@@ -1474,13 +1855,24 @@ function renderThemeGrid(filterText = '') {
     card.className = 'theme-card glass' + (state.currentTheme === key ? ' selected' : '');
     
     const formattedName = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-    const specificCount = diffs[state.currentDifficulty] || 0;
-    const solvedCount = (state.themeSolvedCounts[key] && state.themeSolvedCounts[key][state.currentDifficulty]) || 0;
+    const solvedFor = state.themeSolvedCounts[key] || { easy: 0, medium: 0, hard: 0 };
+    const pctFor = (diff) => {
+      const total = diffs[diff] || 0;
+      const solved = solvedFor[diff] || 0;
+      return total > 0 ? Math.min(100, Math.round((solved / total) * 100)) : 0;
+    };
+
+    const rows = ['easy', 'medium', 'hard'].map(diff => {
+      const label = diff.charAt(0).toUpperCase() + diff.slice(1);
+      const isCurrent = diff === state.currentDifficulty;
+      const total = diffs[diff] || 0;
+      const solved = solvedFor[diff] || 0;
+      return `<div class="tprog-row${isCurrent ? ' current' : ''}"><span>${label}</span><span class="tprog-nums"><span class="frac">${solved.toLocaleString()}/${total.toLocaleString()}</span><span class="pct">${pctFor(diff)}%</span></span></div>`;
+    }).join('');
 
     card.innerHTML = `
       <div class="tname">${formattedName}</div>
-      <div class="tcount">${specificCount.toLocaleString()} Puzzles (${state.currentDifficulty})</div>
-      <div class="tsolved">${solvedCount.toLocaleString()} solved (${state.currentDifficulty})</div>
+      <div class="tprogress">${rows}</div>
     `;
     
     card.addEventListener('click', (e) => { 
@@ -1562,7 +1954,10 @@ function initBoardIfNeeded(){
     onDragStart, onDrop, onSnapEnd
   });
   if(!state.boardResizeWired){
-    window.addEventListener('resize', ()=>state.board && state.board.resize());
+    window.addEventListener('resize', ()=>{
+      if(state.board) state.board.resize();
+      updateNotationStamp();
+    });
     state.boardResizeWired = true;
   }
 
@@ -1626,24 +2021,30 @@ function loadPuzzle(themeKey, difficulty, puzzle){
   state.moveCursor = 0;
   state.fenHistory = [puzzle.f];
   state.sanHistory = [];
+  state.toSquareHistory = [];
   state.viewIndex = 0;
   state.solving = false;
   state.puzzleStartTime = Date.now();
+  state.blindfoldSuspended = false;
   setDragEnabled(false);
   clearHighlights();
   state.sfBestLine = {};
   renderEnginePanel();
+  document.getElementById('btnNext').classList.remove('solved');
 
   const sideToSolve = state.chess.turn() === 'w' ? 'black' : 'white';
   state.boardOrientation = state.settings.autoFlip ? sideToSolve : 'white';
   state.board.orientation(state.boardOrientation);
   state.board.position(puzzle.f, false);
+  revealPieces();
+  scheduleBlindfoldHide();
 
   renderPuzzleInfo(themeKey, difficulty, puzzle);
   renderMoveList();
   updateFavoriteButton();
   updateNavButtons();
   updateMoveDisplay();
+  updateBoardCounter();
   
   setTimeout(()=>{
     if(state.currentPuzzle !== puzzle) return;
@@ -1671,16 +2072,68 @@ function updateMoveCounter(){
   document.getElementById('infoMoveCount').textContent = `${Math.min(state.moveCursor, total)} / ${total}`;
 }
 
+/* ---- puzzles-solved counter for the current theme + difficulty ---- */
+function updateBoardCounter(){
+  const els = document.querySelectorAll('.board-counter-val');
+  if(!els.length) return;
+  let text;
+  if(!state.currentTheme || !state.themesMeta || !state.themesMeta[state.currentTheme]){
+    text = '0 / 0';
+  }else{
+    const total = state.themesMeta[state.currentTheme][state.currentDifficulty] || 0;
+    const solvedBucket = state.themeSolvedCounts[state.currentTheme] || {};
+    const solved = solvedBucket[state.currentDifficulty] || 0;
+    text = solved.toLocaleString() + ' / ' + total.toLocaleString();
+  }
+  els.forEach(el => el.textContent = text);
+}
+
+/* ---- session clock: tracks active time spent on the trainer screen ---- */
+let sessionClockTimer = null;
+function formatSessionTime(sec){
+  sec = Math.max(0, Math.floor(sec));
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  if(h > 0) return h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  return m + ':' + String(s).padStart(2, '0');
+}
+function updateSessionClockDisplay(){
+  const els = document.querySelectorAll('.session-clock-val');
+  if(!els.length) return;
+  const liveMs = state.sessionRunning ? (Date.now() - state.sessionTickStart) : 0;
+  const text = formatSessionTime((state.sessionElapsedMs + liveMs) / 1000);
+  els.forEach(el => el.textContent = text);
+}
+function startSessionClock(){
+  if(state.sessionRunning) return;
+  state.sessionRunning = true;
+  state.sessionTickStart = Date.now();
+  updateSessionClockDisplay();
+  clearInterval(sessionClockTimer);
+  sessionClockTimer = setInterval(updateSessionClockDisplay, 1000);
+}
+function pauseSessionClock(){
+  if(!state.sessionRunning) return;
+  state.sessionElapsedMs += Date.now() - state.sessionTickStart;
+  state.sessionRunning = false;
+  clearInterval(sessionClockTimer);
+  sessionClockTimer = null;
+}
+
 function applyMoveToBoard(uci, showOnBoard){
   const mv = parseUCI(uci);
   const result = state.chess.move(mv);
   if(!result) return null;
   state.fenHistory.push(state.chess.fen());
   state.sanHistory.push(result.san);
+  state.toSquareHistory.push(result.to);
   const wasAtLatest = state.viewIndex === state.fenHistory.length - 2;
   if(wasAtLatest){
     state.viewIndex = state.fenHistory.length - 1;
-    if(showOnBoard !== false) state.board.position(state.chess.fen());
+    if(showOnBoard !== false){
+      state.board.position(state.chess.fen());
+    }
   }
   sfx.move();
   renderMoveList();
@@ -1690,8 +2143,41 @@ function applyMoveToBoard(uci, showOnBoard){
   return result;
 }
 
+function getBoardPixelSize(){
+  const boardEl = document.getElementById('board');
+  return boardEl ? boardEl.offsetWidth : 0;
+}
+
+function positionNotationStamp(){
+  const stamp = document.getElementById('notationStamp');
+  if(!stamp) return;
+  stamp.style.left = '50%';
+  stamp.style.top = '50%';
+  const boardSize = getBoardPixelSize();
+  stamp.style.fontSize = Math.max(20, Math.round(boardSize * 0.34)) + 'px';
+}
+
+function updateNotationStamp(){
+  const stamp = document.getElementById('notationStamp');
+  if(!stamp) return;
+  if(!state.settings.notationStamp){
+    stamp.classList.add('hidden');
+    return;
+  }
+  const idx = state.viewIndex;
+  const san = state.sanHistory[idx - 1];
+  if(idx <= 0 || !san){
+    stamp.classList.add('hidden');
+    return;
+  }
+  stamp.textContent = san;
+  positionNotationStamp();
+  stamp.classList.remove('hidden');
+}
+
 function updateMoveDisplay(flashClass){
   clearBoardArrows();
+  updateNotationStamp();
   const el = document.getElementById('statusBar');
   if(!state.chess || !state.fenHistory.length){
     el.textContent = 'Choose a puzzle to start training';
@@ -1718,6 +2204,25 @@ function updateMoveDisplay(flashClass){
 
 function setDragEnabled(enabled){
   state.dragEnabled = enabled;
+}
+
+/* ============================================================
+     BLINDFOLD MODE — pieces flash then vanish
+     ============================================================ */
+let blindfoldTimer = null;
+function revealPieces(){
+  clearTimeout(blindfoldTimer);
+  const el = document.getElementById('board');
+  if(el) el.classList.remove('pieces-hidden');
+}
+function scheduleBlindfoldHide(){
+  clearTimeout(blindfoldTimer);
+  if(!state.settings.blindfold || state.blindfoldSuspended) return;
+  const delay = state.settings.blindfoldTime || 1000;
+  blindfoldTimer = setTimeout(()=>{
+    const el = document.getElementById('board');
+    if(el) el.classList.add('pieces-hidden');
+  }, delay);
 }
 
 /* ============================================================
@@ -1837,7 +2342,11 @@ async function attemptSolvingMove(source, target){
     registerAttempt(false);
     flashSquare(target, 'sq-wrong');
     sfx.wrong();
-    toast('Good try, but not the sharpest move — look again.');
+    if(state.rush.active){
+      handleRushMiss();
+    }else{
+      toast('Good try, but not the sharpest move — look again.');
+    }
     return 'rejected';
   }
 
@@ -1862,6 +2371,7 @@ async function attemptSolvingMove(source, target){
 
   state.fenHistory.push(state.chess.fen());
   state.sanHistory.push(result.san);
+  state.toSquareHistory.push(result.to);
   state.viewIndex = state.fenHistory.length - 1;
 
   flashSquare(target, 'sq-correct');
@@ -1903,8 +2413,10 @@ async function attemptFreeMove(source, target){
 
   state.fenHistory = state.fenHistory.slice(0, state.viewIndex + 1);
   state.sanHistory = state.sanHistory.slice(0, state.viewIndex);
+  state.toSquareHistory = state.toSquareHistory.slice(0, state.viewIndex);
   state.fenHistory.push(vc.fen());
   state.sanHistory.push(result.san);
+  state.toSquareHistory.push(result.to);
   state.viewIndex = state.fenHistory.length - 1;
   state.chess = vc;
   state.solving = false;
@@ -1916,6 +2428,7 @@ async function attemptFreeMove(source, target){
   updateNavButtons();
   updateMoveDisplay();
   state.board.position(state.chess.fen());
+  revealPieces();
   return 'accepted';
 }
 
@@ -1962,10 +2475,25 @@ function finishPuzzle(){
   const elapsed = Date.now() - state.puzzleStartTime;
   recordSolve(state.currentTheme, state.currentDifficulty, state.currentPuzzle.r, elapsed);
   addToRecents(state.currentTheme, state.currentDifficulty, state.currentPuzzle);
+  updateBoardCounter();
   state.sessionSolved++;
   document.getElementById('infoSession').textContent = state.sessionSolved;
-  if(state.settings.autoAdvance){
-    setTimeout(()=>{ if(state.currentTheme) startTraining(state.currentTheme, state.currentDifficulty); }, CONFIG.AUTO_ADVANCE_DELAY);
+
+  if(state.rush.active){
+    state.rush.score++;
+    updateRushHud();
+    setTimeout(()=>{ if(state.rush.active) advanceRushPuzzle(); }, 550);
+    return;
+  }
+
+  // Light up the Next button the instant the puzzle is solved, so it's
+  // obviously ready to tap even if auto-advance is off or slow.
+  document.getElementById('btnNext').classList.add('solved');
+
+  const delayKey = state.settings.autoAdvanceDelay || 'off';
+  const delayMs = AUTO_ADVANCE_DELAYS[delayKey];
+  if(delayMs != null){
+    setTimeout(()=>{ if(state.currentTheme) startTraining(state.currentTheme, state.currentDifficulty); }, delayMs);
   }
 }
 
@@ -2037,6 +2565,7 @@ function jumpToFenIndex(idx){
   state.viewIndex = idx;
   clearHighlights();
   state.board.position(state.fenHistory[idx], false);
+  revealPieces();
   renderMoveList();
   updateNavButtons();
   updateMoveDisplay();
@@ -2082,6 +2611,8 @@ document.getElementById('btnSolution').addEventListener('click', ()=>{
   setDragEnabled(false);
   clearHighlights();
   breakStreak();
+  state.blindfoldSuspended = true;
+  revealPieces();
   jumpToFenIndex(state.fenHistory.length - 1);
   playOutSolutionFromCursor();
 });
@@ -2098,12 +2629,27 @@ function playOutSolutionFromCursor(){
 }
 
 document.getElementById('btnNext').addEventListener('click', ()=>{
+  if(state.rush.active){ exitRush(); return; }
   if(state.currentTheme) startTraining(state.currentTheme, state.currentDifficulty);
+});
+
+document.querySelectorAll('.act-rush').forEach(el=>el.addEventListener('click', openRushSelect));
+document.getElementById('rushPickTimed').addEventListener('click', ()=>startRush('timed'));
+document.getElementById('rushPickSurvival').addEventListener('click', ()=>startRush('survival'));
+document.getElementById('rushPickCancel').addEventListener('click', closeRushSelect);
+document.getElementById('rushPlayAgain').addEventListener('click', ()=>{
+  document.getElementById('rushEndOverlay').classList.add('hidden');
+  startRush(state.rush.mode);
+});
+document.getElementById('rushEndExit').addEventListener('click', ()=>{
+  document.getElementById('rushEndOverlay').classList.add('hidden');
+  showScreen('home');
 });
 document.getElementById('btnFlip').addEventListener('click', ()=>{
   state.board.flip();
   state.boardOrientation = state.boardOrientation === 'white' ? 'black' : 'white';
   renderEnginePanel();
+  updateNotationStamp();
 });
 document.getElementById('toggleAnalysis').addEventListener('click', ()=>{
   const el = document.getElementById('toggleAnalysis');
@@ -2302,9 +2848,11 @@ function playFreeMove(uciStr){
   if(!result) return;
   state.fenHistory.push(state.chess.fen());
   state.sanHistory.push(result.san);
+  state.toSquareHistory.push(result.to);
   state.viewIndex = state.fenHistory.length - 1;
   clearHighlights();
   state.board.position(state.chess.fen());
+  revealPieces();
   sfx.move();
   renderMoveList();
   updateMoveDisplay();
@@ -2436,7 +2984,23 @@ wireToggle('toggleSound', 'sound');
 wireToggle('toggleAnim', 'animations');
 wireToggle('toggleCoords', 'coordinates', v=>{ rebuildBoard(); });
 wireToggle('toggleAutoFlip', 'autoFlip');
-wireToggle('toggleAutoAdvance', 'autoAdvance');
+wireToggle('toggleNotationStamp', 'notationStamp', ()=>{ updateNotationStamp(); });
+wireToggle('toggleBlindfold', 'blindfold', v=>{
+  document.getElementById('selBlindfoldTime').disabled = !v;
+  if(v){ scheduleBlindfoldHide(); } else { revealPieces(); }
+});
+document.getElementById('selBlindfoldTime').disabled = !state.settings.blindfold;
+document.getElementById('selBlindfoldTime').value = state.settings.blindfoldTime;
+document.getElementById('selBlindfoldTime').addEventListener('change', e=>{
+  state.settings.blindfoldTime = parseInt(e.target.value, 10);
+  saveSettings();
+});
+
+document.getElementById('selAutoAdvance').value = state.settings.autoAdvanceDelay;
+document.getElementById('selAutoAdvance').addEventListener('change', e=>{
+  state.settings.autoAdvanceDelay = e.target.value;
+  saveSettings();
+});
 
 document.getElementById('selPieceStyle').value = state.settings.pieceStyle;
 document.getElementById('selPieceStyle').addEventListener('change', e=>{
@@ -2464,6 +3028,7 @@ function refreshBoardPosition(animate){
   state.board.orientation(state.boardOrientation);
   if(state.fenHistory.length){
     state.board.position(state.fenHistory[state.viewIndex], !!animate);
+    revealPieces();
   }
   applyBoardColor();
 }
